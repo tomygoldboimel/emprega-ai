@@ -12,7 +12,7 @@
         </button>
         <div class="action-buttons">
           <button @click="abrirModal" class="btn-back">
-           Sair
+            Sair
           </button>
           <button @click="downloadPDF" class="btn-pdf">
             Download PDF
@@ -29,7 +29,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
-              {{ curriculo.telefone }}
+              {{ formatarTelefone(curriculo.telefone) }}
             </span>
             
             <span v-if="curriculo.email">
@@ -70,8 +70,8 @@
           <div v-for="(exp, index) in experiencias" :key="index" class="cv-item">
             <div class="item-header">
               <div>
-                <h3>{{ exp.cargo ? exp.cargo : "Cargo não Informado"}}</h3>
-                <p class="company">{{ exp.empresa ? exp.empresa  : "Empresa não Informada"}}</p>
+                <h3>{{ exp.cargo || "Cargo não Informado" }}</h3>
+                <p class="company">{{ exp.empresa || "Empresa não Informada" }}</p>
               </div>
               <span class="period">{{ formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual) }}</span>
             </div>
@@ -120,26 +120,23 @@
       <p>Erro ao carregar currículo</p>
       <button @click="voltar" class="btn-back">Voltar</button>
     </div>
+
     <ModalEncerramentoSessao
       :isOpen="modalAberto"
       @confirmar="confirmarSair"
-      @fechar="fecharModal"/>
+      @fechar="fecharModal"
+    />
   </div>
 </template>
 
 <script>
-import CurriculoService from '@/services/curriculoService';
-import ExperienciaService from '@/services/experienciaService';
-import FormacaoService from '@/services/formacaoService';
-import CertificacaoService from '@/services/certificacaoService';
-import usuarioService from '@/services/usuarioService';
+import jsPDF from 'jspdf';
 import ModalEncerramentoSessao from '@/components/ModalEncerramentoSessao.vue';
-import { onMounted } from 'vue';
-import * as XLSX from 'xlsx';
-import jsPDF  from 'jspdf';
-import html2pdf from 'html2pdf.js';
-import experienciaService from '@/services/experienciaService';
+import certificacaoService from '@/services/certificacaoService';
 import curriculoService from '@/services/curriculoService';
+import experienciaService from '@/services/experienciaService';
+import formacaoService from '@/services/formacaoService';
+import usuarioService from '@/services/usuarioService';
 
 export default {
   name: 'CurriculoVisualizar',
@@ -163,6 +160,7 @@ export default {
       this.$router.replace('/login');
       return;
     }
+
     const curriculoId = this.$route.params.id;
     if (curriculoId) {
       await this.carregarCurriculo(curriculoId);
@@ -170,14 +168,15 @@ export default {
       this.$router.push('/');
     }
   },
-
   methods: {
     abrirModal() {
       this.modalAberto = true;
     },
+
     fecharModal() {
       this.modalAberto = false;
     },
+
     async confirmarSair() {
       try {
         await usuarioService.logout();
@@ -191,26 +190,39 @@ export default {
         });
       }
     },
+
     async carregarCurriculo(id) {
       try {
         this.loading = true;
-        this.curriculo = await CurriculoService.listarCurriculoPorId(id);
-        const todasExperiencias = await ExperienciaService.listarExperiencias();
+        this.curriculo = await curriculoService.listarCurriculoPorId(id);
+        
+        const todasExperiencias = await experienciaService.listarExperiencias();
         this.experiencias = todasExperiencias.filter(exp => exp.curriculoId === id);
         
-        const todasFormacoes = await FormacaoService.listarFormacaos();
+        const todasFormacoes = await formacaoService.listarFormacaos();
         this.formacoes = todasFormacoes.filter(form => form.curriculoId === id);
         
-        const todasCertificacoes = await CertificacaoService.listarCertificacaos();
+        const todasCertificacoes = await certificacaoService.listarCertificacaos();
         this.certificacoes = todasCertificacoes.filter(cert => cert.curriculoId === id);
-        
       } catch (error) {
         this.curriculo = null;
       } finally {
         this.loading = false;
       }
     },
-
+    formatarTelefone(telefone) {
+      if (!telefone) return '';
+      
+      const apenasNumeros = telefone.toString().replace(/\D/g, '');
+      
+      if (apenasNumeros.length === 11) {
+        return `(${apenasNumeros.substring(0, 2)}) ${apenasNumeros.substring(2, 7)}-${apenasNumeros.substring(7)}`;
+      } else if (apenasNumeros.length === 10) {
+        return `(${apenasNumeros.substring(0, 2)}) ${apenasNumeros.substring(2, 6)}-${apenasNumeros.substring(6)}`;
+      }
+      
+      return telefone;
+    },
     formatarPeriodo(inicio, fim, atual) {
       if (!inicio) return 'Não informado';
       
@@ -230,25 +242,6 @@ export default {
       return `${mes}/${ano}`;
     },
 
-    voltarDashboard() {
-      this.$router.push('/dashboard');
-    },
-    async voltarLogin() {
-      try {
-        await usuarioService.logout();
-        
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        this.$router.replace('/login').then(() => {
-          window.location.reload(); 
-        });
-        
-      } catch (error) {
-        this.$router.replace('/login').then(() => {
-          window.location.reload();
-        });
-      }
-    },
     voltar() {
       this.$router.go(-1);
     },
@@ -257,198 +250,197 @@ export default {
       this.$router.push(`/curriculo/editar/${this.curriculo.id}`);
     },
 
-
-  downloadPDF() {
-    const doc = new jsPDF('p', 'mm', 'a4');
-    
-    let yPosition = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 15;
-
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text(this.curriculo.nomeCompleto, pageWidth / 2, yPosition, { align: 'center' });
-    
-    yPosition += 8;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    
-    const contato = [
-      this.curriculo.telefone,
-      this.curriculo.email,
-      `${this.curriculo.cidade}, ${this.curriculo.estado}`
-    ].filter(item => item && item.trim() !== '').join(' | ');
-    
-    doc.text(contato, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 6;
-    
-    if (this.curriculo.linkedIn || this.curriculo.gitHub) {
-      const social = [
-        this.curriculo.linkedIn,
-        this.curriculo.gitHub
-      ].filter(item => item).join(' | ');
+    downloadPDF() {
+      const doc = new jsPDF('p', 'mm', 'a4');
       
-      doc.setTextColor(30, 64, 175);
-      doc.text(social, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 10;
-    } else {
-      yPosition += 5;
-    }
+      let yPosition = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 15;
 
-    doc.setTextColor(0, 0, 0);
-
-    if (this.experiencias.length > 0) {
-      doc.setFontSize(14);
+      doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.text('EXPERIÊNCIAS PROFISSIONAIS', margin, yPosition);
-      yPosition += 2;
+      doc.text(this.curriculo.nomeCompleto, pageWidth / 2, yPosition, { align: 'center' });
       
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 8;
-
-      this.experiencias.forEach((exp, index) => {
-        if (yPosition > 270) {
-          doc.addPage();
-          yPosition = 20;
-        }
-
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text(exp.cargo || 'Cargo não informado', margin, yPosition);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      
+      const contato = [
+        this.formatarTelefone(this.curriculo.telefone),
+        this.curriculo.email,
+        `${this.curriculo.cidade}, ${this.curriculo.estado}`
+      ].filter(item => item && item.trim() !== '').join(' | ');
+      
+      doc.text(contato, pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 6;
+      
+      if (this.curriculo.linkedIn || this.curriculo.gitHub) {
+        const social = [
+          this.curriculo.linkedIn,
+          this.curriculo.gitHub
+        ].filter(item => item).join(' | ');
         
-        yPosition += 5;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(60, 60, 60);
-        doc.text(exp.empresa || 'Empresa não informada', margin, yPosition);
-        
-        yPosition += 5;
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text(this.formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual), margin, yPosition);
-        
-        if (exp.descricao) {
-          yPosition += 5;
-          doc.setTextColor(40, 40, 40);
-          const descricaoLines = doc.splitTextToSize(exp.descricao, pageWidth - 2 * margin);
-          doc.text(descricaoLines, margin, yPosition);
-          yPosition += (descricaoLines.length * 4);
-        }
-        
+        doc.setTextColor(30, 64, 175);
+        doc.text(social, pageWidth / 2, yPosition, { align: 'center' });
         yPosition += 10;
-        doc.setTextColor(0, 0, 0);
-      });
-    }
-
-    if (this.formacoes.length > 0) {
-      if (yPosition > 240) {
-        doc.addPage();
-        yPosition = 20;
+      } else {
+        yPosition += 5;
       }
 
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('FORMAÇÃO ACADÊMICA', margin, yPosition);
-      yPosition += 2;
-      
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 8;
+      doc.setTextColor(0, 0, 0);
 
-      this.formacoes.forEach((form, index) => {
-        if (yPosition > 270) {
-          doc.addPage();
-          yPosition = 20;
-        }
-
-        doc.setFontSize(12);
+      if (this.experiencias.length > 0) {
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(form.curso || 'Curso não informado', margin, yPosition);
+        doc.text('EXPERIÊNCIAS PROFISSIONAIS', margin, yPosition);
+        yPosition += 2;
         
-        yPosition += 5;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(60, 60, 60);
-        doc.text(form.instituicao || 'Instituição não informada', margin, yPosition);
-        
-        yPosition += 5;
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        const nivel = `${form.nivel || ''} • ${form.status || ''}`.trim();
-        doc.text(nivel, margin, yPosition);
-        
-        if (form.dataInicio) {
-          yPosition += 5;
-          const periodo = `${this.formatarData(form.dataInicio)} - ${form.dataConclusao ? this.formatarData(form.dataConclusao) : 'Em andamento'}`;
-          doc.text(periodo, margin, yPosition);
-        }
-        
-        yPosition += 10;
-        doc.setTextColor(0, 0, 0);
-      });
-    }
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 8;
 
-    if (this.certificacoes.length > 0) {
-      if (yPosition > 240) {
-        doc.addPage();
-        yPosition = 20;
+        this.experiencias.forEach((exp) => {
+          if (yPosition > 270) {
+            doc.addPage();
+            yPosition = 20;
+          }
+
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.text(exp.cargo || 'Cargo não informado', margin, yPosition);
+          
+          yPosition += 5;
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(60, 60, 60);
+          doc.text(exp.empresa || 'Empresa não informada', margin, yPosition);
+          
+          yPosition += 5;
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          doc.text(this.formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual), margin, yPosition);
+          
+          if (exp.descricao) {
+            yPosition += 5;
+            doc.setTextColor(40, 40, 40);
+            const descricaoLines = doc.splitTextToSize(exp.descricao, pageWidth - 2 * margin);
+            doc.text(descricaoLines, margin, yPosition);
+            yPosition += (descricaoLines.length * 4);
+          }
+          
+          yPosition += 10;
+          doc.setTextColor(0, 0, 0);
+        });
       }
 
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CERTIFICAÇÕES', margin, yPosition);
-      yPosition += 2;
-      
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(margin, yPosition, pageWidth - margin, yPosition);
-      yPosition += 8;
-
-      this.certificacoes.forEach((cert, index) => {
-        if (yPosition > 270) {
+      if (this.formacoes.length > 0) {
+        if (yPosition > 240) {
           doc.addPage();
           yPosition = 20;
         }
 
-        doc.setFontSize(12);
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(cert.nome || 'Certificação não informada', margin, yPosition);
+        doc.text('FORMAÇÃO ACADÊMICA', margin, yPosition);
+        yPosition += 2;
         
-        yPosition += 5;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(60, 60, 60);
-        doc.text(cert.instituicao || 'Instituição não informada', margin, yPosition);
-        
-        yPosition += 5;
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        const info = [
-          cert.cargaHoraria ? `${cert.cargaHoraria}h` : null,
-          cert.dataConclusao ? this.formatarData(cert.dataConclusao) : null
-        ].filter(item => item).join(' • ');
-        
-        if (info) {
-          doc.text(info, margin, yPosition);
-          yPosition += 5;
-        }
-        
-        if (cert.urlCertificado) {
-          doc.setTextColor(30, 64, 175);
-          doc.textWithLink('Ver certificado', margin, yPosition, { url: cert.urlCertificado });
-        }
-        
-        yPosition += 10;
-        doc.setTextColor(0, 0, 0);
-      });
-    }
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 8;
 
-    doc.save(`Curriculo_${this.curriculo.nomeCompleto.replace(/\s/g, '_')}.pdf`);
-  },
+        this.formacoes.forEach((form) => {
+          if (yPosition > 270) {
+            doc.addPage();
+            yPosition = 20;
+          }
+
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.text(form.curso || 'Curso não informado', margin, yPosition);
+          
+          yPosition += 5;
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(60, 60, 60);
+          doc.text(form.instituicao || 'Instituição não informada', margin, yPosition);
+          
+          yPosition += 5;
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          const nivel = `${form.nivel || ''} • ${form.status || ''}`.trim();
+          doc.text(nivel, margin, yPosition);
+          
+          if (form.dataInicio) {
+            yPosition += 5;
+            const periodo = `${this.formatarData(form.dataInicio)} - ${form.dataConclusao ? this.formatarData(form.dataConclusao) : 'Em andamento'}`;
+            doc.text(periodo, margin, yPosition);
+          }
+          
+          yPosition += 10;
+          doc.setTextColor(0, 0, 0);
+        });
+      }
+
+      if (this.certificacoes.length > 0) {
+        if (yPosition > 240) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('CERTIFICAÇÕES', margin, yPosition);
+        yPosition += 2;
+        
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 8;
+
+        this.certificacoes.forEach((cert) => {
+          if (yPosition > 270) {
+            doc.addPage();
+            yPosition = 20;
+          }
+
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.text(cert.nome || 'Certificação não informada', margin, yPosition);
+          
+          yPosition += 5;
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(60, 60, 60);
+          doc.text(cert.instituicao || 'Instituição não informada', margin, yPosition);
+          
+          yPosition += 5;
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          const info = [
+            cert.cargaHoraria ? `${cert.cargaHoraria}h` : null,
+            cert.dataConclusao ? this.formatarData(cert.dataConclusao) : null
+          ].filter(item => item).join(' • ');
+          
+          if (info) {
+            doc.text(info, margin, yPosition);
+            yPosition += 5;
+          }
+          
+          if (cert.urlCertificado) {
+            doc.setTextColor(30, 64, 175);
+            doc.textWithLink('Ver certificado', margin, yPosition, { url: cert.urlCertificado });
+          }
+          
+          yPosition += 10;
+          doc.setTextColor(0, 0, 0);
+        });
+      }
+
+      doc.save(`Curriculo_${this.curriculo.nomeCompleto.replace(/\s/g, '_')}.pdf`);
+    }
   }
 }
 </script>
@@ -715,7 +707,7 @@ export default {
 @media print {
   .cv-header h1,
   .cv-section h2,
-  .cv-item h3{
+  .cv-item h3 {
     color: #000000 !important;
   }
 
@@ -723,7 +715,7 @@ export default {
   .description,
   .contact-info,
   .contact-info span {
-    color: #1f2937 !important; 
+    color: #1f2937 !important;
   }
 
   .period,
@@ -737,5 +729,4 @@ export default {
     color: #1e40af !important;
   }
 }
-
 </style>

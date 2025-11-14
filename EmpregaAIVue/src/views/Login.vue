@@ -17,10 +17,7 @@
           <div v-if="activeMode === 'login'" class="form-wrapper" key="login-form">
             <div class="form-content">
               <div class="icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
+                <img src="/usericon.svg" alt="User Icon" />
               </div>
               
               <h1>Bem-vindo</h1>
@@ -36,10 +33,12 @@
               </div>
 
               <div class="form-group">
-                <PasswordInputEscuro type="password" 
-                placeholder="••••••••"
-                v-model="loginPassword"
-                @enter="handleLogin"/>
+                <PasswordInputEscuro 
+                  type="password" 
+                  placeholder="••••••••"
+                  v-model="loginPassword"
+                  @enter="handleLogin"
+                />
               </div>
 
               <button 
@@ -64,8 +63,7 @@
         </transition>
 
         <transition name="fade-preview">
-          <div v-if="activeMode !== 'login'" class="preview" key="login-preview">
-          </div>
+          <div v-if="activeMode !== 'login'" class="preview" key="login-preview"></div>
         </transition>
       </div>
 
@@ -76,12 +74,7 @@
           <div v-if="activeMode === 'cadastro'" class="form-wrapper" key="cadastro-form">
             <div class="form-content">
               <div class="icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
+                <img src="/usersicon.svg" alt="User Icon" style="filter: brightness(0) invert(1);"/>
               </div>
               
               <h1>Criar conta</h1>
@@ -104,17 +97,21 @@
               </div>
 
               <div class="form-group">
-                <PasswordInputClaro type="password" 
-                placeholder="••••••••"
-                v-model="cadastroPassword"/>
+                <PasswordInputClaro 
+                  type="password" 
+                  placeholder="••••••••"
+                  v-model="cadastroPassword"
+                />
               </div>
 
               <div class="form-group">
-                <PasswordInputClaro type="password" 
-                placeholder="••••••••"
-                v-model="cadastroConfirmPassword"
-                label="Confirmar Senha"
-                @keyup.enter="handleCadastro"/>
+                <PasswordInputClaro 
+                  type="password" 
+                  placeholder="••••••••"
+                  v-model="cadastroConfirmPassword"
+                  label="Confirmar Senha"
+                  @keyup.enter="handleCadastro"
+                />
               </div>
 
               <button 
@@ -143,14 +140,14 @@
         </transition>
 
         <transition name="fade-preview">
-          <div v-if="activeMode !== 'cadastro'" class="preview" key="cadastro-preview">
-          </div>
+          <div v-if="activeMode !== 'cadastro'" class="preview" key="cadastro-preview"></div>
         </transition>
       </div>
     </div>
+
     <div v-if="errorMessage" class="alert alert-error">
-        {{ errorMessage }}
-      </div>
+      {{ errorMessage }}
+    </div>
   </div>
 </template>
 
@@ -170,7 +167,6 @@ export default {
     return {
       activeMode: 'login',
       loading: false,
-      
       loginEmail: '',
       loginPassword: '',
       loginError: '',
@@ -231,10 +227,11 @@ export default {
           this.loginError = 'Email ou senha inválidos';
         }
       } catch (error) {
-        if (error.status == 401){
+        if (error.status === 401) {
           this.loginError = 'Email ou senha inválidos';
+        } else {
+          this.loginError = 'Erro ao fazer login. Tente novamente.';
         }
-        else this.loginError = 'Erro ao fazer login. Tente novamente.';
       } finally {
         this.loading = false;
       }
@@ -273,30 +270,24 @@ export default {
           email: this.cadastroEmail,
           senha: this.cadastroPassword
         });
+        
         this.cadastroSuccess = 'Cadastro realizado com sucesso!';
         localStorage.setItem('usuario', JSON.stringify(novoUsuario));
 
         setTimeout(() => {
+          this.limparFormularioCadastro();
           this.changeMode('login');
-          this.cadastroNome = '';
-          this.cadastroEmail = '';
-          this.cadastroPassword = '';
-          this.cadastroConfirmPassword = '';
         }, 1500);
 
       } catch (error) {
-        if (error.response?.status === 400){
-          this.errorMessage = 'E-mail já cadastrado. Redirecionando ao Login'
+        if (error.response?.status === 400) {
+          this.errorMessage = 'E-mail já cadastrado. Redirecionando ao Login';
           setTimeout(() => {
             this.errorMessage = '';
-            this.cadastroNome = '';
-            this.cadastroEmail = '';
-            this.cadastroPassword = '';
-            this.cadastroConfirmPassword = '';
+            this.limparFormularioCadastro();
             this.changeMode('login');
           }, 2000);
-        }
-        else if (error.response) {
+        } else if (error.response) {
           this.cadastroError = error.response.data.message || 'Erro ao realizar cadastro';
         } else if (error.request) {
           this.cadastroError = 'Erro de conexão. Verifique se a API está rodando.';
@@ -306,6 +297,13 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    limparFormularioCadastro() {
+      this.cadastroNome = '';
+      this.cadastroEmail = '';
+      this.cadastroPassword = '';
+      this.cadastroConfirmPassword = '';
     }
   }
 }
@@ -389,7 +387,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 24px;
   margin: 0 auto 24px;
 }
 
@@ -612,7 +609,7 @@ export default {
   text-align: center;
 }
 
-.alert-error-login{
+.alert-error-login {
   position: fixed;
   bottom: 24px;
   left: 30%;

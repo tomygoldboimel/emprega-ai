@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import Login from '../views/Login.vue'
-import Cadastro from '../views/Cadastro.vue'
 import Curriculo from '../views/Curriculo.vue'
 import usuarioService from '@/services/usuarioService'
 
@@ -13,11 +12,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/login',
     name: 'Login',
     component: Login
-  },
-  {
-    path: '/cadastro',
-    name: 'Cadastro',
-    component: Cadastro
   },
   {
     path: '/curriculo',
