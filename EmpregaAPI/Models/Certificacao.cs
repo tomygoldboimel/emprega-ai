@@ -10,7 +10,7 @@ namespace EmpregaAI.Models
         public Guid Id { get; set; }
 
         [Required]
-        public Guid CurriculoId { get; set; } // FK
+        public Guid CurriculoId { get; set; }
 
         public string? Nome { get; set; }
         public string? Instituicao { get; set; }
@@ -18,8 +18,6 @@ namespace EmpregaAI.Models
         public int? CargaHoraria { get; set; }
         public string? UrlCertificado { get; set; }
         public bool? Excluido { get; set; }
-
-        // Navigation
         public Curriculo? Curriculo { get; set; }
     }
 }

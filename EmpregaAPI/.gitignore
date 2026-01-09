@@ -18,7 +18,10 @@ x86/
 [Oo]bj/
 
 # Visual Studio cache/options
+.vS/
 .vs/
+*.sqlite
+*.slnx.sqlite
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

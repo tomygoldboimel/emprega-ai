@@ -2,6 +2,7 @@ using EmpregaAI.Services.Interfaces;
 using EmpregaAI.Services;
 using EmpregaAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,8 @@ builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ICertificacaoService, CertificacaoService>();
 builder.Services.AddScoped<IExperienciaService, ExperienciaService>();
 builder.Services.AddScoped<IFormacaoService, FormacaoService>();
+builder.Services.AddScoped<IExtratorService, ExtratorService>();
+builder.Services.AddHttpClient<IProcessadorGroqService, ProcessadorGroqService>();
 
 // CONFIGURAÇÃO DE SESSÃO (adicione antes de builder.Build())
 builder.Services.AddDistributedMemoryCache();
@@ -34,6 +37,11 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.None; // IMPORTANTE para CORS
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Para HTTPS
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
 });
 
 // CORS - CORRIGIDO
@@ -47,6 +55,8 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
