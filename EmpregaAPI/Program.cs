@@ -69,7 +69,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.UseSession(); // Session depois do CORS
 app.UseAuthorization();
 app.MapControllers();
