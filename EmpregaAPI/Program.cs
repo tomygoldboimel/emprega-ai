@@ -1,4 +1,4 @@
-using EmpregaAI.Services.Interfaces;
+ï»¿using EmpregaAI.Services.Interfaces;
 using EmpregaAI.Services;
 using EmpregaAPI.Data;
 using Microsoft.EntityFrameworkCore;
@@ -6,20 +6,16 @@ using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração da string de conexão
 var connectionString = builder.Configuration.GetConnectionString("CurriculoConnection");
-Console.WriteLine($"String de Conexão: {connectionString}");
+Console.WriteLine($"String de ConexÃ£o: {connectionString}");
 
-// Registrando o DbContext para injeção
 builder.Services.AddDbContext<AplicacaoContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Adicionando serviços ao contêiner
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Registrando serviços
 builder.Services.AddScoped<ICurriculoService, CurriculoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ICertificacaoService, CertificacaoService>();
@@ -28,15 +24,14 @@ builder.Services.AddScoped<IFormacaoService, FormacaoService>();
 builder.Services.AddScoped<IExtratorService, ExtratorService>();
 builder.Services.AddHttpClient<IProcessadorGroqService, ProcessadorGroqService>();
 
-// CONFIGURAÇÃO DE SESSÃO (adicione antes de builder.Build())
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SameSite = SameSiteMode.None; // IMPORTANTE para CORS
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Para HTTPS
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 builder.Services.Configure<FormOptions>(options =>
@@ -44,7 +39,6 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
 });
 
-// CORS - CORRIGIDO
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueApp", policy =>
@@ -57,11 +51,14 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
+
+builder.Services.Configure<VonageSettings>(builder.Configuration.GetSection("Vonage"));
+builder.Services.AddScoped<VonageSmsService>();
 
 var app = builder.Build();
 
-// ORDEM CORRETA DOS MIDDLEWARES
-app.UseCors("AllowVueApp"); // CORS primeiro
+app.UseCors("AllowVueApp");
 
 if (app.Environment.IsDevelopment())
 {
@@ -69,7 +66,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseSession(); // Session depois do CORS
+app.UseSession();
 app.UseAuthorization();
 app.MapControllers();
 

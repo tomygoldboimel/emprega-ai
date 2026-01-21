@@ -87,19 +87,10 @@ public class UsuarioController : ControllerBase
     }
 
     [HttpGet("login")]
-    public async Task<IActionResult> Login([FromQuery] string email, [FromQuery] string senha)
+    public async Task<IActionResult> Login([FromQuery] string telefone)
     {
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(senha))
-        {
-            return BadRequest(new { message = "Email e senha são obrigatórios" });
-        }
 
-        var usuario = await _UsuarioService.Login(email, senha);
-
-        if (usuario == null)
-        {
-            return Unauthorized(new { message = "Email ou senha inválidos" });
-        }
+        var usuario = await _UsuarioService.Login(telefone);
         HttpContext.Session.SetString("UsuarioId", usuario.Id.ToString());
         return Ok(usuario);
     }

@@ -9,6 +9,6 @@ namespace EmpregaAI.Services.Interfaces
         Task<Usuario> ListarUsuarioPorID(Guid id);
         Task<Usuario> AtualizarUsuario(Usuario Usuario);
         Task<Usuario> ExcluirUsuario(Usuario Usuario);
-        Task<Usuario> Login(string email, string senha);
+        Task<Usuario> Login(string telefone);
     }
 }

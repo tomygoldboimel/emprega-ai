@@ -16,10 +16,10 @@ namespace EmpregaAI.Services
 
         public async Task<Usuario> AdicionaUsuario(Usuario Usuario)
         {
-            var emailExiste = await _context.Usuarios
-                .AnyAsync(u => u.Email == Usuario.Email);
+            var telefoneExiste = await _context.Usuarios
+                .AnyAsync(u => u.Telefone == Usuario.Telefone);
 
-            if (emailExiste)
+            if (telefoneExiste)
             {
                 return null;
             }
@@ -80,22 +80,19 @@ namespace EmpregaAI.Services
             return c;
         }
 
-        public async Task<Usuario> Login(string email, string senha)
+        public async Task<Usuario?> Login(string telefone)
         {
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Email == email && u.Excluido != true);
-
-            if (usuario == null)
-            {
-                return null;
-            }
-
-            if (senha == usuario.Senha)
-            {
+                .FirstOrDefaultAsync(u => u.Telefone == telefone && u.Excluido != true);
+            if (usuario != null)
                 return usuario;
-            }
 
-            return null;
+            var novoUsuario = new Usuario
+            {
+                Telefone = telefone
+            };
+
+            return await AdicionaUsuario(novoUsuario);
         }
     }
 }

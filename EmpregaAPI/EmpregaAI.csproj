@@ -26,7 +26,13 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 
 
+		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+
+
 		<PackageReference Include="Tesseract" Version="5.2.0" />
+
+
+		<PackageReference Include="Vonage" Version="8.20.0" />
 	</ItemGroup>
 
 </Project>

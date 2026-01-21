@@ -26,7 +26,18 @@ namespace EmpregaAI.Services
                 throw new ArgumentException("DataNascimento_Invalida");
             }
             _context.Curriculos.Add(curriculo);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Isso vai pegar o erro do SQL (ex: campo obrigatório faltando)
+                var innerError = ex.InnerException?.Message ?? ex.Message;
+                Console.WriteLine($"Erro detalhado no POST: {innerError}");
+
+                throw;
+            }
             return curriculo;
         }
 

@@ -18,10 +18,6 @@ namespace EmpregaAI.Services
         {
             Formacao.Id = Guid.NewGuid();
             Formacao.Excluido = false;
-            if (Formacao.DataInicio > DateTime.Today)
-            {
-                throw new ArgumentException("DataInicio_Futura");
-            }
             _context.Formacoes.Add(Formacao);
             await _context.SaveChangesAsync();
             return Formacao;
@@ -55,10 +51,6 @@ namespace EmpregaAI.Services
             {
                 return null;
             }
-            if (Formacao.DataInicio > DateTime.Today)
-            {
-                throw new ArgumentException("DataInicio_Futura");
-            }
             _context.Entry(c).CurrentValues.SetValues(Formacao);
             await _context.SaveChangesAsync();
             return c;
@@ -68,7 +60,6 @@ namespace EmpregaAI.Services
         {
             var formacoes = await _context.Formacoes
                 .Where(x => x.CurriculoId == curriculoId && x.Excluido != true)
-                .OrderByDescending(x => x.DataInicio)
                 .ToListAsync();
 
             return formacoes;
