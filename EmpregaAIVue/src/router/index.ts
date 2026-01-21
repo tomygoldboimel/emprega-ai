@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import Login from '../views/Login.vue'
+import Login from '../views/Login_new.vue'
 import Curriculo from '../views/Curriculo.vue'
-import usuarioService from '@/services/usuarioService'
+import Cadastro from '../views/Cadastro.vue'
+import CodigoVerificacao from '../views/CodigoVerificacao.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -14,9 +15,19 @@ const routes: Array<RouteRecordRaw> = [
     component: Login
   },
   {
+    path: '/cadastro',
+    name: 'Cadastro',
+    component: Cadastro
+  },
+  {
     path: '/curriculo',
     name: 'Curriculo',
     component: Curriculo
+  },
+  {
+    path: '/verificar-codigo',
+    name: 'CodigoVerificacao',
+    component: CodigoVerificacao
   },
   {
     path: '/curriculo/visualizar/:id',
@@ -34,21 +45,5 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
-router.beforeEach(async (to, from, next) => {
-  if (to.meta.requiresAuth) {
-    try {
-      const autenticado = await usuarioService.verificarSessao()
-      
-      if (autenticado) {
-        next()
-      } else {
-        next('/login')
-      }
-    } catch (error) {
-      next('/login')
-    }
-  } else {
-    next()
-  }
-})
+
 export default router

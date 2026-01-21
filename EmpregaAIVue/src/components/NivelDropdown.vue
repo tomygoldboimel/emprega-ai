@@ -93,6 +93,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
+  padding-right: 37px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: white;

@@ -1,9 +1,17 @@
 <template>
   <div class="wrapper">
+    <TutorialHand 
+      v-model="mostrarTutorial"
+      :handSrc="pointerHandIcon"
+    />
     <div class="container">
-      <button @click="abrirModal" class="btn-back">
-        Sair
-      </button>
+      <div class="top-bar">
+        <LogoutButton @logout="abrirModal" />
+        <div class="right-actions">
+          <BotaoContraste />
+          <BotaoDescricao @toggle="mostrarTutorial = $event"/>
+        </div>
+      </div>
       <div class="header">
         <div class="logo-circle">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -18,135 +26,232 @@
       <div class="progress-bar">
         <div :class="['progress-step', { active: step >= 1 }]">
           <div class="step-circle">1</div>
-          <span>Pessoais</span>
+          <span>Sobre você</span>
         </div>
         <div class="progress-line" :class="{ active: step >= 2 }"></div>
         <div :class="['progress-step', { active: step >= 2 }]">
           <div class="step-circle">2</div>
-          <span>Experiência</span>
+          <span>Trabalhos</span>
         </div>
         <div class="progress-line" :class="{ active: step >= 3 }"></div>
         <div :class="['progress-step', { active: step >= 3 }]">
           <div class="step-circle">3</div>
-          <span>Formação</span>
-        </div>
-        <div class="progress-line" :class="{ active: step >= 4 }"></div>
-        <div :class="['progress-step', { active: step >= 4 }]">
-          <div class="step-circle">4</div>
-          <span>Certificações</span>
+          <span>Estudos</span>
         </div>
       </div>
 
       <div v-if="step === 1" class="step-content">
-        <h2 class="step-title">Dados Pessoais</h2>
-        
+        <h2 class="step-title">Sobre você</h2>
         <div class="form-group">
           <label>Nome Completo*</label>
-          <input type="text" v-model="curriculo.nomeCompleto" required />
+          <div style="position: relative;">
+            <input type="text" v-model="curriculo.nomeCompleto" required placeholder="Seu nome todo..."/>
+            <BotaoMicrofone 
+              :isRecording="camposGravando.nomeCompleto" 
+              @toggle="toggleGravacao('nomeCompleto', curriculo)"
+              style="position: absolute; left:580px; top:50%; transform: translateY(-50%);"
+            />
+          </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Data de Nascimento</label>
-            <input type="date" v-model="curriculo.dataNascimento" />
+            <div style="position: relative;"> 
+              <input
+              type="date" 
+              v-model="curriculo.dataNascimento"
+              class="input-com-dois-icones"
+              />
+              
+              <BotaoMicrofone 
+              :isRecording="gravandoDataFim" 
+              @toggle="toggleGravacaoDataFim"
+              style="position: absolute; left:260px; transform: translateY(-50%); top:50%;"
+              />
+                
+              </div>
           </div>
           <div class="form-group">
             <label>Telefone</label>
             <input 
               type="tel" 
-              v-model="telefoneFormatado" 
+              v-model="curriculo.telefone" 
               @input="formatarTelefone"
               placeholder="(XX) XXXXX-XXXX"
               maxlength="15"
+              disabled
             />
           </div>
-        </div>
-
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" v-model="curriculo.email" disabled/>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Estado</label>
-            <EstadoDropdown v-model="curriculo.estado" />
+            <div style="position: relative;">
+              <EstadoDropdown v-model="curriculo.estado" class="input-com-dois-icones"/>
+              <BotaoMicrofone 
+                  :isRecording="camposGravando.estado" 
+                  @toggle="toggleGravacao('estado', curriculo)"
+                  style="position: absolute; left:265px; top:50%; transform: translateY(-50%);"
+              />
+            </div>
           </div>
           <div class="form-group">
             <label>Cidade</label>
-            <input type="text" v-model="curriculo.cidade" />
+            <div style="position: relative;">
+              <CidadeDropdown 
+                v-model="curriculo.cidade" 
+                :cidades="cidades"
+                class="input-com-dois-icones"
+              />
+              <BotaoMicrofone 
+                :isRecording="camposGravando.cidade" 
+                @toggle="toggleGravacao('cidade', curriculo)"
+                style="position: absolute; left:260px; top:50%; transform: translateY(-50%);"
+              />
+            </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label>Endereço</label>
-          <input type="text" v-model="curriculo.endereco" />
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>LinkedIn</label>
-            <input type="url" v-model="curriculo.linkedIn" placeholder="linkedin.com/in/..." />
-          </div>
-          <div class="form-group">
-            <label>GitHub</label>
-            <input type="url" v-model="curriculo.gitHub" placeholder="github.com/..." />
-          </div>
-        </div>
-
-        <button class="btn-primary" @click="nextStepPerfil">Continuar</button>
-      </div>
-
-      <div v-if="step === 2" class="step-content">
-        <h2 class="step-title">Experiências Profissionais</h2>
-        <div class="form-card">
-          <div class="form-group">
-            <label>Empresa</label>
-            <input type="text" v-model="novaExperiencia.empresa" />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Cargo</label>
-              <input type="text" v-model="novaExperiencia.cargo" />
-            </div>
-            <div class="form-group">
-              <label>Data Início*</label>
-              <input type="date" v-model="novaExperiencia.dataInicio" required/>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Data Fim</label>
-            <input type="date" v-model="novaExperiencia.dataFim" :disabled="novaExperiencia.empregoAtual" />
-            <div class="checkbox-wrapper">
-              <input type="checkbox" id="empregoAtual" v-model="novaExperiencia.empregoAtual" />
-              <label for="empregoAtual" style="margin: 0;">Trabalho aqui atualmente</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Descrição das Atividades*</label>
-            <textarea v-model="novaExperiencia.descricao" rows="4" required></textarea>
+            <label>Objetivo Profissional*</label>
+              <div style="position: relative;">
+                <textarea 
+                  v-model="curriculo.objetivo" 
+                  rows="6" 
+                  required
+                  placeholder="No que você quer trabalhar?"
+                ></textarea>
+                <BotaoMicrofone 
+                  :isRecording="camposGravando.objetivo"
+                  @toggle="toggleGravacao('objetivo', curriculo)"
+                  style="position: absolute; left:570px; transform: translateY(-50%); top:30%;"
+                />
+                <button type="button" @click="formatarObjetivoComIA" class="btn-ia" :disabled="loadingIA || !curriculo.objetivo" style="position: absolute; left:573px; transform: translateY(-50%); top:50%;">
+                  <img v-if="!loadingIA" src="@/assets/icons/BotSparkleIcon.svg" alt="IA" class="icon-ia" />
+                  <span v-if="loadingIA" class="loading-spinner-small"></span>
+                </button>
+              </div>
             
-            <button type="button" @click="formatarComIA" class="btn-ia" :disabled="loadingIA || !novaExperiencia.descricao">
-              <svg v-if="!loadingIA" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
-              </svg>
-              <span v-if="!loadingIA">Melhorar com IA</span>
-              <span v-else class="loading-spinner-small"></span>
-            </button>
+            
             
             <small v-if="iaMessage" :class="['ia-message', iaMessageType]">{{ iaMessage }}</small>
           </div>
+        <div class="bottom-bar">
+          <BotaoProximo @forward="nextStepPerfil" class="next-btn"/>
+        </div>
+      </div>
+
+      <div v-if="step === 2" class="step-content">
+        <h2 class="step-title">Trabalhos</h2>
+        <div class="form-card">
+          <div class="form-group">
+            <label>Descrição das Atividades*</label>
+              <div style="position: relative;">
+                <textarea 
+                  v-model="novaExperiencia.descricao" 
+                  rows="6" 
+                  required
+                  placeholder="O que você fazia?"
+                ></textarea>
+                <BotaoMicrofone 
+                  :isRecording="camposGravando.descricao"
+                  @toggle="toggleGravacao('descricao', novaExperiencia)"
+                  style="position: absolute; left:530px; transform: translateY(-50%); top:30%;"
+                />
+                <button type="button" @click="formatarDescricaoComIA" class="btn-ia" :disabled="loadingIA || !novaExperiencia.descricao" style="position: absolute; left:533px; transform: translateY(-50%); top:50%;">
+                  <img v-if="!loadingIA" src="@/assets/icons/BotSparkleIcon.svg" alt="IA" class="icon-ia" />
+                  <span v-if="loadingIA" class="loading-spinner-small"></span>
+                </button>
+              </div>
+            
+            
+            
+            <small v-if="iaMessage" :class="['ia-message', iaMessageType]">{{ iaMessage }}</small>
+          </div>
+          <div class="form-group">
+            <label>Empresa</label>
+            <div style="position: relative;">
+              
+              <input 
+                type="text" 
+                v-model="novaExperiencia.empresa" 
+                style="width: 100%;" 
+                placeholder="Onde você trabalhou? (opcional)"
+              />
+              
+              <BotaoMicrofone 
+                :isRecording="camposGravando.empresa" 
+                @toggle="toggleGravacao('empresa', novaExperiencia)"
+                style="position: absolute; left: 530px; top: 50%; transform: translateY(-50%);"
+              />
+              
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Cargo</label>
+            <div style="position: relative;">
+              <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê? (opcional)"/>
+              <BotaoMicrofone :isRecording="camposGravando.cargo" @toggle="toggleGravacao('cargo', novaExperiencia)" 
+              style="position: absolute; left: 530px; top: 50%; transform: translateY(-50%);"/>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Data Início</label>
+              
+              <div style="position: relative;">
+                
+                <input 
+                type="date" 
+                v-model="novaExperiencia.dataInicio"
+                class="input-com-dois-icones"
+                />
+                
+                <BotaoMicrofone 
+                :isRecording="gravandoDataInicioExperiencia" 
+                @toggle="toggleGravacaoDataInicioExperiencia"
+                style="position: absolute; left:237px; transform: translateY(-50%); top:50%;"
+                />
+                
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Data Fim</label>
+              <div style="position: relative;"> 
+                <input v-if="!novaExperiencia.empregoAtual"
+                type="date" 
+                v-model="novaExperiencia.dataFim"
+                class="input-com-dois-icones"
+                />
+                <input v-else
+                type="date" 
+                v-model="novaExperiencia.dataFim"
+                class="input-com-dois-icones"
+                disabled
+                />
+                
+                <BotaoMicrofone 
+                :isRecording="gravandoDataFim" 
+                @toggle="toggleGravacaoDataFim"
+                style="position: absolute; left:237px; transform: translateY(-50%); top:50%;"
+                />
+                
+              </div>
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="empregoAtual" v-model="novaExperiencia.empregoAtual" />
+                <label for="empregoAtual" style="margin: 0;">Trabalho aqui atualmente</label>
+              </div>
+            </div>
+          </div>
+
 
           <button class="btn-add" @click="adicionarExperiencia">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            {{ editandoIndexExperiencia !== null ? 'Atualizar Experiência' : 'Adicionar Experiência' }}
+            <span v-if="!editandoIndexExperiencia">+</span>
+            <img v-else src="@/assets/icons/updateIcon.svg" alt="Atualizar" class="icon-update" />
           </button>
         </div>
 
@@ -159,58 +264,55 @@
             <h4>{{ exp.cargo ? exp.cargo : "Não Informado"}}</h4>
             <p class="subtitle">{{ exp.empresa ? exp.empresa : "Não Informado"}}</p>
             <p class="date">{{ formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual) }}</p>
-            <p v-if="exp.descricao" class="description">{{ exp.descricao }}</p>
+            <p 
+                v-if="exp.descricao" 
+                class="description"
+                v-html="formatarDescricao(exp.descricao)"
+              ></p>
           </div>
         </div>
 
-        <div class="button-group">
-          <button class="btn-secondary" @click="prevStep">Voltar</button>
-          <button class="btn-primary" @click="nextStep">Continuar</button>
+        <div class="bottom-bar">
+          <BackButton @back="prevStep" />
+          <BotaoProximo @forward="nextStepPerfil"/>
         </div>
       </div>
 
       <div v-if="step === 3" class="step-content">
-        <h2 class="step-title">Formação Acadêmica</h2>
+        <h2 class="step-title">Estudos</h2>
 
         <div class="form-card">
           <div class="form-group">
             <label>Instituição</label>
-            <input type="text" v-model="novaFormacao.instituicao" />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Curso</label>
-              <input type="text" v-model="novaFormacao.curso" />
-            </div>
-            <div class="form-group">
-              <label>Nível</label>
-              <NivelDropdown v-model="novaFormacao.nivel" />
+            <div style="position: relative;">
+              <input type="text" v-model="novaFormacao.instituicao" placeholder="Nome da escola ou universidade..."/>
+              <BotaoMicrofone 
+                :isRecording="camposGravando.instituicao" 
+                @toggle="toggleGravacao('instituicao', novaFormacao)"
+                style="position: absolute; left:530px; top:50%; transform: translateY(-50%);"
+              />
             </div>
           </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Status</label>
-              <StatusDropdown v-model="novaFormacao.status" />
-            </div>
-            <div class="form-group">
-              <label>Data Início</label>
-              <input type="date" v-model="novaFormacao.dataInicio" />
-            </div>
-          </div>
-
           <div class="form-group">
-            <label>Data Conclusão</label>
-            <input type="date" v-model="novaFormacao.dataConclusao" />
+            <label>Curso</label>
+            <div style="position: relative;">
+              <input type="text" v-model="novaFormacao.curso" placeholder="Ex: Ensino Médio, Administração..."/>
+              <BotaoMicrofone 
+                :isRecording="camposGravando.curso" 
+                @toggle="toggleGravacao('curso', novaFormacao)"
+                style="position: absolute; left:530px; top:50%; transform: translateY(-50%);"
+              />
+            </div>
+          </div>
+
+          <div class="checkbox-wrapper" style="margin-bottom: 15px;">
+            <input type="checkbox" id="naoConcluiu" v-model="novaFormacao.status" />
+            <label for="naoConcluiu" style="margin: 0;">Curso incompleto?</label>
+          
           </div>
 
           <button class="btn-add" @click="adicionarFormacao">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            {{ editandoIndexFormacao !== null ? 'Atualizar Formação' : 'Adicionar Formação' }}
+            <span>+</span>
           </button>
         </div>
 
@@ -220,76 +322,16 @@
               <i class="fas fa-pencil"></i>
             </button>
             <button class="btn-remove" @click="removerFormacao(index)">×</button>
-            <h4>{{ form.curso }}</h4>
+            <h4>{{ form.curso }} • {{ form.status === true ? 'Incompleto' : 'Completo' }}</h4>
             <p class="subtitle">{{ form.instituicao }}</p>
-            <p class="date">{{ form.nivel }} • {{ form.status }}</p>
           </div>
         </div>
 
-        <div class="button-group">
-          <button class="btn-secondary" @click="prevStep">Voltar</button>
-          <button class="btn-primary" @click="nextStep">Continuar</button>
-        </div>
-      </div>
-
-      <div v-if="step === 4" class="step-content">
-        <h2 class="step-title">Certificações</h2>
-
-        <div class="form-card">
-          <div class="form-group">
-            <label>Nome da Certificação</label>
-            <input type="text" v-model="novaCertificacao.nome" />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Instituição</label>
-              <input type="text" v-model="novaCertificacao.instituicao" />
-            </div>
-            <div class="form-group">
-              <label>Data Conclusão</label>
-              <input type="date" v-model="novaCertificacao.dataConclusao" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Carga Horária</label>
-              <input type="number" v-model="novaCertificacao.cargaHoraria"/>
-            </div>
-            <div class="form-group">
-              <label>URL do Certificado</label>
-              <input type="url" v-model="novaCertificacao.urlCertificado" />
-            </div>
-          </div>
-
-          <button class="btn-add" @click="adicionarCertificacao">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            {{ editandoIndexCertificacao !== null ? 'Atualizar Certificação' : 'Adicionar Certificação' }}
-          </button>
-        </div>
-
-        <div v-if="curriculo.certificacoes.length > 0" class="item-list">
-          <div v-for="(cert, index) in curriculo.certificacoes" :key="index" class="item-card">
-            <button class="btn-edit" @click="editarCertificacao(index)" title="Editar">
-              <i class="fas fa-pencil"></i>
-            </button>
-            <button class="btn-remove" @click="removerCertificacao(index)">×</button>
-            <h4>{{ cert.nome }}</h4>
-            <p class="subtitle">{{ cert.instituicao }}</p>
-            <p v-if="cert.cargaHoraria" class="date">{{ cert.cargaHoraria }}h</p>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button class="btn-secondary" @click="prevStep">Voltar</button>
-          <button class="btn-primary" @click="updateCurriculo" :disabled="loading">
-            <span v-if="!loading">Salvar Currículo</span>
-            <span v-else class="loading-spinner"></span>
-          </button>
+        <div class="bottom-bar">
+          <BackButton @back="prevStep" />
+          <SaveButton
+            :loading="loading"
+            @save="salvarCurriculo"/>
         </div>
       </div>
 
@@ -311,17 +353,27 @@
       @confirmar="confirmarRemocao"
       @fechar="showConfirmModal = false"
     />
+    <!-- <ModalErro
+      :isOpen="modalAberto"
+      @confirmar="confirmarSair"
+      @fechar="fecharModal"/> -->
     <ModalEncerramentoSessao
       :isOpen="modalAberto"
       @confirmar="confirmarSair"
       @fechar="fecharModal"/>
+    <ModalAviso
+      :show="modalAvisoAberto"
+      title="Atenção"
+      message="Ao importar o currículo, a formatação da descrição pode ser alterada. Recomendamos revisar os textos após a importação."
+      type="aviso"
+      @fechar="fecharModalAviso"
+    />
   </div>
 </template>
 
 <script>
 import EstadoDropdown from '@/components/EstadoDropdown.vue'
 import ModalExclusao from '@/components/ModalExclusao.vue'
-import certificacaoService from '@/services/certificacaoService';
 import curriculoService from '@/services/curriculoService';
 import experienciaService from '@/services/experienciaService';
 import formacaoService from '@/services/formacaoService';
@@ -330,7 +382,24 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import { ref, watch } from 'vue';
 import StatusDropdown from '@/components/StatusDropdown.vue';
 import NivelDropdown from '@/components/NivelDropdown.vue';
+import ResumeUpload from "@/components/ResumeUpload.vue";
 import ModalEncerramentoSessao from '@/components/ModalEncerramentoSessao.vue';
+import ModalConfirmacao from '@/components/ModalConfirmacao.vue';
+import ModalCarregamento from '@/components/ModalCarregamento.vue';
+import ModalErro from '@/components/ModalErro.vue';
+import ModalAviso from '@/components/AvisoDescricao.vue';
+import BotaoAudio from '@/components/BotaoAudio.vue';
+import LogoutButton from '@/components/LogoutButton.vue';
+import BotaoMicrofone from '@/components/BotaoMicrofone.vue';
+import BotaoDescricao from '@/components/BotaoDescricao.vue';
+import BotaoProximo from '@/components/BotaoProximo.vue';
+import { ibgeService } from '@/services/ibgeService';
+import BackButton from '@/components/BackButton.vue';
+import SaveButton from '@/components/SaveButton.vue';
+import CidadeDropdown from '@/components/CidadeDropdown.vue';
+import TutorialHand from '@/components/TutorialHand.vue';
+import pointerHandIcon from '@/assets/icons/pointerHandIcon.svg';
+import BotaoContraste from '@/components/BotaoContraste.vue';
 
 export default {
   name: 'CurriculoForm',
@@ -340,7 +409,22 @@ export default {
     StatusDropdown,
     NivelDropdown,
     ModalExclusao,
-    ModalEncerramentoSessao
+    ModalEncerramentoSessao,
+    ModalConfirmacao,
+    ModalCarregamento,
+    ModalAviso,
+    ModalErro,
+    ResumeUpload,
+    BotaoAudio,
+    LogoutButton,
+    BotaoMicrofone,
+    BotaoDescricao,
+    BotaoProximo,
+    BackButton,
+    SaveButton,
+    CidadeDropdown,
+    BotaoContraste,
+    TutorialHand
   },
   data() {
     return {
@@ -349,8 +433,6 @@ export default {
       editandoExperiencia: false,
       editandoIndexFormacao: null,
       editandoFormacao: null,
-      editandoIndexCertificacao: null,
-      editandoCertificacao: null,
       loading: false,
       loadingIA: false,
       successMessage: '',
@@ -360,10 +442,31 @@ export default {
       telefoneFormatado: '',
       modoEdicao: false,
       modalAberto: false,
+      modalAvisoAberto: false,
       curriculoId: null,
       showConfirmModal: false,
       itemParaRemover: null,
-      curriculo: {},
+      pointerHandIcon: pointerHandIcon,
+      // Sistema genérico de gravação
+      camposGravando: {
+        descricao: false,
+        empresa: false,
+        cargo: false,
+        instituicao: false,
+        curso: false,
+        estado: false,
+        nomeCompleto: false,
+        email: false,
+        cidade: false
+      },
+      // Gravação de datas individuais
+      gravandoDataFim: false,
+      gravandoDataInicioExperiencia: false,
+      gravandoDataInicioFormacao: false,
+      gravandoDataConclusaoFormacao: false,
+      transcricaoDescricao: '',
+      transcricaoAtual: '', // Transcrição em tempo real do que está sendo falado
+      erroAudio: null,
       curriculoOriginal: {},
       modalConfig: {
         title: '',
@@ -384,9 +487,12 @@ export default {
         github: '',
         resumoProfissional: '',
         experiencias: [],
-        formacoes: [],
-        certificacoes: []
+        formacoes: []
       },
+      
+      cidades: [], // Lista de cidades de acordo com o estado
+      carregandoCidades: false,
+      mostrarTutorial: false,
 
       novaExperiencia: {
         empresa: '',
@@ -400,18 +506,7 @@ export default {
       novaFormacao: {
         instituicao: '',
         curso: '',
-        nivel: '',
-        status: '',
-        dataInicio: '',
-        dataConclusao: ''
-      },
-
-      novaCertificacao: {
-        nome: '',
-        instituicao: '',
-        dataConclusao: '',
-        cargaHoraria: '',
-        urlCertificado: ''
+        status: false,
       }
     }
   },
@@ -420,54 +515,147 @@ export default {
       if (newValue) {
           this.novaExperiencia.dataFim = '';
       }
+    },
+    'curriculo.estado': async function(newValue) {
+      if (newValue) {
+        this.carregandoCidades = true;
+        this.cidades = [];
+        this.curriculo.cidade = ''; // Limpar a cidade quando mudar o estado
+        
+        try {
+          this.cidades = await ibgeService.listarCidades(newValue);
+          console.log(`📍 Cidades carregadas para ${newValue}:`, this.cidades.length);
+        } catch (error) {
+          console.error('Erro ao carregar cidades:', error);
+          this.mostrarErro('Erro ao carregar cidades');
+        } finally {
+          this.carregandoCidades = false;
+        }
+      }
     }
   },
   async created() {
-    const usuarioLogado = localStorage.getItem('usuario');
-    if (usuarioLogado) {
-      const usuario = JSON.parse(usuarioLogado);
-      const user = await usuarioService.listarUsuarioPorId(usuario.id);
-      this.curriculo.usuarioId = usuario.id;
-      this.curriculo.email = usuario.email || '';
-      this.curriculo.nomeCompleto = user.nome;
-      if (this.$route.params.id) {
-        this.modoEdicao = true;
-        this.curriculoId = this.$route.params.id;
-        const curriculo = await curriculoService.listarCurriculoPorId(this.curriculoId);
-        
-        if (curriculo) {
-          this.curriculo = {
-            ...curriculo,
-            experiencias: [],
-            formacoes: [],
-            certificacoes: []
-          };
-          
-          this.telefoneFormatado = this.formatarTelefoneString(curriculo.telefone || '');
-          
-          try {
-            const experiencias = await experienciaService.listarExperienciaPorIdCurriculo(this.curriculoId);
-            const formacoes = await formacaoService.listarFormacoesPorCurriculoId(this.curriculoId);
-            const certificados = await certificacaoService.listarCertificacoesPorCurriculoId(this.curriculoId);
-            
-            this.curriculo.experiencias = Array.isArray(experiencias) ? experiencias : [];
-            this.curriculo.formacoes = Array.isArray(formacoes) ? formacoes : [];
-            this.curriculo.certificacoes = Array.isArray(certificados) ? certificados : [];
-          } catch (error) {
-            return this.mostrarErro('Erro ao carregar experiências, formações ou certificados.');
-          }
-        } else {
-          return this.mostrarErro('Currículo para edição não encontrado.');
-        }
-      }
-      this.curriculo.dataNascimento = this.curriculo.dataNascimento.split('T')[0]
-      this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
-    } else {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      this.mostrarErro('Usuário não encontrado. Faça login novamente.');
       this.$router.push('/login');
+      return;
     }
+
+    let user;
+    try {
+      user = JSON.parse(userStr);
+    } catch (e) {
+      this.mostrarErro('Erro ao carregar dados do usuário.');
+      this.$router.push('/login');
+      return;
+    }
+
+    // 1. Já garantimos os dados básicos do usuário no objeto local imediatamente
+    this.curriculo.usuarioId = user.id;
+    if (user.telefone) {
+      this.curriculo.telefone = this.formatarTelefoneString(user.telefone);
+    }
+
+    try {
+      // 2. Tentamos buscar o currículo no banco
+      const curriculoExistente = await curriculoService.listarCurriculosPorUsuario(user.id);
+      
+      if (curriculoExistente) {
+        
+        this.curriculo = {
+          ...this.curriculo, // Mantém o que já setamos acima (telefone e userId)
+          ...curriculoExistente,
+          experiencias: curriculoExistente.experiencias || [],
+          formacoes: curriculoExistente.formacoes || []
+        };
+        console.log(this.curriculo)
+      } else {
+        // Se for nulo, garantimos que as listas não sejam "undefined" para o Vue não quebrar
+        this.curriculo.experiencias = [];
+        this.curriculo.formacoes = [];
+      }
+    } catch (error) {
+      console.error("Erro ao buscar currículo, mas continuaremos com os dados de login:", error);
+      // Mesmo com erro na API, as listas devem ser inicializadas
+      this.curriculo.experiencias = [];
+      this.curriculo.formacoes = [];
+    }
+
+    // 3. Verificação de edição (params ID)
+    if (this.$route.params.id) {
+      this.modoEdicao = true;
+      this.curriculoId = this.$route.params.id;
+      // ... sua lógica de carregar experiências por ID
+    }
+
+    // 4. Formatação de data (só se existir)
+    if (this.curriculo.dataNascimento) {
+      this.curriculo.dataNascimento = this.curriculo.dataNascimento.split('T')[0];
+    }
+
+    this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
   },
 
+
   methods: {
+    getTextoStep1() {
+      const campos = [];
+      
+      if (this.curriculo.nomeCompleto) {
+        campos.push(`Nome completo: ${this.curriculo.nomeCompleto}`);
+      }
+      if (this.curriculo.dataNascimento) {
+        campos.push(`Data de nascimento: ${this.formatarDataParaLeitura(this.curriculo.dataNascimento)}`);
+      }
+      if (this.telefoneFormatado) {
+        campos.push(`Telefone: ${this.telefoneFormatado}`);
+      }
+      if (this.curriculo.email) {
+        campos.push(`Email: ${this.curriculo.email}`);
+      }
+      if (this.curriculo.estado) {
+        campos.push(`Estado: ${this.curriculo.estado}`);
+      }
+      if (this.curriculo.cidade) {
+        campos.push(`Cidade: ${this.curriculo.cidade}`);
+      }
+      if (this.curriculo.endereco) {
+        campos.push(`Endereço: ${this.curriculo.endereco}`);
+      }
+      if (this.curriculo.linkedIn) {
+        campos.push(`LinkedIn: ${this.curriculo.linkedIn}`);
+      }
+      if (this.curriculo.gitHub) {
+        campos.push(`GitHub: ${this.curriculo.gitHub}`);
+      }
+
+      if (campos.length === 0) {
+        return 'Dados pessoais. Preencha os campos do formulário.';
+      }
+
+      return 'Dados pessoais preenchidos: ' + campos.join('. ');
+    },
+
+    formatarDataParaLeitura(data) {
+      if (!data) return '';
+      const partes = data.split('-');
+      if (partes.length === 3) {
+        return `${partes[2]} de ${this.getNomeMes(partes[1])} de ${partes[0]}`;
+      }
+      return data;
+    },
+
+    getNomeMes(mes) {
+      const meses = {
+        '01': 'janeiro', '02': 'fevereiro', '03': 'março',
+        '04': 'abril', '05': 'maio', '06': 'junho',
+        '07': 'julho', '08': 'agosto', '09': 'setembro',
+        '10': 'outubro', '11': 'novembro', '12': 'dezembro'
+      };
+      return meses[mes] || mes;
+    },
+
     mostrarErro(mensagem){
       this.errorMessage = mensagem
       this.$nextTick(() => {
@@ -478,6 +666,895 @@ export default {
       });
       setTimeout(() => this.errorMessage = '', 3000);
       return;
+    },
+    handleResumeImport(data) {
+      try {
+        this.abrirModalAviso();
+        if (data.dadosPessoais) {
+          this.curriculo.nomeCompleto = data.dadosPessoais.nomeCompleto || '';
+          this.curriculo.dataNascimento = data.dadosPessoais.dataNascimento?.split('T')[0] || '';
+          this.curriculo.cidade = data.dadosPessoais.cidade || '';
+          this.curriculo.estado = data.dadosPessoais.estado || '';
+          this.curriculo.endereco = data.dadosPessoais.endereco || '';
+          this.curriculo.linkedIn = data.dadosPessoais.linkedIn || '';
+          this.curriculo.gitHub = data.dadosPessoais.gitHub || '';
+
+          if (data.dadosPessoais.telefone) {
+            this.telefoneFormatado = this.formatarTelefoneString(data.dadosPessoais.telefone);
+            this.curriculo.telefone = data.dadosPessoais.telefone.replace(/\D/g, '');
+          }
+        }
+
+        /* EXPERIÊNCIAS */
+        if (Array.isArray(data.experiencias)) {
+          this.curriculo.experiencias = data.experiencias.map(exp => ({
+            empresa: exp.empresa || '',
+            cargo: exp.cargo || '',
+            dataInicio: exp.dataInicio ? exp.dataInicio.split('T')[0] : '',
+            dataFim: exp.dataFim ? exp.dataFim.split('T')[0] : '',
+            empregoAtual: exp.empregoAtual || false,
+            descricao: exp.descricao || ''
+          }));
+          console.log('✅ Experiências importadas:', this.curriculo.experiencias.length);
+        }
+
+        /* FORMAÇÕES */
+        if (Array.isArray(data.formacoes)) {
+          this.curriculo.formacoes = data.formacoes.map(form => ({
+            instituicao: form.instituicao || '',
+            curso: form.curso || '',
+            nivel: form.nivel || '',
+            status: form.status || '',
+            dataInicio: form.dataInicio ? form.dataInicio.split('T')[0] : '',
+            dataConclusao: form.dataConclusao ? form.dataConclusao.split('T')[0] : ''
+          }));
+          console.log('✅ Formações importadas:', this.curriculo.formacoes.length);
+        }
+
+        /* FEEDBACK */
+        this.successMessage = 'Currículo importado com sucesso!';
+        
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 3000);
+
+        // Scroll para o topo
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (error) {
+        console.error('❌ Erro ao importar:', error);
+        this.mostrarErro('Erro ao aplicar dados do currículo.');
+      }
+    },
+    toggleGravacaoDescricao() {
+      if (this.gravandoDescricao) {
+        // Parar gravação
+        this.stopRecording();
+      } else {
+        // Iniciar gravação
+        this.startRecordingDescricao();
+      }
+    },
+    
+    async startRecordingDescricao() {
+      try {
+        // Verificar suporte
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        // Solicitar permissão do microfone
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Criar reconhecimento
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        // Quando tem resultado
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            } else {
+              this.transcricaoDescricao = event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            objeto[fieldName] = this.capitalizeText(transcript);
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoDescricao = true;
+          this.erroAudio = null;
+          this.transcricaoDescricao = '';
+          console.log('🎤 Gravação iniciada');
+        };
+        
+        // Quando termina
+        this.recognition.onend = () => {
+          this.gravandoDescricao = false;
+          this.transcricaoDescricao = '';
+          console.log('🛑 Gravação finalizada');
+        };
+        
+        // Quando dá erro
+        this.recognition.onerror = (event) => {
+          this.gravandoDescricao = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        // Iniciar
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoDescricao = false;
+      }
+    },
+
+    stopRecording() {
+      if (this.recognition) {
+        this.recognition.stop();
+      }
+    },
+
+    toggleGravacao(fieldName, objeto) {
+      if (this.camposGravando[fieldName]) {
+        this.stopRecording();
+      } else {
+        this.startRecording(fieldName, objeto);
+      }
+    },
+
+    async startRecording(fieldName, objeto) {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          let interim = ''; // Texto enquanto está falando
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcriptParcial = event.results[i][0].transcript;
+            
+            if (event.results[i].isFinal) {
+              transcript += transcriptParcial;
+            } else {
+              interim += transcriptParcial; // Captura o que está sendo falado
+            }
+          }
+          
+          // Mostrar em tempo real o que está sendo falado
+          this.transcricaoAtual = interim || transcript;
+          
+          // Console logs para verificação
+          if (interim) {
+            console.log(`🎙️ OUVINDO (${fieldName}):`, interim);
+          }
+          if (transcript) {
+            console.log(`✅ FINAL (${fieldName}):`, transcript);
+          }
+          
+          if (transcript) {
+            // Se for estado, converter para sigla
+            if (fieldName === 'estado') {
+              const sigla = this.converterEstadoParaSigla(transcript);
+              // Só preenchher se a conversão foi bem-sucedida (retornou uma sigla válida)
+              if (sigla) {
+                objeto[fieldName] = sigla;
+                console.log(`✨ Estado convertido para:`, sigla);
+              }
+            } 
+            // Se for cidade, validar se existe no estado selecionado
+            else if (fieldName === 'cidade') {
+              const cidadeValida = this.validarEConverterCidade(transcript);
+              if (cidadeValida) {
+                objeto[fieldName] = cidadeValida;
+              }
+            }
+            else if (fieldName === 'nivel') {
+              const nivelValido = this.validarNivel(transcript);
+              if (nivelValido) {
+                objeto[fieldName] = nivelValido;
+              }
+            }
+            else {
+              // Para outros campos, adicionar ao existente ou criar novo
+              objeto[fieldName] = this.capitalizeText(transcript);
+            }
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.camposGravando[fieldName] = true;
+          this.erroAudio = null;
+          this.transcricaoDescricao = '';
+          console.log(`🎤 Gravação ${fieldName} iniciada`);
+        };
+        
+        this.recognition.onend = () => {
+          this.camposGravando[fieldName] = false;
+          this.transcricaoAtual = ''; // Limpar a transcrição ao terminar
+          this.transcricaoDescricao = '';
+          console.log(`🛑 Gravação ${fieldName} finalizada`);
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.camposGravando[fieldName] = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error(`Erro ao iniciar gravação ${fieldName}:`, error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.camposGravando[fieldName] = false;
+      }
+    },
+    capitalizeText(text) {
+      if (!text) return '';
+      const trimmed = text.trim();
+      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    },
+
+    toggleGravacaoEmpresa() {
+      if (this.gravandoEmpresa) {
+        this.stopRecording();
+      } else {
+        this.startRecordingEmpresa();
+      }
+    },
+    
+    async startRecordingEmpresa() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            this.novaExperiencia.empresa = transcript;
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoEmpresa = true;
+          this.erroAudio = null;
+          console.log('🎤 Gravação empresa iniciada');
+        };
+        
+        this.recognition.onend = () => {
+          this.gravandoEmpresa = false;
+          console.log('🛑 Gravação empresa finalizada');
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.gravandoEmpresa = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação empresa:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoEmpresa = false;
+      }
+    },
+    toggleGravacaoCargo() {
+      if (this.gravandoCargo) {
+        this.stopRecording();
+      } else {
+        this.startRecordingCargo();
+      }
+    },
+    
+    async startRecordingCargo() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            this.novaExperiencia.cargo = transcript;
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoCargo = true;
+          this.erroAudio = null;
+        };
+        
+        this.recognition.onend = () => {
+          this.gravandoCargo = false;
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.gravandoCargo = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação cargo:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoCargo = false;
+      }
+    },
+    
+    converterEstadoParaSigla(nomeEstado) {
+      const estadosMap = {
+        // Nomes completos
+        'acre': 'AC',
+        'alagoas': 'AL',
+        'amapá': 'AP',
+        'amazonas': 'AM',
+        'bahia': 'BA',
+        'ceará': 'CE',
+        'distrito federal': 'DF',
+        'espírito santo': 'ES',
+        'goiás': 'GO',
+        'maranhão': 'MA',
+        'mato grosso': 'MT',
+        'mato grosso do sul': 'MS',
+        'minas gerais': 'MG',
+        'pará': 'PA',
+        'para': 'PA', // Variação para "Pará"
+        'parà': 'PA', // Variação para "Pará"
+        'parar': 'PA', // Variação para "Pará"
+        'paraíba': 'PB',
+        'paraná': 'PR',
+        'pernambuco': 'PE',
+        'piauí': 'PI',
+        'rio de janeiro': 'RJ',
+        'rio grande do norte': 'RN',
+        'rio grande do sul': 'RS',
+        'rondônia': 'RO',
+        'roraima': 'RR',
+        'santa catarina': 'SC',
+        'são paulo': 'SP',
+        'sergipe': 'SE',
+        'tocantins': 'TO'
+      };
+      
+      const estadoLower = nomeEstado.trim().toLowerCase();
+      const sigla = estadosMap[estadoLower];
+      
+      // Retorna null se não encontrar um estado válido
+      if (!sigla) {
+        return null;
+      }
+      
+      return sigla;
+    },
+    
+    validarEConverterCidade(nomeCidade) {
+      if (!this.curriculo.estado) {
+        this.erroAudio = 'Selecione um estado antes de selecionar a cidade.';
+        console.warn('❌ Estado não selecionado');
+        return null;
+      }
+      
+      // Procurar pela cidade nas cidades carregadas do estado
+      const cidadeEncontrada = this.cidades.find(c => 
+        c.nome.toLowerCase() === nomeCidade.trim().toLowerCase()
+      );
+      
+      if (!cidadeEncontrada) {
+        this.erroAudio = `"${nomeCidade}" não é uma cidade válida em ${this.curriculo.estado}. Tente falar o nome de uma cidade do estado.`;
+        console.warn(`❌ Cidade inválida para ${this.curriculo.estado}: "${nomeCidade}"`);
+        return null;
+      }
+      
+      console.log(`✨ Cidade encontrada: ${cidadeEncontrada.nome}`);
+      return cidadeEncontrada.nome;
+    },
+
+    validarNivel(nomeNivel) {
+      const niveis = [
+        'Ensino Fundamental',
+        'Ensino Médio',
+        'Técnico',
+        'Graduação',
+        'Pós-graduação',
+        'Mestrado',
+        'Doutorado'
+      ];
+
+      const nivelEncontrado = niveis.find(n =>
+        n.toLowerCase() === nomeNivel.trim().toLowerCase()
+      );
+
+      if (!nivelEncontrado) {
+        this.erroAudio = `"${nomeNivel}" não é um nível válido. Opções: ${niveis.join(', ')}.`;
+        console.warn(`❌ Nível inválido: "${nomeNivel}"`);
+        return null;
+      }
+
+      console.log(`✨ Nível encontrado: ${nivelEncontrado}`);
+      return nivelEncontrado;
+    },
+    
+    toggleGravacaoDataInicioExperiencia() {
+      if (this.gravandoDataInicioExperiencia) {
+        this.stopRecording();
+      } else {
+        this.startRecordingDataInicioExperiencia();
+      }
+    },
+    
+    async startRecordingDataInicioExperiencia() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            // AQUI ESTÁ A MUDANÇA:
+            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
+            const dataFormatada = this.converterTextoParaDataISO(transcript);
+            
+            if (dataFormatada) {
+              this.novaExperiencia.dataInicio = dataFormatada;
+            } else {
+              // Opcional: Avisar usuário que não entendeu a data
+              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
+            }
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoDataInicioExperiencia = true;
+          this.erroAudio = null;
+        };
+        
+        this.recognition.onend = () => {
+          this.gravandoDataInicioExperiencia = false;
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.gravandoDataInicioExperiencia = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação data início:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoDataInicioExperiencia = false;
+      }
+    },
+
+    converterTextoParaDataISO(texto) {
+      if (!texto) return '';
+      texto = texto.toLowerCase().trim();
+
+      const meses = {
+        'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
+        'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
+        'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12',
+        '1': '01', '2': '02', '3': '03', '4': '04', '5': '05', '6': '06',
+        '7': '07', '8': '08', '9': '09', 
+        '01': '01', '02': '02', '03': '03', '04': '04', '05': '05', '06': '06',
+        '07': '07', '08': '08', '09': '09', '10': '10', '11': '11', '12': '12',
+        'um': '01', 'dois': '02', 'três': '03', 'quatro': '04', 'cinco': '05', 'seis': '06',
+        'sete': '07', 'oito': '08', 'nove': '09', 'dez': '10', 'onze': '11', 'doze': '12'
+      };
+
+      const regexFalado = /(\d{1,2})\s*(?:d[eo])?\s*([a-zç0-9]+)\s*(?:d[eo])?\s*(\d{4})/i;
+      const matchFalado = texto.match(regexFalado);
+
+      if (matchFalado) {
+        let dia = matchFalado[1];
+        let mesCapturado = matchFalado[2];
+        let ano = matchFalado[3];
+        if (parseInt(dia) > 31 && /^\d+$/.test(mesCapturado)) {
+          const digitoSobrando = dia.slice(-1);
+          
+          dia = dia.slice(0, -1);
+          
+          mesCapturado = digitoSobrando + mesCapturado;
+        }
+
+        dia = dia.padStart(2, '0');
+        let mes = meses[mesCapturado];
+
+        if (mes) {
+          return `${ano}-${mes}-${dia}`;
+        }
+      }
+
+      // Regex Misto (Barra + Texto)
+      const regexMisto = /(\d{1,2})[\/-](\d{1,2})\s*(?:d[eo])?\s*(\d{4})/;
+      const matchMisto = texto.match(regexMisto);
+      if (matchMisto) {
+        let dia = matchMisto[1].padStart(2, '0');
+        let mes = matchMisto[2].padStart(2, '0');
+        let ano = matchMisto[3];
+        return `${ano}-${mes}-${dia}`;
+      }
+
+      // Regex Numérico Puro
+      const regexNumerico = /(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/;
+      const matchNumerico = texto.match(regexNumerico);
+      if (matchNumerico) {
+        let dia = matchNumerico[1].padStart(2, '0');
+        let mes = matchNumerico[2].padStart(2, '0');
+        let ano = matchNumerico[3];
+        return `${ano}-${mes}-${dia}`;
+      }
+
+      console.warn("Não foi possível converter a data:", texto);
+      return '';
+    },
+    toggleGravacaoDataFim() {
+      if (this.gravandoDataFim) {
+        this.stopRecording();
+      } else {
+        this.startRecordingDataFim();
+      }
+    },
+    
+    async startRecordingDataFim() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            // AQUI ESTÁ A MUDANÇA:
+            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
+            const dataFormatada = this.converterTextoParaDataISO(transcript);
+            
+            if (dataFormatada) {
+              this.novaExperiencia.dataFim = dataFormatada;
+              console.log(`Convertido: "${transcript}" -> "${dataFormatada}"`);
+            } else {
+              // Opcional: Avisar usuário que não entendeu a data
+              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
+            }
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoDataFim = true;
+          this.erroAudio = null;
+          console.log('🎤 Gravação data fim iniciada');
+        };
+        
+        this.recognition.onend = () => {
+          this.gravandoDataFim = false;
+          console.log('🛑 Gravação data fim finalizada');
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.gravandoDataFim = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação data fim:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoDataFim = false;
+      }
+    },
+    toggleGravacaoDataInicioFormacao() {
+      if (this.gravandoDataInicioFormacao) {
+        this.stopRecording();
+      } else {
+        this.startRecordingDataInicioFormacao();
+      }
+    },
+    
+    async startRecordingDataInicioFormacao() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            // AQUI ESTÁ A MUDANÇA:
+            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
+            const dataFormatada = this.converterTextoParaDataISO(transcript);
+            
+            if (dataFormatada) {
+              this.novaFormacao.dataInicio = dataFormatada;
+              console.log(`Convertido: "${transcript}" -> "${dataFormatada}"`);
+            } else {
+              // Opcional: Avisar usuário que não entendeu a data
+              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
+            }
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoDataInicioFormacao = true;
+          this.erroAudio = null;
+          console.log('🎤 Gravação data início formação iniciada');
+        };
+        
+        this.recognition.onend = () => {
+          this.gravandoDataInicioFormacao = false;
+          console.log('🛑 Gravação data início formação finalizada');
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.gravandoDataInicioFormacao = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação data início formação:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoDataInicioFormacao = false;
+      }
+    },
+    toggleGravacaoDataConclusaoFormacao() {
+      if (this.gravandoDataConclusaoFormacao) {
+        this.stopRecording();
+      } else {
+        this.startRecordingDataConclusaoFormacao();
+      }
+    },
+    
+    async startRecordingDataConclusaoFormacao() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            // AQUI ESTÁ A MUDANÇA:
+            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
+            const dataFormatada = this.converterTextoParaDataISO(transcript);
+            
+            if (dataFormatada) {
+              this.novaFormacao.dataConclusao = dataFormatada;
+              console.log(`Convertido: "${transcript}" -> "${dataFormatada}"`);
+            } else {
+              // Opcional: Avisar usuário que não entendeu a data
+              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
+            }
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoDataConclusaoFormacao = true;
+          this.erroAudio = null;
+          console.log('🎤 Gravação data conclusão formação iniciada');
+        };
+        
+        this.recognition.onend = () => {
+          this.gravandoDataConclusaoFormacao = false;
+          console.log('🛑 Gravação data conclusão formação finalizada');
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.gravandoDataConclusaoFormacao = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação data conclusão formação:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoDataConclusaoFormacao = false;
+      }
     },
     resetarFormExperiencia() {
       this.novaExperiencia = {
@@ -490,7 +1567,6 @@ export default {
       };
       this.editandoIndexExperiencia = null;
     },
-
     resetarFormFormacao() {
       this.novaFormacao = {
         instituicao: '',
@@ -501,17 +1577,6 @@ export default {
         dataConclusao: ''
       };
       this.editandoIndexFormacao = null;
-    },
-
-    resetarFormCertificacao() {
-      this.novaCertificacao = {
-        nome: '',
-        instituicao: '',
-        dataConclusao: '',
-        cargaHoraria: '',
-        urlCertificado: ''
-      };
-      this.editandoIndexCertificacao = null;
     },
 
     editarExperiencia(index) {
@@ -573,33 +1638,6 @@ export default {
       
     },
 
-    editarCertificacao(index) {
-      const certificacao = this.curriculo.certificacoes[index];
-
-      const isEditingSameItem = this.editandoCertificacao && this.editandoIndexCertificacao === index;
-      
-      if(isEditingSameItem){
-        this.novaCertificacao = {
-          nome: '',
-          instituicao: '',
-          dataConclusao: '',
-          cargaHoraria: '',
-          urlCertificado: '',
-        }
-        this.editandoIndexCertificacao = null;
-        this.editandoCertificacao = null;
-      }
-      else{
-        this.novaCertificacao = {
-          ...certificacao,
-          dataConclusao: certificacao.dataConclusao?.split('T')[0] || ''
-        };
-        
-        this.editandoIndexCertificacao = index;
-        this.editandoCertificacao = true;
-      }
-      
-    },
 
     formatarTelefone(event) {
       let valor = event.target.value.replace(/\D/g, '');
@@ -613,9 +1651,8 @@ export default {
           valor = valor.replace(/(\d)(\d{4})$/, '$1-$2');
         }
       }
-      
       this.telefoneFormatado = valor;
-      this.curriculo.telefone = valor.replace(/\D/g, ''); 
+      this.user.telefone = valor.replace(/\D/g, ''); 
     },
 
     formatarTelefoneString(telefone) {
@@ -635,7 +1672,39 @@ export default {
       
       return valor;
     },
+    formatarDescricao(descricao) {
+      if (!descricao) return '';
 
+      descricao = descricao.trim();
+      descricao = descricao.replace(/(?<!\.)([a-z])([A-Z])/g, '$1; $2');
+
+      if (descricao.includes('\n')) {
+          return descricao
+              .split('\n')
+              .map(item => item.trim())
+              .filter(item => item.length > 0)
+              .map(item => {
+                  if (!/^[•\-\*]/.test(item)) {
+                      return `• ${item}`;
+                  }
+                  return item.replace(/^([•\-\*])\s*/, '• ');
+              })
+              .join('<br>');
+      }
+
+      const marcadores = descricao.match(/[•\-\*]\s+/g);
+
+      if (marcadores && marcadores.length >= 2) {
+          return descricao
+              .split(/[•\-\*]\s+/)
+              .map(item => item.trim())
+              .filter(item => item.length > 0)
+              .map(item => `• ${item}`)
+              .join('<br>');
+      }
+
+      return descricao;
+  },
     formatarPeriodo(dataInicio, dataFim, empregoAtual) {
       const formatarData = (dataString) => {
         if (!dataString) return 'Data não informada';
@@ -660,7 +1729,7 @@ export default {
       return `${inicio} - ${fim}`;
     },
     nextStep() {
-      if (this.step < 4) this.step++;
+      if (this.step < 3) this.step++;
     },
     
     prevStep() {
@@ -770,54 +1839,61 @@ export default {
     async adicionarFormacao() {
       if (!this.novaFormacao.instituicao) {
         return this.mostrarErro('Preencha a Nome da Instituição');
-      }
-      else if (!this.novaFormacao.nivel) {
-        return this.mostrarErro('Preencha o Nível da formação');
-      }
-      else if (!this.novaFormacao.status) {
-        return this.mostrarErro('Preencha o Status da formação');
-      }
-      else if (!this.novaFormacao.dataInicio) {
-        return this.mostrarErro('Preencha a Data de Início');
-      }
-      else if (!this.novaFormacao.status) {
-        return this.mostrarErro('Preencha a Data de Conclusão');
+      } else if (!this.novaFormacao.curso) {
+        return this.mostrarErro('Preencha o Curso');
       }
 
       try {
+        const formacaoNormalizada = {
+          ...this.novaFormacao,
+          status:
+            this.novaFormacao.status === true
+              ? true
+              : this.novaFormacao.status === false
+              ? false
+              : null
+        };
+
         if (this.editandoIndexFormacao !== null) {
           const formId = this.curriculo.formacoes[this.editandoIndexFormacao].id;
-          
-          if (formId) {
-            await formacaoService.atualizarFormacao(this.novaFormacao);
-          }
-          
-          this.curriculo.formacoes.splice(this.editandoIndexFormacao, 1, { ...this.novaFormacao });
-          this.successMessage = 'Formação atualizada!';
 
+          if (formId) {
+            console.log("B")
+            await formacaoService.atualizarFormacao(formacaoNormalizada);
+          }
+
+          this.curriculo.formacoes.splice(
+            this.editandoIndexFormacao,
+            1,
+            { ...formacaoNormalizada }
+          );
+
+          this.successMessage = 'Formação atualizada!';
         } else {
+          console.log(this.curriculoId)
+          this.curriculoId = this.curriculo.id
           if (this.curriculoId) {
             const formacaoComCurriculo = {
-              ...this.novaFormacao,
+              ...formacaoNormalizada,
               curriculoId: this.curriculoId
             };
+            console.log("A")
             const novaForm = await formacaoService.adicionarFormacao(formacaoComCurriculo);
             this.curriculo.formacoes.push(novaForm);
           } else {
-            this.curriculo.formacoes.push({ ...this.novaFormacao });
+            this.curriculo.formacoes.push({ ...formacaoNormalizada });
           }
-          
+
           this.successMessage = 'Formação adicionada!';
         }
-        
+
         this.resetarFormFormacao();
-        
       } catch (error) {
-        const apiResponse = error.response; 
+        const apiResponse = error.response;
 
         if (apiResponse && apiResponse.status === 400) {
           const errorCode = apiResponse.data.code;
-          
+
           if (errorCode === 'DataInicio_Futura') {
             return this.mostrarErro('A data de início não pode ser posterior à data atual.');
           }
@@ -825,8 +1901,8 @@ export default {
           return this.mostrarErro('Erro ao salvar formação. Verifique a conexão e o servidor.');
         }
       }
-      
-      setTimeout(() => this.successMessage = '', 2000);
+
+      setTimeout(() => (this.successMessage = ''), 2000);
     },
 
     removerFormacao(index) {
@@ -841,74 +1917,6 @@ export default {
       this.modalConfig = {
         title: 'Excluir Formação',
         message: 'Você tem certeza que deseja excluir esta formação acadêmica?',
-        type: 'perigo',
-        confirmText: 'Sim, excluir'
-      };
-      
-      this.showConfirmModal = true;
-    },
-
-    async adicionarCertificacao() {
-      if (!this.novaCertificacao.nome && !this.novaCertificacao.instituicao) {
-        return this.mostrarErro('Preencha pelo menos o nome ou a instituição');
-      }
-
-      try {
-        if (this.editandoIndexCertificacao !== null) {
-          const certId = this.curriculo.certificacoes[this.editandoIndexCertificacao].id;
-          
-          if (certId) {
-            await certificacaoService.atualizarCertificacao(this.novaCertificacao);
-          }
-          
-          this.curriculo.certificacoes.splice(this.editandoIndexCertificacao, 1, { ...this.novaCertificacao });
-          this.successMessage = 'Certificação atualizada!';
-
-        } else {
-          if (this.curriculoId) {
-            const certificacaoComCurriculo = {
-              ...this.novaCertificacao,
-              curriculoId: this.curriculoId
-            };
-            const novaCert = await certificacaoService.adicionarCertificacao(certificacaoComCurriculo);
-            this.curriculo.certificacoes.push(novaCert);
-          } else {
-            this.curriculo.certificacoes.push({ ...this.novaCertificacao });
-          }
-          
-          this.successMessage = 'Certificação adicionada!';
-        }
-        
-        this.resetarFormCertificacao();
-        
-      } catch (error) {
-          const apiResponse = error.response; 
-
-          if (apiResponse && apiResponse.status === 400) {
-              const errorCode = apiResponse.data.message;
-              if (errorCode === 'DataConclusao_Futura'){
-                  return this.mostrarErro('A data de início não pode ser posterior à data atual.');
-              }
-          } else {
-              return this.mostrarErro('Erro ao salvar certificado. Verifique a conexão e o servidor.');
-          }
-          
-      }
-      setTimeout(() => this.successMessage = '', 2000);
-    },
-
-    removerCertificacao(index) {
-      const certificacao = this.curriculo.certificacoes[index];
-      
-      this.itemParaRemover = { 
-        index, 
-        tipo: 'certificacao',
-        id: certificacao.id
-      };
-      
-      this.modalConfig = {
-        title: 'Excluir Certificação',
-        message: 'Você tem certeza que deseja excluir esta certificação?',
         type: 'perigo',
         confirmText: 'Sim, excluir'
       };
@@ -952,21 +1960,6 @@ export default {
             
             this.successMessage = 'Formação removida!';
             break;
-            
-          case 'certificacao':
-            if (id) {
-              await certificacaoService.excluirCertificacao(id);
-            }
-            this.curriculo.certificacoes.splice(index, 1);
-            
-            if (this.editandoIndexCertificacao === index) {
-              this.resetarFormCertificacao();
-            } else if (this.editandoIndexCertificacao !== null && index < this.editandoIndexCertificacao) {
-              this.editandoIndexCertificacao--;
-            }
-            
-            this.successMessage = 'Certificação removida!';
-            break;
         }
 
         setTimeout(() => this.successMessage = '', 2000);
@@ -978,7 +1971,7 @@ export default {
       }
     },
 
-    async formatarComIA() {
+    async formatarDescricaoComIA() {
       if (!this.novaExperiencia.descricao || this.novaExperiencia.descricao.trim().length < 10) {
         this.iaMessage = 'Digite pelo menos 10 caracteres';
         this.iaMessageType = 'info';
@@ -1025,11 +2018,55 @@ export default {
       }
     },
 
+    async formatarObjetivoComIA() {
+      if (!this.curriculo.objetivo || this.curriculo.objetivo.trim().length < 10) {
+        this.iaMessage = 'Digite pelo menos 10 caracteres';
+        this.iaMessageType = 'info';
+        setTimeout(() => {
+          this.iaMessage = '';
+          this.iaMessageType = '';
+        }, 3000);
+        return;
+      }
+
+      this.loadingIA = true;
+      this.iaMessage = 'Melhorando objetivo...';
+      this.iaMessageType = 'info';
+
+      try {
+        const iaFormattingService = (await import('@/services/iaFormattingService')).default;
+        
+        const objetivoMelhorado = await iaFormattingService.formatarObjetivo(
+          this.curriculo.objetivo
+        );
+        
+        this.curriculo.objetivo = objetivoMelhorado;
+        
+        this.iaMessage = 'Objetivo melhorado!';
+        this.iaMessageType = 'success';
+        
+        setTimeout(() => {
+          this.iaMessage = '';
+          this.iaMessageType = '';
+        }, 3000);
+
+      } catch (error) {
+        this.iaMessage = 'Erro ao melhorar. Tente novamente.';
+        this.iaMessageType = 'error';
+        
+        setTimeout(() => {
+          this.iaMessage = '';
+          this.iaMessageType = '';
+        }, 3000);
+      } finally {
+        this.loadingIA = false;
+      }
+    },
+
     async salvarCurriculo() {
       try {
         this.loading = true;
-        
-        if (this.curriculo.idUsuario) {
+        if (this.curriculo.id) {
           await curriculoService.atualizarCurriculo(this.curriculo);
           this.successMessage = 'Currículo atualizado com sucesso!';
         } else {
@@ -1094,18 +2131,7 @@ export default {
       }
   },
   nextStepPerfil() {
-    if (this.curriculo.dataNascimento == ''){
-      this.mostrarErro("Preencha a data de nascimento.")
-    }
-    if (this.hasChanges()) {
-        this.continuarPerfil().then(sucesso => {
-            if (sucesso) {
-                this.step++;
-            }
-        });
-    } else {
-        this.step++;
-    }
+    this.step++;
   },
   async voltarLogin() {
     try {
@@ -1124,28 +2150,34 @@ export default {
     }
   },
   abrirModal() {
-      this.modalAberto = true;
-    },
-    fecharModal() {
-      this.modalAberto = false;
-    },
-    async confirmarSair() {
-      try {
-        await usuarioService.logout();
-        this.curriculo = null;
-        this.$router.replace('/login').then(() => {
-          window.location.reload();
-        });
-      } catch (error) {
-        this.$router.replace('/login').then(() => {
-          window.location.reload();
-        });
-      }
-    },
-    hasChanges() {
-      return JSON.stringify(this.curriculo) !== JSON.stringify(this.curriculoOriginal);
+    this.modalAberto = true;
+  },
+  abrirModalAviso() {
+    this.modalAvisoAberto = true;
+  },
+  fecharModal() {
+    this.modalAberto = false;
+  },
+  fecharModalAviso() {
+    this.modalAvisoAberto = false;
+  },
+  async confirmarSair() {
+    try {
+      await usuarioService.logout();
+      this.curriculo = null;
+      this.$router.replace('/login').then(() => {
+        window.location.reload();
+      });
+    } catch (error) {
+      this.$router.replace('/login').then(() => {
+        window.location.reload();
+      });
     }
+  },
+  hasChanges() {
+    return JSON.stringify(this.curriculo) !== JSON.stringify(this.curriculoOriginal);
   }
+}
 }
 </script>
 
@@ -1173,6 +2205,19 @@ export default {
   width: 100%;
   max-width: 720px;
   animation: fadeIn 0.4s ease-out;
+}
+
+.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; } .right-actions { display: flex; gap: 12px; align-items: center; }
+
+.bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.next-btn{
+  display: flex;
+  margin-left: auto;
 }
 
 @keyframes fadeIn {
@@ -1308,6 +2353,26 @@ export default {
   margin-bottom: 18px;
 }
 
+input:disabled { /* Fundo cinza bem claro */
+  color: #999999;       /* Muda o cursor para um sinal de "proibido" */
+  border: 1px solid #dddddd; /* Borda suave */
+  opacity: 0.7;              /* Garante que pareça levemente desbotado */
+}
+
+.input-com-dois-icones {
+  width: 100%; /* Espaço para Calendário/Dropdown + Microfone */
+}
+
+
+/* 2. O MÁGICO: Empurra o ícone nativo do calendário para a esquerda */
+.input-com-dois-icones::-webkit-calendar-picker-indicator {
+  /* Move o ícone do calendário para longe da borda direita, 
+     dando espaço para o microfone entrar */
+  margin-right: 25px; 
+  cursor: pointer;
+  opacity: 0.3;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1322,7 +2387,7 @@ label {
   margin-bottom: 8px;
 }
 
-input, select, textarea {
+input, select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
@@ -1335,8 +2400,135 @@ input, select, textarea {
 }
 
 textarea {
+  width: 100%;
+  padding: 10px 50px 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #111827;
+  font-family: inherit;
   resize: vertical;
   min-height: 80px;
+}
+
+.btn-microfone {
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 0;
+  opacity: 0.6;
+}
+
+.btn-microfone img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.btn-microfone:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.btn-microfone:hover svg {
+  color: #475569;
+}
+
+.btn-microfone.gravando {
+  opacity: 1;
+  animation: pulse-icon 1.5s ease-in-out infinite;
+}
+
+.btn-microfone.gravando svg {
+  color: #ef4444; /* ← Vermelho quando grava */
+}
+
+@keyframes pulse-icon {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.btn-microfone:focus {
+  outline: none;
+}
+
+.btn-microfone:active {
+  transform: scale(0.95);
+}
+
+/* Transcrição em tempo real */
+.transcricao-tempo-real {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #e3f2fd;
+  border: 1px dashed #1976d2;
+  border-radius: 8px;
+  animation: fadeInAudio 0.3s ease;
+}
+
+.transcricao-tempo-real small {
+  color: #1565c0;
+  font-style: italic;
+  font-size: 13px;
+  display: block;
+}
+
+/* Erro de áudio */
+.erro-audio {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 8px;
+  animation: fadeInAudio 0.3s ease;
+}
+
+.erro-audio small {
+  color: #c62828;
+  font-size: 13px;
+  display: block;
+}
+
+@keyframes fadeInAudio {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .btn-microfone {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  
+  textarea {
+    padding-right: 45px;
+  }
 }
 
 input:focus, select:focus, textarea:focus {
@@ -1368,9 +2560,14 @@ input::placeholder, textarea::placeholder {
   font-size: 13px;
 }
 
+.button-container {
+  position: relative;
+  width: 100%;
+}
+
 .btn-primary {
   width: 100%;
-  padding: 12px;
+  padding: 12px 60px 12px 12px; /* Padding extra à direita para o botão de áudio */
   background: #000;
   color: white;
   border: none;
@@ -1382,7 +2579,53 @@ input::placeholder, textarea::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  min-height: 50px;
+  position: relative;
+}
+
+.btn-text {
+  flex: 1;
+  margin-left: 50px;
+}
+
+.btn-audio-inline {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.btn-audio {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  transition: all 0.2s;
+  z-index: 2;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.btn-audio:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-audio:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.btn-audio:active {
+  transform: translateY(-50%) scale(0.95);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -1453,10 +2696,10 @@ input::placeholder, textarea::placeholder {
 }
 
 .btn-ia {
-  width: 100%;
+  width: 6%;
   margin-top: 10px;
   padding: 10px;
-  background: #6366f1;
+  background: #6365f100;
   color: white;
   border: none;
   border-radius: 8px;
@@ -1470,8 +2713,17 @@ input::placeholder, textarea::placeholder {
   gap: 8px;
 }
 
-.btn-ia:hover:not(:disabled) {
-  background: #4f46e5;
+.icon-update {
+  filter: brightness(0) invert(1);
+}
+
+.icon-update {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-ia{
+  opacity: 0.2;
 }
 
 .btn-ia:disabled {
@@ -1521,6 +2773,7 @@ input::placeholder, textarea::placeholder {
 
 .item-list {
   margin-top: 20px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1546,6 +2799,12 @@ input::placeholder, textarea::placeholder {
 .item-card .subtitle {
   color: #6b7280;
   font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.status{
+  color: #6b7280;
+  font-size: 12px;
   margin-bottom: 4px;
 }
 

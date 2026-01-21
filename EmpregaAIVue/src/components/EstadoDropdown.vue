@@ -114,6 +114,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
+  padding-right: 37px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: white;
@@ -161,7 +162,7 @@ export default {
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  max-height: 280px;
+  max-height: 250px;
   overflow-y: auto;
   animation: aparecer 0.2s ease-out;
 }

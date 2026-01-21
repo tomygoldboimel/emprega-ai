@@ -7,8 +7,6 @@ export interface Curriculo {
   endereco: string | null;
   cidade: string | null;
   estado: string | null;
-  resumoProfissional: string | null;
-  linkedin: string | null;
-  github: string | null;
+  objetivo: string | null;
   excluido: boolean;
 }

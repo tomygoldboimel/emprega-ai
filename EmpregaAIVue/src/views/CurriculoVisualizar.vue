@@ -7,20 +7,16 @@
 
     <div v-else-if="curriculo" class="curriculo-container">
       <div class="actions-bar">
-        <button @click="editarCurriculo" class="btn-edit-cv">
-          ← Voltar à Edição
-        </button>
+        <BackButton @back="prevStep" />
         <div class="action-buttons">
-          <button @click="abrirModal" class="btn-back">
-            Sair
-          </button>
-          <button @click="downloadPDF" class="btn-pdf">
-            Download PDF
-          </button>
+          <LogoutButton @logout="abrirModal" />
         </div>
       </div>
 
       <div class="curriculo-paper" id="curriculo-print">
+        <div class="paper-actions">
+           <DownloadButton @download="downloadPDF" />
+        </div>
         <header class="cv-header">
           <h1>{{ curriculo.nomeCompleto }}</h1>
           
@@ -40,11 +36,12 @@
               {{ curriculo.email }}
             </span>
             
+            <span v-if="curriculo.estado && !curriculo.cidade">
+              <img src='@/assets/icons/locationIcon.svg' class="locationIcon"/>
+              {{ curriculo.estado }}
+            </span>
             <span v-if="curriculo.cidade && curriculo.estado">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
+              <img src='@/assets/icons/locationIcon.svg' class="locationIcon"/>
               {{ curriculo.cidade }}, {{ curriculo.estado }}
             </span>
           </div>
@@ -87,30 +84,13 @@
                 <h3>{{ form.curso }}</h3>
                 <p class="company">{{ form.instituicao }}</p>
               </div>
-              <span class="period">{{ form.nivel }} • {{ form.status }}</span>
+              <span class="period">
+                {{ form.status === true ? 'Incompleto' : 'Completo' }}
+              </span>
             </div>
             <p v-if="form.dataInicio" class="dates">
               {{ formatarData(form.dataInicio) }} - {{ form.dataConclusao ? formatarData(form.dataConclusao) : 'Em andamento' }}
             </p>
-          </div>
-        </section>
-
-        <section v-if="certificacoes.length > 0" class="cv-section">
-          <h2>Certificações</h2>
-          <div v-for="(cert, index) in certificacoes" :key="index" class="cv-item cert-item">
-            <div class="cert-header">
-              <div>
-                <h3>{{ cert.nome }}</h3>
-                <p class="company">{{ cert.instituicao }}</p>
-              </div>
-              <div class="cert-meta">
-                <span v-if="cert.cargaHoraria" class="badge">{{ cert.cargaHoraria }}h</span>
-                <span v-if="cert.dataConclusao">{{ formatarData(cert.dataConclusao) }}</span>
-              </div>
-            </div>
-            <a v-if="cert.urlCertificado" :href="cert.urlCertificado" target="_blank" class="cert-link">
-              Ver certificado
-            </a>
           </div>
         </section>
       </div>
@@ -132,16 +112,21 @@
 <script>
 import jsPDF from 'jspdf';
 import ModalEncerramentoSessao from '@/components/ModalEncerramentoSessao.vue';
-import certificacaoService from '@/services/certificacaoService';
 import curriculoService from '@/services/curriculoService';
 import experienciaService from '@/services/experienciaService';
 import formacaoService from '@/services/formacaoService';
 import usuarioService from '@/services/usuarioService';
+import BackButton from '@/components/BackButton.vue';
+import LogoutButton from '@/components/LogoutButton.vue';
+import DownloadButton from '@/components/DownloadButton.vue';
 
 export default {
   name: 'CurriculoVisualizar',
   components: {
-    ModalEncerramentoSessao
+    ModalEncerramentoSessao,
+    BackButton,
+    LogoutButton,
+    DownloadButton
   },
   data() {
     return {
@@ -149,8 +134,7 @@ export default {
       curriculo: null,
       modalAberto: false,
       experiencias: [],
-      formacoes: [],
-      certificacoes: []
+      formacoes: []
     }
   },
   async created() {
@@ -171,6 +155,10 @@ export default {
   methods: {
     abrirModal() {
       this.modalAberto = true;
+    },
+
+    prevStep() {
+      this.$router.push('/curriculo');
     },
 
     fecharModal() {
@@ -199,11 +187,8 @@ export default {
         const todasExperiencias = await experienciaService.listarExperiencias();
         this.experiencias = todasExperiencias.filter(exp => exp.curriculoId === id);
         
-        const todasFormacoes = await formacaoService.listarFormacaos();
+        const todasFormacoes = await formacaoService.listarFormacoes();
         this.formacoes = todasFormacoes.filter(form => form.curriculoId === id);
-        
-        const todasCertificacoes = await certificacaoService.listarCertificacaos();
-        this.certificacoes = todasCertificacoes.filter(cert => cert.curriculoId === id);
       } catch (error) {
         this.curriculo = null;
       } finally {
@@ -370,68 +355,14 @@ export default {
           yPosition += 5;
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(100, 100, 100);
-          const nivel = `${form.nivel || ''} • ${form.status || ''}`.trim();
+          const statusTexto = form.status === true ? 'Incompleto' : 'Completo';
+          const nivel = `${form.nivel || ''} • ${statusTexto}`.trim();
           doc.text(nivel, margin, yPosition);
           
           if (form.dataInicio) {
             yPosition += 5;
             const periodo = `${this.formatarData(form.dataInicio)} - ${form.dataConclusao ? this.formatarData(form.dataConclusao) : 'Em andamento'}`;
             doc.text(periodo, margin, yPosition);
-          }
-          
-          yPosition += 10;
-          doc.setTextColor(0, 0, 0);
-        });
-      }
-
-      if (this.certificacoes.length > 0) {
-        if (yPosition > 240) {
-          doc.addPage();
-          yPosition = 20;
-        }
-
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        doc.text('CERTIFICAÇÕES', margin, yPosition);
-        yPosition += 2;
-        
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.5);
-        doc.line(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 8;
-
-        this.certificacoes.forEach((cert) => {
-          if (yPosition > 270) {
-            doc.addPage();
-            yPosition = 20;
-          }
-
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text(cert.nome || 'Certificação não informada', margin, yPosition);
-          
-          yPosition += 5;
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'italic');
-          doc.setTextColor(60, 60, 60);
-          doc.text(cert.instituicao || 'Instituição não informada', margin, yPosition);
-          
-          yPosition += 5;
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(100, 100, 100);
-          const info = [
-            cert.cargaHoraria ? `${cert.cargaHoraria}h` : null,
-            cert.dataConclusao ? this.formatarData(cert.dataConclusao) : null
-          ].filter(item => item).join(' • ');
-          
-          if (info) {
-            doc.text(info, margin, yPosition);
-            yPosition += 5;
-          }
-          
-          if (cert.urlCertificado) {
-            doc.setTextColor(30, 64, 175);
-            doc.textWithLink('Ver certificado', margin, yPosition, { url: cert.urlCertificado });
           }
           
           yPosition += 10;
@@ -496,7 +427,13 @@ export default {
   gap: 12px;
 }
 
-.btn-back, .btn-edit-cv, .btn-excel, .btn-pdf {
+.locationIcon{
+  width: 16px;
+  height: 16px;
+  margin-top: auto;
+}
+
+.btn-back, .btn-logout, .btn-excel, .btn-pdf {
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 14px;
@@ -544,11 +481,19 @@ export default {
 }
 
 .curriculo-paper {
+  position: relative; /* Importante! */
   background: white;
   padding: 60px;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   animation: fadeIn 0.4s ease-out;
+}
+
+.paper-actions {
+  position: absolute;
+  top: 20px;  /* Distância do topo do papel */
+  right: 20px; /* Distância da direita do papel */
+  z-index: 10; /* Garante que fique sobre o texto se necessário */
 }
 
 @keyframes fadeIn {
@@ -646,6 +591,7 @@ export default {
   color: #9ca3af;
   white-space: nowrap;
   margin-left: 16px;
+  margin-top:18px;
 }
 
 .dates {
