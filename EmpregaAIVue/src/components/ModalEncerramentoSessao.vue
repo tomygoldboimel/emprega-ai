@@ -1,21 +1,19 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click="fechar">
     <div class="modal-container" @click.stop>
-      <div class="modal-header">
-        <h3>Confirmar Saída</h3>
-      </div>
-      
-      <div class="modal-body">
-        <p>Tem certeza que deseja sair e encerrar sua sessão?</p>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn-cancelar" @click="fechar">
-          Cancelar
-        </button>
-        <button class="btn-confirmar" @click="confirmar">
-          Sair
-        </button>
+      <div class="modal-content">
+        <h3 class="modal-title">Sair</h3>
+        
+        <p class="modal-message">Tem certeza que deseja encerrar sua sessão?</p>
+        
+        <div class="modal-buttons">
+          <button class="btn-voltar" @click="fechar">
+            Voltar
+          </button>
+          <button class="btn-confirmar" @click="confirmar">
+            Confirmar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -57,10 +55,11 @@ export default {
 
 .modal-container {
   background: white;
-  border-radius: 8px;
+  border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width:500px;
+  max-width: 500px;
   width: 90%;
+  height: 250px;
   animation: slideIn 0.3s ease-out;
 }
 
@@ -75,67 +74,69 @@ export default {
   }
 }
 
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.modal-body p {
-  margin: 0;
-  color: #6b7280;
-  font-size: 1rem;
-  line-height: 2.5;
-}
-
-.modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
+.modal-content {
+  padding: 2rem;
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.btn-cancelar,
+.modal-title {
+  margin: 0;
+  margin: 10px 10px -10px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.modal-message {
+  margin: 0px 10px;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 25px;
+}
+
+.btn-voltar,
 .btn-confirmar {
-  padding: 0.5rem 1.25rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  width: 100%;
+  height: 55px;
+  padding: 0.75rem 2.5rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  border: none;
+  border: 2px solid #333;
 }
 
-.btn-cancelar {
-  background-color: #f3f4f6;
-  color: #374151;
+.btn-voltar {
+  background-color: white;
+  color: #333;
 }
 
-.btn-cancelar:hover {
-  background-color: #e5e7eb;
+.btn-voltar:hover {
+  background-color: #f5f5f5;
 }
 
 .btn-confirmar {
-  background-color: #ef4444;
+  background-color: #000;
   color: white;
+  border-color: #000;
 }
 
 .btn-confirmar:hover {
-  background-color: #dc2626;
+  background-color: #333;
+  border-color: #333;
 }
 
-.btn-cancelar:focus,
+.btn-voltar:focus,
 .btn-confirmar:focus {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;

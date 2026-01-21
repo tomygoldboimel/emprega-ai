@@ -24,8 +24,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -54,6 +52,24 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #999999;
+}
+
+@media (prefers-color-scheme: light) {
+  button:disabled,
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    color: #666666;
+  }
+}
+
 .card {
   padding: 2em;
 }
@@ -63,6 +79,82 @@ button:focus-visible {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+}
+html.high-contrast,
+html.high-contrast body,
+html.high-contrast #app {
+  background-color: #000 !important;
+  color: #ffff00 !important;
+}
+
+/* Wrapper principal */
+html.high-contrast .wrapper {
+  background: #000 !important;
+}
+
+/* Textos */
+html.high-contrast h1,
+html.high-contrast h2,
+html.high-contrast h3,
+html.high-contrast h4,
+html.high-contrast p,
+html.high-contrast span,
+html.high-contrast label {
+  color: #ffff00 !important;
+}
+
+/* Containers */
+html.high-contrast .container,
+html.high-contrast .form-card,
+html.high-contrast .item-card {
+  background-color: #000 !important;
+  border-color: #ffffff !important;
+}
+
+/* Inputs */
+html.high-contrast input,
+html.high-contrast select,
+html.high-contrast textarea {
+  background-color: #000 !important;
+  color: #ffff00 !important;
+  border-color: #ffffff !important;
+}
+
+/* Placeholders */
+html.high-contrast input::placeholder,
+html.high-contrast textarea::placeholder {
+  color: #ffffff !important;
+}
+
+/* Botões */
+html.high-contrast button {
+  background-color: #000 !important;
+  color: #ffff00 !important;
+  border-color: #ffffff !important;
+}
+
+/* Botões primários */
+html.high-contrast .btn-primary,
+html.high-contrast .btn-add {
+  border: 2px solid #ffff00 !important;
+}
+
+/* Botões secundários */
+html.high-contrast .btn-secondary,
+html.high-contrast .btn-back {
+  border: 2px solid #ffffff !important;
+}
+
+/* Ícones */
+html.high-contrast img,
+html.high-contrast svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Foco acessível */
+html.high-contrast *:focus-visible {
+  outline: 3px solid #ffff00 !important;
+  outline-offset: 2px;
 }
 
 @media (prefers-color-scheme: light) {

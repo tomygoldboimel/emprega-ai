@@ -3,9 +3,6 @@ export interface Formacao {
   curriculoId: string; 
   instituicao: string | null;
   curso: string | null;
-  nivel: string | null;
-  status: string | null;
-  dataInicio: string | null;
-  dataConclusao: string | null;
+  status: boolean | null;
   excluido: boolean | null;
 }

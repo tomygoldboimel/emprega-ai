@@ -1,147 +1,42 @@
 <template>
   <div class="auth-page">
-    <div 
-      class="bg-left" 
-      :style="{ width: activeMode === 'login' ? '60%' : '40%' }"
-    ></div>
-    <div 
-      class="bg-right" 
-      :style="{ width: activeMode === 'cadastro' ? '60%' : '40%' }"
-    ></div>
-
     <div class="auth-container">
-      <div 
-        :class="['auth-section', 'login-section', { active: activeMode === 'login', inactive: activeMode !== 'login' }]"
-      >
-        <transition name="fade-form">
-          <div v-if="activeMode === 'login'" class="form-wrapper" key="login-form">
-            <div class="form-content">
-              <div class="icon-box">
-                <img src="/usericon.svg" alt="User Icon" />
-              </div>
-              
-              <h1>Bem-vindo</h1>
-              <p class="subtitle">Entre com sua conta</p>
-
-              <div class="form-group">
-                <label>Email</label>
-                <input 
-                  type="email" 
-                  v-model="loginEmail"
-                  @keyup.enter="handleLogin"
-                />
-              </div>
-
-              <div class="form-group">
-                <PasswordInputEscuro 
-                  type="password" 
-                  placeholder="••••••••"
-                  v-model="loginPassword"
-                  @enter="handleLogin"
-                />
-              </div>
-
-              <button 
-                class="btn-submit" 
-                @click="handleLogin"
-                :disabled="loading"
-              >
-                <span v-if="!loading">Entrar</span>
-                <div v-else class="spinner"></div>
-              </button>
-
-              <div v-if="loginError" class="alert-error-login">
-                {{ loginError }}
-              </div>
-
-              <div class="footer-text">
-                <span>Não tem uma conta?</span>
-                <a @click="changeMode('cadastro')">Cadastre-se</a>
-              </div>
-            </div>
+      <div class="form-wrapper">
+        <div class="form-content">
+          <div class="icon-box">
+            <img src="/usericon.svg" alt="User Icon" />
           </div>
-        </transition>
+          
+          <h1>Bem-vindo</h1>
+          <p class="subtitle">Entre com sua conta</p>
 
-        <transition name="fade-preview">
-          <div v-if="activeMode !== 'login'" class="preview" key="login-preview"></div>
-        </transition>
-      </div>
-
-      <div 
-        :class="['auth-section', 'cadastro-section', { active: activeMode === 'cadastro', inactive: activeMode !== 'cadastro' }]"
-      >
-        <transition name="fade-form">
-          <div v-if="activeMode === 'cadastro'" class="form-wrapper" key="cadastro-form">
-            <div class="form-content">
-              <div class="icon-box">
-                <img src="/usersicon.svg" alt="User Icon" style="filter: brightness(0) invert(1);"/>
-              </div>
-              
-              <h1>Criar conta</h1>
-              <p class="subtitle">Preencha os dados para começar</p>
-
-              <div class="form-group">
-                <label>Nome completo</label>
-                <input 
-                  type="text" 
-                  v-model="cadastroNome"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Email</label>
-                <input 
-                  type="email" 
-                  v-model="cadastroEmail"
-                />
-              </div>
-
-              <div class="form-group">
-                <PasswordInputClaro 
-                  type="password" 
-                  placeholder="••••••••"
-                  v-model="cadastroPassword"
-                />
-              </div>
-
-              <div class="form-group">
-                <PasswordInputClaro 
-                  type="password" 
-                  placeholder="••••••••"
-                  v-model="cadastroConfirmPassword"
-                  label="Confirmar Senha"
-                  @keyup.enter="handleCadastro"
-                />
-              </div>
-
-              <button 
-                class="btn-submit" 
-                @click="handleCadastro"
-                :disabled="loading"
-              >
-                <span v-if="!loading">Criar Conta</span>
-                <div v-else class="spinner"></div>
-              </button>
-
-              <div v-if="cadastroError" class="alert-error">
-                {{ cadastroError }}
-              </div>
-
-              <div v-if="cadastroSuccess" class="alert-success">
-                {{ cadastroSuccess }}
-              </div>
-
-              <div class="footer-text">
-                <span>Já tem uma conta?</span>
-                <a @click="changeMode('login')">Fazer login</a>
-              </div>
-            </div>
+          <div class="form-group">
+            <label>Telefone</label>
+            <input 
+              type="tel" 
+              v-model="loginTelefone"
+              @keyup.enter="handleLogin"
+            />
           </div>
-        </transition>
 
-        <transition name="fade-preview">
-          <div v-if="activeMode !== 'cadastro'" class="preview" key="cadastro-preview"></div>
-        </transition>
+          <button 
+            class="btn-submit" 
+            @click="handleLogin"
+            :disabled="loading"
+          >
+            <span v-if="!loading">Entrar</span>
+            <div v-else class="spinner"></div>
+          </button>
+
+          <div v-if="loginError" class="alert-error">
+            {{ loginError }}
+          </div>
+
+          <div class="footer-text">
+            <span>Não tem uma conta?</span>
+            <a @click="$router.push('/cadastro')">Cadastre-se</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -152,158 +47,41 @@
 </template>
 
 <script>
-import usuarioService from '@/services/usuarioService';
-import curriculoService from '@/services/curriculoService';
-import PasswordInputEscuro from '@/components/PasswordInputEscuro.vue';
-import PasswordInputClaro from '@/components/PasswordInputClaro.vue';
-
 export default {
-  name: 'AuthUnified',
-  components: {
-    PasswordInputEscuro,
-    PasswordInputClaro,
-  },
+  name: 'Login',
   data() {
     return {
-      activeMode: 'login',
       loading: false,
-      loginEmail: '',
-      loginPassword: '',
+      loginTelefone: '',
       loginError: '',
-      errorMessage: '',
-      cadastroNome: '',
-      cadastroEmail: '',
-      cadastroPassword: '',
-      cadastroConfirmPassword: '',
-      cadastroError: '',
-      cadastroSuccess: ''
+      errorMessage: ''
     }
   },
   methods: {
-    changeMode(mode) {
-      this.activeMode = mode;
-      this.loginError = '';
-      this.cadastroError = '';
-      this.cadastroSuccess = '';
-    },
-
     async handleLogin() {
       this.loginError = '';
       
-      if (!this.loginEmail || !this.loginPassword) {
-        this.loginError = 'Preencha todos os campos';
+      if (!this.loginTelefone) {
+        this.loginError = 'Preencha o telefone';
+        return;
+      }
+
+      const telefoneRegex = /^\d{10,11}$/;
+      if (!telefoneRegex.test(this.loginTelefone.replace(/\D/g, ''))) {
+        this.loginError = 'Telefone inválido (10 ou 11 dígitos)';
         return;
       }
 
       this.loading = true;
       
       try {
-        const loginValido = await usuarioService.login(this.loginEmail, this.loginPassword);
-        
-        if (loginValido) {
-          const usuarios = await usuarioService.listarUsuarios();
-          const usuario = usuarios.find(u => u.email === this.loginEmail);
-          
-          if (usuario) {
-            const usuarioParaSalvar = {
-              id: usuario.id,
-              email: usuario.email
-            };
-            
-            localStorage.setItem('usuario', JSON.stringify(usuarioParaSalvar));
-            
-            try {
-              const curriculos = await curriculoService.listarCurriculosPorUsuario(usuario.id);
-              if (curriculos) {
-                this.$router.push(`/curriculo/visualizar/${curriculos.id}`);
-              } else {
-                this.$router.push('/curriculo');
-              }
-            } catch (error) {
-              this.$router.push('/curriculo');
-            }
-          }
-        } else {
-          this.loginError = 'Email ou senha inválidos';
-        }
+        localStorage.setItem('telefoneVerificacao', this.loginTelefone.replace(/\D/g, ''));
+        this.$router.push('/verificar-codigo');
       } catch (error) {
-        if (error.status === 401) {
-          this.loginError = 'Email ou senha inválidos';
-        } else {
-          this.loginError = 'Erro ao fazer login. Tente novamente.';
-        }
+        this.loginError = 'Erro ao processar. Tente novamente.';
       } finally {
         this.loading = false;
       }
-    },
-
-    async handleCadastro() {
-      this.cadastroError = '';
-      this.cadastroSuccess = '';
-
-      if (this.cadastroNome.length < 3) {
-        this.cadastroError = 'Nome deve ter no mínimo 3 caracteres';
-        return;
-      }
-
-      if (this.cadastroPassword.length < 6) {
-        this.cadastroError = 'Senha deve ter no mínimo 6 caracteres';
-        return;
-      }
-
-      if (this.cadastroPassword !== this.cadastroConfirmPassword) {
-        this.cadastroError = 'As senhas não conferem';
-        return;
-      }
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(this.cadastroEmail)) {
-        this.cadastroError = 'Email inválido';
-        return;
-      }
-
-      this.loading = true;
-
-      try {
-        const novoUsuario = await usuarioService.adicionarUsuario({
-          nome: this.cadastroNome,
-          email: this.cadastroEmail,
-          senha: this.cadastroPassword
-        });
-        
-        this.cadastroSuccess = 'Cadastro realizado com sucesso!';
-        localStorage.setItem('usuario', JSON.stringify(novoUsuario));
-
-        setTimeout(() => {
-          this.limparFormularioCadastro();
-          this.changeMode('login');
-        }, 1500);
-
-      } catch (error) {
-        if (error.response?.status === 400) {
-          this.errorMessage = 'E-mail já cadastrado. Redirecionando ao Login';
-          setTimeout(() => {
-            this.errorMessage = '';
-            this.limparFormularioCadastro();
-            this.changeMode('login');
-          }, 2000);
-        } else if (error.response) {
-          this.cadastroError = error.response.data.message || 'Erro ao realizar cadastro';
-        } else if (error.request) {
-          this.cadastroError = 'Erro de conexão. Verifique se a API está rodando.';
-        } else {
-          this.cadastroError = 'Erro inesperado ao realizar cadastro';
-        }
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    limparFormularioCadastro() {
-      this.cadastroNome = '';
-      this.cadastroEmail = '';
-      this.cadastroPassword = '';
-      this.cadastroConfirmPassword = '';
     }
   }
 }
@@ -500,7 +278,7 @@ export default {
 }
  
 .btn-submit {
-  width: 100%;
+  width: 80%;
   padding: 14px;
   border-radius: 10px;
   font-size: 16px;
@@ -509,6 +287,8 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 8px;
+  margin-left: auto;
+  margin-right: auto;
   min-height: 50px;
   display: flex;
   align-items: center;

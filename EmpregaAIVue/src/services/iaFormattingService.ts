@@ -23,6 +23,54 @@ interface GroqResponse {
 class IAFormattingService {
   private groqApiKey: string = import.meta.env.VITE_GROQ_API_KEY;
   private groqApiUrl: string = 'https://api.groq.com/openai/v1/chat/completions';
+  
+  async formatarObjetivo(objetivo: string): Promise<string> {
+    try {
+      const prompt = this.criarPromptObjetivo(objetivo);
+      
+      const requestData: GroqRequest = {
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: 'Você é um especialista em RH e career coaching com experiência em seleção e recrutamento. Sua função é transformar objetivos profissionais genéricos em declarações de objetivos excepcionais, sucintas e precisas que capturam a atenção de recrutadores e demonstram clareza de propósito.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 300
+      };
+
+      const response = await axios.post<GroqResponse>(
+        this.groqApiUrl,
+        requestData,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.groqApiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      return response.data.choices[0].message.content.trim();
+      
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<any>;
+        if (axiosError.response) {
+          throw new Error(`Erro da API: ${axiosError.response.data.error?.message || 'Erro desconhecido'}`);
+        } else if (axiosError.request) {
+          throw new Error('Erro de conexão com a API. Verifique sua internet.');
+        }
+      }
+      
+      throw new Error('Erro ao configurar a requisição.');
+    }
+  }
+  
   async formatarDescricaoProfissional(descricao: string, cargo?: string): Promise<string> {
     try {
       const prompt = this.criarPrompt(descricao, cargo);
@@ -70,6 +118,29 @@ class IAFormattingService {
       throw new Error('Erro ao configurar a requisição.');
     }
   }
+  
+  private criarPromptObjetivo(objetivo: string): string {
+    return `Transforme o seguinte objetivo profissional em uma declaração excepcional, sucinta e precisa que:
+
+OBJETIVO ORIGINAL:
+${objetivo}
+
+REQUISITOS PARA TRANSFORMAÇÃO:
+1. SEJA EXCEPCIONAL: Deve destacar-se e criar impacto imediato aos olhos do recrutador
+2. SEJA SUCINTO: Máximo 1 linha (não mais de 20 palavras)
+3. SEJA PRECISO: Deixe claro EXATAMENTE o que você busca e o valor que oferece
+
+ESTRATÉGIAS PARA CRIAR OBJETIVOS IMPACTANTES:
+- Mencione a posição/função desejada com especificidade
+- Demonstre conhecimento do mercado ou da área
+- Evite clichês ("busco crescimento profissional", "procuro novos desafios")
+- Personalize para a área de atuação, mas não invente posições, como junior, senior, etc. Cite apenas caso seja fornecido como objetivo original.
+EXEMPLO RUIM A EVITAR:
+"Procuro um emprego como gerente de projetos para crescimento profissional e novos desafios."
+
+Responda APENAS com o objetivo reformulado, sem explicações adicionais. Mantenha tom profissional, confiante e orientado a resultados.`;
+  }
+  
   private criarPrompt(descricao: string, cargo?: string): string {
     let contexto = '';
     

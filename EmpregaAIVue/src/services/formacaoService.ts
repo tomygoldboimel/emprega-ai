@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Formacao } from 'src/models/Formacao';
 
-const API_URL = 'https://localhost:44388/api/Formacao';
+const API_URL = 'https://localhost:7274/api/Formacao';
 
 class FormacaoService {
   async adicionarFormacao(Formacao: Omit<Formacao, 'id' | 'ativo' | 'excluido'>): Promise<Formacao> {
@@ -9,7 +9,7 @@ class FormacaoService {
     return response.data;
   }
 
-  async listarFormacaos(): Promise<Formacao[]> {
+  async listarFormacoes(): Promise<Formacao[]> {
     const response = await axios.get<Formacao[]>(API_URL);
     return response.data;
   }

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Curriculo } from 'src/models/Curriculo';
 
-const API_URL = 'https://localhost:44388/api/Curriculo';
+const API_URL = 'https://localhost:7274/api/Curriculo';
 
 class CurriculoService {
   async adicionarCurriculo(Curriculo: Omit<Curriculo, 'id' | 'ativo' | 'excluido'>): Promise<Curriculo> {

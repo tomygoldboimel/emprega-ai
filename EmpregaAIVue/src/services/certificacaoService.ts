@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Certificacao } from 'src/models/Certificacao';
 
-const API_URL = 'https://localhost:44388/api/Certificacao';
+const API_URL = 'https://localhost:7274/api/Certificacao';
 
 class CertificacaoService {
   async adicionarCertificacao(Certificacao: Omit<Certificacao, 'id' | 'ativo' | 'excluido'>): Promise<Certificacao> {

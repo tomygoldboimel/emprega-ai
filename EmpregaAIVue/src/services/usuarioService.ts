@@ -1,18 +1,22 @@
 import axios from 'axios';
 import type { Usuario } from 'src/models/Usuario';
 
-const API_URL = 'https://localhost:44388/api/Usuario';
+const API_URL = 'https://localhost:7274/api/Usuario';
+
+const api = axios.create({
+  baseURL: 'http://localhost:7274/api',
+  withCredentials: true
+});
 
 class UsuarioService {
   async adicionarUsuario(usuario: Omit<Usuario, 'id' | 'ativo' | 'excluido'>): Promise<Usuario> {
     const response = await axios.post<Usuario>(API_URL, usuario);
     return response.data;
   }
-  async login(email: string, senha: string): Promise<Usuario | null> {
+  async login(telefone: string): Promise<Usuario | null> {
     const response = await axios.get<Usuario | null>(`${API_URL}/login`, {
       params: {
-        email,
-        senha
+        telefone
       },
       withCredentials: true
     });
