@@ -13,10 +13,10 @@ namespace EmpregaAPI.Models
         public Guid UsuarioId { get; set; }
         public string? NomeCompleto { get; set; }
         public DateTime? DataNascimento { get; set; }
-        public string? Email { get; set; }
         public string? Cidade { get; set; }
         public string? Estado { get; set; }
         public string? Objetivo { get; set; }
+        public string? Telefone { get; set; }
 
         public bool? Excluido { get; set; }
 
