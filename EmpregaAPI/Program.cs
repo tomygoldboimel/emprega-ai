@@ -3,6 +3,7 @@ using EmpregaAI.Services;
 using EmpregaAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.Features;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,7 @@ var connectionString = builder.Configuration.GetConnectionString("CurriculoConne
 Console.WriteLine($"String de Conexão: {connectionString}");
 
 builder.Services.AddDbContext<AplicacaoContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -39,16 +40,14 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
 });
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowVueApp", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173")
+builder.Services.AddCors(options => {
+    options.AddPolicy("Producao", policy => {
+        policy.AllowAnyOrigin() // Em produção real, coloque a URL do seu site aqui
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
+
 
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
@@ -58,7 +57,7 @@ builder.Services.AddScoped<VonageSmsService>();
 
 var app = builder.Build();
 
-app.UseCors("AllowVueApp");
+// Remova a linha "app.UseCors("AllowVueApp");" que estava aqui
 
 if (app.Environment.IsDevelopment())
 {
@@ -66,6 +65,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("Producao"); // Este nome deve ser igual ao builder.Services.AddCors
 app.UseSession();
 app.UseAuthorization();
 app.MapControllers();
