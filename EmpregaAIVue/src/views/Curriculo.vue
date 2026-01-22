@@ -1,5 +1,6 @@
 <template>
   <div class="wrapper">
+    <ModalCarregamento :isOpen="loading" />
     <TutorialHand 
       v-model="mostrarTutorial"
       :handSrc="pointerHandIcon"
@@ -8,7 +9,6 @@
       <div class="top-bar">
         <LogoutButton @logout="abrirModal" />
         <div class="right-actions">
-          <BotaoContraste />
           <BotaoDescricao @toggle="mostrarTutorial = $event"/>
         </div>
       </div>
@@ -49,7 +49,6 @@
             <BotaoMicrofone 
               :isRecording="camposGravando.nomeCompleto" 
               @toggle="toggleGravacao('nomeCompleto', curriculo)"
-              style="position: absolute; left:580px; top:50%; transform: translateY(-50%);"
             />
           </div>
         </div>
@@ -67,7 +66,6 @@
               <BotaoMicrofone 
               :isRecording="gravandoDataFim" 
               @toggle="toggleGravacaoDataFim"
-              style="position: absolute; left:260px; transform: translateY(-50%); top:50%;"
               />
                 
               </div>
@@ -93,7 +91,6 @@
               <BotaoMicrofone 
                   :isRecording="camposGravando.estado" 
                   @toggle="toggleGravacao('estado', curriculo)"
-                  style="position: absolute; left:265px; top:50%; transform: translateY(-50%);"
               />
             </div>
           </div>
@@ -108,14 +105,13 @@
               <BotaoMicrofone 
                 :isRecording="camposGravando.cidade" 
                 @toggle="toggleGravacao('cidade', curriculo)"
-                style="position: absolute; left:260px; top:50%; transform: translateY(-50%);"
               />
             </div>
           </div>
         </div>
 
         <div class="form-group">
-            <label>Objetivo Profissional*</label>
+            <label>Objetivo Profissional</label>
               <div style="position: relative;">
                 <textarea 
                   v-model="curriculo.objetivo" 
@@ -126,9 +122,8 @@
                 <BotaoMicrofone 
                   :isRecording="camposGravando.objetivo"
                   @toggle="toggleGravacao('objetivo', curriculo)"
-                  style="position: absolute; left:570px; transform: translateY(-50%); top:30%;"
                 />
-                <button type="button" @click="formatarObjetivoComIA" class="btn-ia" :disabled="loadingIA || !curriculo.objetivo" style="position: absolute; left:573px; transform: translateY(-50%); top:50%;">
+                <button type="button" @click="formatarObjetivoComIA" class="btn-ia" :disabled="loadingIA || !curriculo.objetivo">
                   <img v-if="!loadingIA" src="@/assets/icons/BotSparkleIcon.svg" alt="IA" class="icon-ia" />
                   <span v-if="loadingIA" class="loading-spinner-small"></span>
                 </button>
@@ -158,9 +153,8 @@
                 <BotaoMicrofone 
                   :isRecording="camposGravando.descricao"
                   @toggle="toggleGravacao('descricao', novaExperiencia)"
-                  style="position: absolute; left:530px; transform: translateY(-50%); top:30%;"
                 />
-                <button type="button" @click="formatarDescricaoComIA" class="btn-ia" :disabled="loadingIA || !novaExperiencia.descricao" style="position: absolute; left:533px; transform: translateY(-50%); top:50%;">
+                <button type="button" @click="formatarDescricaoComIA" class="btn-ia" :disabled="loadingIA || !novaExperiencia.descricao">
                   <img v-if="!loadingIA" src="@/assets/icons/BotSparkleIcon.svg" alt="IA" class="icon-ia" />
                   <span v-if="loadingIA" class="loading-spinner-small"></span>
                 </button>
@@ -184,7 +178,6 @@
               <BotaoMicrofone 
                 :isRecording="camposGravando.empresa" 
                 @toggle="toggleGravacao('empresa', novaExperiencia)"
-                style="position: absolute; left: 530px; top: 50%; transform: translateY(-50%);"
               />
               
             </div>
@@ -194,8 +187,7 @@
             <label>Cargo</label>
             <div style="position: relative;">
               <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê? (opcional)"/>
-              <BotaoMicrofone :isRecording="camposGravando.cargo" @toggle="toggleGravacao('cargo', novaExperiencia)" 
-              style="position: absolute; left: 530px; top: 50%; transform: translateY(-50%);"/>
+              <BotaoMicrofone :isRecording="camposGravando.cargo" @toggle="toggleGravacao('cargo', novaExperiencia)"/>
             </div>
           </div>
           
@@ -214,7 +206,6 @@
                 <BotaoMicrofone 
                 :isRecording="gravandoDataInicioExperiencia" 
                 @toggle="toggleGravacaoDataInicioExperiencia"
-                style="position: absolute; left:237px; transform: translateY(-50%); top:50%;"
                 />
                 
               </div>
@@ -237,7 +228,6 @@
                 <BotaoMicrofone 
                 :isRecording="gravandoDataFim" 
                 @toggle="toggleGravacaoDataFim"
-                style="position: absolute; left:237px; transform: translateY(-50%); top:50%;"
                 />
                 
               </div>
@@ -289,7 +279,6 @@
               <BotaoMicrofone 
                 :isRecording="camposGravando.instituicao" 
                 @toggle="toggleGravacao('instituicao', novaFormacao)"
-                style="position: absolute; left:530px; top:50%; transform: translateY(-50%);"
               />
             </div>
           </div>
@@ -300,7 +289,6 @@
               <BotaoMicrofone 
                 :isRecording="camposGravando.curso" 
                 @toggle="toggleGravacao('curso', novaFormacao)"
-                style="position: absolute; left:530px; top:50%; transform: translateY(-50%);"
               />
             </div>
           </div>
@@ -385,7 +373,6 @@ import NivelDropdown from '@/components/NivelDropdown.vue';
 import ResumeUpload from "@/components/ResumeUpload.vue";
 import ModalEncerramentoSessao from '@/components/ModalEncerramentoSessao.vue';
 import ModalConfirmacao from '@/components/ModalConfirmacao.vue';
-import ModalCarregamento from '@/components/ModalCarregamento.vue';
 import ModalErro from '@/components/ModalErro.vue';
 import ModalAviso from '@/components/AvisoDescricao.vue';
 import BotaoAudio from '@/components/BotaoAudio.vue';
@@ -400,6 +387,7 @@ import CidadeDropdown from '@/components/CidadeDropdown.vue';
 import TutorialHand from '@/components/TutorialHand.vue';
 import pointerHandIcon from '@/assets/icons/pointerHandIcon.svg';
 import BotaoContraste from '@/components/BotaoContraste.vue';
+import ModalCarregamento from '@/components/ModalCarregamento.vue';
 
 export default {
   name: 'CurriculoForm',
@@ -424,7 +412,8 @@ export default {
     SaveButton,
     CidadeDropdown,
     BotaoContraste,
-    TutorialHand
+    TutorialHand,
+    ModalCarregamento
   },
   data() {
     return {
@@ -490,7 +479,7 @@ export default {
         formacoes: []
       },
       
-      cidades: [], // Lista de cidades de acordo com o estado
+      cidades: [],
       carregandoCidades: false,
       mostrarTutorial: false,
 
@@ -516,11 +505,16 @@ export default {
           this.novaExperiencia.dataFim = '';
       }
     },
-    'curriculo.estado': async function(newValue) {
+    'curriculo.estado': async function(newValue, oldValue) {
       if (newValue) {
         this.carregandoCidades = true;
         this.cidades = [];
-        this.curriculo.cidade = ''; // Limpar a cidade quando mudar o estado
+        
+        // SÓ limpa a cidade se já existia um estado antes (mudança manual)
+        // Se oldValue for undefined ou null, significa que é o carregamento inicial
+        if (oldValue) {
+          this.curriculo.cidade = ''; 
+        }
         
         try {
           this.cidades = await ibgeService.listarCidades(newValue);
@@ -535,6 +529,7 @@ export default {
     }
   },
   async created() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const userStr = localStorage.getItem('user');
     if (!userStr) {
       this.mostrarErro('Usuário não encontrado. Faça login novamente.');
@@ -558,16 +553,17 @@ export default {
     }
 
     try {
-      // 2. Tentamos buscar o currículo no banco
+      this.loading = true;
       const curriculoExistente = await curriculoService.listarCurriculosPorUsuario(user.id);
       
       if (curriculoExistente) {
-        
+        const exps = await experienciaService.listarExperienciaPorIdCurriculo(curriculoExistente.id);
+        const forms = await formacaoService.listarFormacoesPorCurriculoId(curriculoExistente.id);
         this.curriculo = {
           ...this.curriculo, // Mantém o que já setamos acima (telefone e userId)
           ...curriculoExistente,
-          experiencias: curriculoExistente.experiencias || [],
-          formacoes: curriculoExistente.formacoes || []
+          experiencias: exps || [],
+          formacoes: forms || []
         };
         console.log(this.curriculo)
       } else {
@@ -580,6 +576,9 @@ export default {
       // Mesmo com erro na API, as listas devem ser inicializadas
       this.curriculo.experiencias = [];
       this.curriculo.formacoes = [];
+    } finally {
+      // 2. Desativa o modal independente de sucesso ou erro
+      this.loading = false; 
     }
 
     // 3. Verificação de edição (params ID)
@@ -1606,6 +1605,7 @@ export default {
         this.editandoIndexExperiencia = index;
         this.editandoExperiencia = true;
       }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     editarFormacao(index) {
@@ -1635,7 +1635,7 @@ export default {
         this.editandoIndexFormacao = index;
         this.editandoFormacao = true;
       }
-      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
 
@@ -1733,7 +1733,13 @@ export default {
     },
     
     prevStep() {
-      if (this.step > 1) this.step--;
+      if (this.step > 1) {
+        this.step--;
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth' // Faz a subida ser suave
+        });
+      }
     },
     formatarDataAtual(dataRef) {
       const dataString = dataRef?.value || dataRef;
@@ -1780,13 +1786,14 @@ export default {
               this.successMessage = 'Experiência atualizada!';
 
           } else {
-              if (this.curriculoId) {
+              console.log(this.curriculo.id)
+              if (this.curriculo.id) {
                   const experienciaComCurriculo = {
                       ...this.novaExperiencia,
                       dataFim: this.novaExperiencia.empregoAtual || !this.novaExperiencia.dataFim 
                           ? null 
                           : this.novaExperiencia.dataFim,
-                      curriculoId: this.curriculoId
+                      curriculoId: this.curriculo.id
                   };
                   
                   novaExp = await experienciaService.adicionarExperiencia(experienciaComCurriculo);
@@ -2065,28 +2072,31 @@ export default {
 
     async salvarCurriculo() {
       try {
-        this.loading = true;
-        if (this.curriculo.id) {
-          await curriculoService.atualizarCurriculo(this.curriculo);
+        const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
+
+        if (dadosParaEnviar.experiencias) {
+          dadosParaEnviar.experiencias.forEach(exp => {
+            if (!exp.dataFim || exp.dataFim === "") exp.dataFim = null;
+            if (!exp.dataInicio || exp.dataInicio === "") exp.dataInicio = null;
+          });
+        }
+
+        if (dadosParaEnviar.id) {
+          await curriculoService.atualizarCurriculo(dadosParaEnviar);
           this.successMessage = 'Currículo atualizado com sucesso!';
         } else {
-          const data = await curriculoService.adicionarCurriculo(this.curriculo);
+          const data = await curriculoService.adicionarCurriculo(dadosParaEnviar);
           this.curriculoId = data.id;
           this.successMessage = 'Currículo salvo com sucesso!';
         }
-        
-        setTimeout(() => {
-          this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
-        }, 2000);
+        this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
       } catch (error) {
+        console.error("Erro detalhado:", error.response?.data);
         return this.mostrarErro('Erro ao salvar currículo');
-      } finally {
-        this.loading = false;
       }
     },
     async updateCurriculo() {
       try {
-        this.loading = true;
         await curriculoService.atualizarCurriculo(this.curriculo);
         this.successMessage = 'Currículo atualizado com sucesso!';
         setTimeout(() => {
@@ -2094,14 +2104,10 @@ export default {
         }, 2000);
       } catch (error) {
         return this.mostrarErro('Erro ao salvar currículo');
-      } finally {
-        this.loading = false;
       }
     },
     async continuarPerfil() {
     try {
-        this.loading = true;
-        
         if (this.curriculo.id) {
             await curriculoService.atualizarCurriculo(this.curriculo);
             this.successMessage = 'Currículo atualizado com sucesso!';
@@ -2126,12 +2132,14 @@ export default {
         } else {
             return this.mostrarErro('Erro ao salvar experiência. Verifique a conexão e o servidor.');
         }
-      } finally {
-        this.loading = false;
       }
   },
   nextStepPerfil() {
     this.step++;
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // Faz a subida ser suave
+    });
   },
   async voltarLogin() {
     try {
@@ -2263,9 +2271,12 @@ export default {
 
 .progress-bar {
   display: flex;
-  align-items: center;
+  align-items: center; /* Alinha pelo topo para o cálculo da linha ser fixo */
   justify-content: space-between;
   margin-bottom: 40px;
+  padding: 0 10px; 
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .progress-step {
@@ -2273,6 +2284,8 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  min-width: 80px; /* Garante que cada etapa tenha uma área mínima para não "esmagar" o círculo */
+  z-index: 1; /* Garante que o círculo fique acima da linha se eles se sobrepuserem */
 }
 
 .step-circle {
@@ -2309,8 +2322,7 @@ export default {
   flex: 1;
   height: 2px;
   background: #e5e7eb;
-  margin: 0 8px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   transition: all 0.3s ease;
 }
 
@@ -2353,6 +2365,18 @@ export default {
   margin-bottom: 18px;
 }
 
+.form-group div[style*="position: relative"] {
+  display: flex;
+  align-items: center;
+}
+
+.posicao-lateral {
+  position: absolute;
+  left: 580px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 input:disabled { /* Fundo cinza bem claro */
   color: #999999;       /* Muda o cursor para um sinal de "proibido" */
   border: 1px solid #dddddd; /* Borda suave */
@@ -2377,6 +2401,7 @@ input:disabled { /* Fundo cinza bem claro */
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+  align-items: start; /* Garante que os labels fiquem alinhados no topo */
 }
 
 label {
@@ -2415,8 +2440,10 @@ textarea {
 
 .btn-microfone {
   position: absolute;
-  left: 3px;
-  bottom: 3px;
+  right: 8px; /* Ajuste este valor para afastar da borda direita do input */
+  top: 50%;   /* Centraliza verticalmente */
+  transform: translateY(-50%); /* Ajuste fino para a centralização vertical */
+  
   width: 36px;
   height: 36px;
   background: transparent;
@@ -2441,7 +2468,7 @@ textarea {
 
 .btn-microfone:hover {
   opacity: 1;
-  transform: scale(1.1);
+  transform: translateY(-50%) scale(1.1); /* Mantém o alinhamento vertical com o scale */
 }
 
 .btn-microfone:hover svg {
@@ -2696,21 +2723,25 @@ input::placeholder, textarea::placeholder {
 }
 
 .btn-ia {
-  width: 6%;
-  margin-top: 10px;
-  padding: 10px;
-  background: #6365f100;
-  color: white;
+  position: absolute;
+  right: 5px; /* Ajuste este valor para afastar da borda direita do input */
+  top: 20%;   /* Centraliza verticalmente */
+  transform: translateY(-50%); /* Ajuste fino para a centralização vertical */
+  
+  width: 36px;
+  height: 36px;
+  background: transparent;
   border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 0;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  z-index: 10;
+  padding: 0;
+  opacity: 0.6;
 }
 
 .icon-update {
@@ -2910,9 +2941,24 @@ input::placeholder, textarea::placeholder {
   border: 1px solid #fecaca;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 728px) {
+  .wrapper {
+    padding: 0; /* Remove o respiro externo para o card encostar na lateral se necessário */
+    background: rgb(255, 255, 255); /* Opcional: tira o fundo cinza para parecer um app nativo */
+    align-items: flex-start; /* Alinha o conteúdo no topo */
+  }
+
   .container {
-    padding: 32px 24px;
+    padding: 20px; /* Reduz drasticamente o padding interno */
+    border-radius: 0; /* Remove arredondamento para ocupar os cantos da tela */
+    border: none; /* Remove a borda para um visual mais limpo */
+    max-width: 100vw; /* Garante 100% da largura da visualização */
+    min-height: 100vh; /* Faz o branco ocupar a altura toda do celular */
+  }
+  
+  /* Ajuste para que os inputs fiquem confortáveis */
+  input, select, textarea {
+    font-size: 16px; /* Evita que o iOS dê zoom automático ao clicar */
   }
 
   .header h1 {
@@ -2920,7 +2966,8 @@ input::placeholder, textarea::placeholder {
   }
 
   .form-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Um campo por linha no celular */
+    gap: 0; /* O margin-bottom do form-group já cuidará do espaço */
   }
 
   .button-group {
@@ -2928,7 +2975,8 @@ input::placeholder, textarea::placeholder {
   }
 
   .progress-bar {
-    padding: 0;
+    /* No mobile, talvez precise de um pouco mais de respiro */
+    padding: 0 25px;
   }
 
   .progress-step span {

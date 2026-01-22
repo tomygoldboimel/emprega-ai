@@ -99,15 +99,17 @@ export default {
 .modal-buttons {
   display: flex;
   gap: 1rem;
-  justify-content: space-between;
+  justify-content: center; /* Alinha os botões ao centro horizontalmente */
   margin-top: 25px;
+  width: 100%; /* Garante que o container use a largura disponível */
 }
 
 .btn-voltar,
 .btn-confirmar {
-  width: 100%;
+  width: auto; /* Muda de 100% para auto para não forçar a largura total */
+  min-width: 140px; /* Define um tamanho mínimo para manter a simetria */
   height: 55px;
-  padding: 0.75rem 2.5rem;
+  padding: 0.75rem 2rem;
   border-radius: 12px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -115,6 +117,24 @@ export default {
   transition: all 0.2s;
   border: 2px solid #333;
 }
+
+@media (max-width: 768px) {
+  .modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .modal-title {
+    margin: 10px 10px -10px -5px;
+  }
+
+  .modal-message {
+    margin: 0px 10px -10px -5px;
+  }
+}
+
 
 .btn-voltar {
   background-color: white;

@@ -1,13 +1,13 @@
 <template>
   <div v-if="isOpen" class="modal-overlay">
     <div class="modal-container">
-      <h3 class="modal-title">Por favor aguarde...</h3>
+      <h3 class="modal-title">Carregando Dados...</h3>
 
       <div class="loading-row">
         <div class="loading-icon-container">
           <img :src="loadingIcon" alt="Loading" class="loading-icon" />
         </div>
-        <p class="modal-message">Carregando...</p>
+        <p class="modal-message">Por favor, aguarde...</p>
       </div>
     </div>
   </div>
@@ -93,5 +93,43 @@ export default {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+@media (max-width: 768px) {
+  /* Reduz o container e o espaçamento interno */
+  .modal-container {
+    min-width: 75%; /* Ocupa a maior parte da largura da tela */
+    height: auto;   /* Permite que a altura se ajuste ao conteúdo menor */
+    padding: 20px 25px;
+    border-radius: 25px; /* Arredondamento mais suave para telas pequenas */
+    align-items: center; /* Centraliza o conteúdo no mobile para melhor equilíbrio */
+  }
+
+  /* Diminui o Título */
+  .modal-title {
+    font-size: 1.4rem;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  /* Ajusta a linha de carregamento */
+  .loading-row {
+    gap: 20px;
+    margin-right: 0; /* Remove a margem grande que empurra o conteúdo */
+    align-items: center;
+  }
+
+  /* Diminui o Ícone de Carregamento */
+  .loading-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  /* Diminui a Mensagem */
+  .modal-message {
+    font-size: 1.1rem;
+    margin-top: 10px;
+    margin-left: 0;
+    text-align: center;
+  }
 }
 </style>
