@@ -48,6 +48,10 @@ const toggleActive = () => {
   transition: all 0.2s ease;
 }
 
+.btn-audio-descricao:not(.ativo):not(:disabled) {
+  animation: pulse-aura 2s 4;
+}
+
 .btn-audio-descricao:hover:not(:disabled) {
   background-color: #f9fafb;
   border-color: #d1d5db;
@@ -96,5 +100,16 @@ const toggleActive = () => {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+@keyframes pulse-aura {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
 }
 </style>

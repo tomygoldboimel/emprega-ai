@@ -1,11 +1,8 @@
 <template>
   <div class="wrapper">
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner-large"></div>
-      <p>Carregando currículo...</p>
-    </div>
+    <ModalCarregamento :isOpen="loading" />
 
-    <div v-else-if="curriculo" class="curriculo-container">
+    <div v-if="!loading && curriculo" class="curriculo-container">
       <div class="actions-bar">
         <BackButton @back="prevStep" />
         <div class="action-buttons">
@@ -25,15 +22,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
-              {{ formatarTelefone(curriculo.telefone) }}
-            </span>
-            
-            <span v-if="curriculo.email">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
-              {{ curriculo.email }}
+              {{ curriculo.telefone }}
             </span>
             
             <span v-if="curriculo.estado && !curriculo.cidade">
@@ -45,22 +34,12 @@
               {{ curriculo.cidade }}, {{ curriculo.estado }}
             </span>
           </div>
-          
-          <div class="social-links" v-if="curriculo.linkedIn || curriculo.gitHub">
-            <a v-if="curriculo.linkedIn" :href="curriculo.linkedIn" target="_blank">
-              {{ curriculo.linkedIn }}
-            </a>
-            
-            <a v-if="curriculo.gitHub" :href="curriculo.gitHub" target="_blank">
-              {{ curriculo.gitHub }}
-            </a>
-          </div>
         </header>
 
-        <section v-if="curriculo.resumoProfissional" class="cv-section">
+        <!-- <section v-if="curriculo.resumoProfissional" class="cv-section">
           <h2>Resumo Profissional</h2>
           <p>{{ curriculo.resumoProfissional }}</p>
-        </section>
+        </section> -->
 
         <section v-if="experiencias.length > 0" class="cv-section">
           <h2>Experiência Profissional</h2>
@@ -96,7 +75,7 @@
       </div>
     </div>
 
-    <div v-else class="error-container">
+    <div v-if="!loading && !curriculo" class="error-container">
       <p>Erro ao carregar currículo</p>
       <button @click="voltar" class="btn-back">Voltar</button>
     </div>
@@ -119,6 +98,7 @@ import usuarioService from '@/services/usuarioService';
 import BackButton from '@/components/BackButton.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
 import DownloadButton from '@/components/DownloadButton.vue';
+import ModalCarregamento from '@/components/ModalCarregamento.vue';
 
 export default {
   name: 'CurriculoVisualizar',
@@ -126,7 +106,8 @@ export default {
     ModalEncerramentoSessao,
     BackButton,
     LogoutButton,
-    DownloadButton
+    DownloadButton,
+    ModalCarregamento
   },
   data() {
     return {
@@ -138,6 +119,7 @@ export default {
     }
   },
   async created() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const autenticado = await usuarioService.verificarSessao();
     
     if (!autenticado) {
@@ -183,7 +165,7 @@ export default {
       try {
         this.loading = true;
         this.curriculo = await curriculoService.listarCurriculoPorId(id);
-        
+        console.log(this.curriculo)
         const todasExperiencias = await experienciaService.listarExperiencias();
         this.experiencias = todasExperiencias.filter(exp => exp.curriculoId === id);
         
@@ -196,6 +178,7 @@ export default {
       }
     },
     formatarTelefone(telefone) {
+      console.log(telefone);
       if (!telefone) return '';
       
       const apenasNumeros = telefone.toString().replace(/\D/g, '');
@@ -356,7 +339,7 @@ export default {
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(100, 100, 100);
           const statusTexto = form.status === true ? 'Incompleto' : 'Completo';
-          const nivel = `${form.nivel || ''} • ${statusTexto}`.trim();
+          const nivel = `${form.nivel || ''} ${statusTexto}`.trim();
           doc.text(nivel, margin, yPosition);
           
           if (form.dataInicio) {
@@ -379,7 +362,7 @@ export default {
 <style scoped>
 .wrapper {
   min-height: 100vh;
-  background: #f3f4f6;
+  background: #ffffff;
   padding: 40px 20px;
 }
 
@@ -443,7 +426,7 @@ export default {
   border: none;
 }
 
-.btn-back {
+.btn-back, .btn-logout {
   background: white;
   color: #111827;
   border: 1px solid #e5e7eb;
@@ -485,7 +468,7 @@ export default {
   background: white;
   padding: 60px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: #e5e7eb 1px solid;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -512,13 +495,14 @@ export default {
   padding-bottom: 32px;
   border-bottom: 2px solid #e5e7eb;
   margin-bottom: 32px;
+  width: 100%;
 }
 
 .cv-header h1 {
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .contact-info {
@@ -528,28 +512,11 @@ export default {
   gap: 20px;
   margin-bottom: 12px;
   color: #6b7280;
-  font-size: 14px;
-}
-
-.social-links {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-.social-links a {
-  color: #3b82f6;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-
-.social-links a:hover {
-  color: #2563eb;
-  text-decoration: underline;
+  font-size: 12px;
 }
 
 .cv-section {
+  margin-top: -10px;
   margin-bottom: 36px;
 }
 
@@ -601,10 +568,10 @@ export default {
 }
 
 .description {
-  font-size: 14px;
+  font-size: 12px;
   color: #4b5563;
   line-height: 1.6;
-  margin-top: 8px;
+  margin-top: -10px;
 }
 
 .cert-item {
@@ -673,6 +640,21 @@ export default {
   .social-links a,
   .cert-link {
     color: #1e40af !important;
+  }
+}
+@media (max-width: 768px) {
+  .curriculo-paper {
+    position: relative; /* Importante! */
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: #e5e7eb 1px solid;
+    animation: fadeIn 0.4s ease-out;
+  }
+  .cv-section h2 {
+    font-size: 16px;
+    font-weight: 800;
+    border-bottom: 1px solid #e5e7eb;
   }
 }
 </style>
