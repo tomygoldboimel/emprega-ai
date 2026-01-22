@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://localhost:7274/api/resume';
+const API_URL = 'https://emprega-ai-production.up.railway.app/api/resume';
 
 // ===== INTERFACES =====
 export interface DadosPessoaisProcessados {

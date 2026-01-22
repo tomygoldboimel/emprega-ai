@@ -1,10 +1,10 @@
 import axios from 'axios';
 import type { Usuario } from 'src/models/Usuario';
 
-const API_URL = 'https://localhost:7274/api/Usuario';
+const API_URL = 'https://emprega-ai-production.up.railway.app/api/Usuario';
 
 const api = axios.create({
-  baseURL: 'http://localhost:7274/api',
+  baseURL: 'http://emprega-ai-production.up.railway.app/api',
   withCredentials: true
 });
 

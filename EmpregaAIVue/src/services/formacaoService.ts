@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Formacao } from 'src/models/Formacao';
 
-const API_URL = 'https://localhost:7274/api/Formacao';
+const API_URL = 'https://emprega-ai-production.up.railway.app/api/Formacao';
 
 class FormacaoService {
   async adicionarFormacao(Formacao: Omit<Formacao, 'id' | 'ativo' | 'excluido'>): Promise<Formacao> {
