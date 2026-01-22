@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Curriculo } from 'src/models/Curriculo';
 
-const API_URL = 'https://localhost:7274/api/Curriculo';
+const API_URL = 'https://emprega-ai-production.up.railway.app/api/Curriculo';
 
 class CurriculoService {
   async adicionarCurriculo(Curriculo: Omit<Curriculo, 'id' | 'ativo' | 'excluido'>): Promise<Curriculo> {

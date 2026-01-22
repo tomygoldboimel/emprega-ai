@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Experiencia } from 'src/models/Experiencia';
 
-const API_URL = 'https://localhost:7274/api/Experiencia';
+const API_URL = 'https://emprega-ai-production.up.railway.app/api/Experiencia';
 
 class ExperienciaService {
   async adicionarExperiencia(Experiencia: Omit<Experiencia, 'id'>): Promise<Experiencia> {
