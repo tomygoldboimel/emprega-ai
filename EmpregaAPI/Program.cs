@@ -42,7 +42,7 @@ builder.Services.Configure<FormOptions>(options =>
 
 builder.Services.AddCors(options => {
     options.AddPolicy("Producao", policy => {
-        policy.AllowAnyOrigin() // Em produção real, coloque a URL do seu site aqui
+        policy.WithOrigins("https://stellar-trust-production.up.railway.app/") // Em produção real, coloque a URL do seu site aqui
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
