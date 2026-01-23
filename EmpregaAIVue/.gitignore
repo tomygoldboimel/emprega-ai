@@ -22,3 +22,10 @@ dist/
 .DS_Store
 .env
 .env.local
+
+[Bb]in/
+[Oo]bj/
+.vscode/
+appsettings.Development.json
+*.user
+EmpregaAPI/EmpregaAPI
