@@ -129,7 +129,7 @@
                   @toggle="toggleGravacao('objetivo', curriculo)"
                 />
                 <button type="button" @click="formatarObjetivoComIA" class="btn-ia" :disabled="loadingIA || !curriculo.objetivo">
-                  <img v-if="!loadingIA" src="@/assets/icons/BotSparkleIcon.svg" alt="IA" class="icon-ia" />
+                  <img v-if="!loadingIA" src="@/assets/icons/botSparkleIcon.svg" alt="IA" class="icon-ia" />
                   <span v-if="loadingIA" class="loading-spinner-small"></span>
                 </button>
               </div>
@@ -161,7 +161,7 @@
                   @toggle="toggleGravacao('descricao', novaExperiencia)"
                 />
                 <button type="button" @click="formatarDescricaoComIA" class="btn-ia" :disabled="loadingIA || !novaExperiencia.descricao">
-                  <img v-if="!loadingIA" src="@/assets/icons/BotSparkleIcon.svg" alt="IA" class="icon-ia" />
+                  <img v-if="!loadingIA" src="@/assets/icons/botSparkleIcon.svg" alt="IA" class="icon-ia" />
                   <span v-if="loadingIA" class="loading-spinner-small"></span>
                 </button>
               </div>
