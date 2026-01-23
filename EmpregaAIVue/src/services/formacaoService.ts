@@ -1,34 +1,35 @@
-import axios from 'axios';
+import api from '../api'; // Sua instância centralizada
 import type { Formacao } from 'src/models/Formacao';
 
-const API_URL = 'https://emprega-ai-production.up.railway.app/api/Formacao';
+// Agora você só define o "pedaço" final da URL
+const ROUTE = '/Formacao';
 
 class FormacaoService {
   async adicionarFormacao(Formacao: Omit<Formacao, 'id' | 'ativo' | 'excluido'>): Promise<Formacao> {
-    const response = await axios.post<Formacao>(API_URL, Formacao);
+    const response = await api.post<Formacao>(ROUTE, Formacao);
     return response.data;
   }
 
   async listarFormacoes(): Promise<Formacao[]> {
-    const response = await axios.get<Formacao[]>(API_URL);
+    const response = await api.get<Formacao[]>(ROUTE);
     return response.data;
   }
 
   async listarFormacaoPorId(id: string): Promise<Formacao> {
-    const response = await axios.get<Formacao>(`${API_URL}/${id}`);
+    const response = await api.get<Formacao>(`${ROUTE}/${id}`);
     return response.data;
   }
   async listarFormacoesPorCurriculoId(curriculoId: string): Promise<Formacao> {
-    const response = await axios.get<Formacao>(`${API_URL}/FormacaoPorCurriculo/${curriculoId}`);
+    const response = await api.get<Formacao>(`${ROUTE}/FormacaoPorCurriculo/${curriculoId}`);
     return response.data;
   }
   async atualizarFormacao(Formacao: Formacao): Promise<Formacao> {
-    const response = await axios.put<Formacao>(`${API_URL}/Atualizar`, Formacao);
+    const response = await api.put<Formacao>(`${ROUTE}/Atualizar`, Formacao);
     return response.data;
   }
 
   async excluirFormacao(idFormacao: String): Promise<Formacao> {
-    const response = await axios.put<Formacao>(`${API_URL}/Deletar/${idFormacao}`);
+    const response = await api.put<Formacao>(`${ROUTE}/Deletar/${idFormacao}`);
     return response.data;
   }
 }

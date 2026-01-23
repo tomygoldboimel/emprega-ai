@@ -1,6 +1,6 @@
-import axios from 'axios';
+import api from '../api';
 
-const API_URL = 'https://emprega-ai-production.up.railway.app/api/resume';
+const ROUTE = '/resume';
 
 // ===== INTERFACES =====
 export interface DadosPessoaisProcessados {
@@ -45,8 +45,8 @@ class ResumeUploadService {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await axios.post<CurriculoProcessado>(
-      `${API_URL}/upload`,
+    const response = await api.post<CurriculoProcessado>(
+      `${ROUTE}/upload`,
       formData,
       {
         headers: {

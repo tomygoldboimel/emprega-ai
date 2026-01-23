@@ -1,36 +1,38 @@
-import axios from 'axios';
+import api from '../api'; // Sua instância centralizada
 import type { Experiencia } from 'src/models/Experiencia';
 
-const API_URL = 'https://emprega-ai-production.up.railway.app/api/Experiencia';
+// Agora você só define o "pedaço" final da URL
+const ROUTE = '/Experiencia';
 
 class ExperienciaService {
-  async adicionarExperiencia(Experiencia: Omit<Experiencia, 'id'>): Promise<Experiencia> {
-    const response = await axios.post<Experiencia>(API_URL, Experiencia);
+  async adicionarExperiencia(experiencia: Omit<Experiencia, 'id'>): Promise<Experiencia> {
+    // 'api' já sabe que o início é 'https://.../api'
+    const response = await api.post<Experiencia>(ROUTE, experiencia);
     return response.data;
   }
 
   async listarExperiencias(): Promise<Experiencia[]> {
-    const response = await axios.get<Experiencia[]>(API_URL);
+    const response = await api.get<Experiencia[]>(ROUTE);
     return response.data;
   }
 
   async listarExperienciaPorId(id: string): Promise<Experiencia> {
-    const response = await axios.get<Experiencia>(`${API_URL}/${id}`);
+    const response = await api.get<Experiencia>(`${ROUTE}/${id}`);
     return response.data;
   }
 
   async listarExperienciaPorIdCurriculo(curriculoId: string): Promise<Experiencia> {
-    const response = await axios.get<Experiencia>(`${API_URL}/ExperienciaPorCurriculo/${curriculoId}`);
+    const response = await api.get<Experiencia>(`${ROUTE}/PorCurriculo/${curriculoId}`);
     return response.data;
   }
 
   async atualizarExperiencia(Experiencia: Experiencia): Promise<Experiencia> {
-    const response = await axios.put<Experiencia>(`${API_URL}/Atualizar`, Experiencia);
+    const response = await api.put<Experiencia>(`${ROUTE}/Atualizar`, Experiencia);
     return response.data;
   }
 
   async excluirExperiencia(idExperiencia: string): Promise<Experiencia> {
-    const response = await axios.put<Experiencia>(`${API_URL}/Deletar/${idExperiencia}`);
+    const response = await api.put<Experiencia>(`${ROUTE}/Deletar/${idExperiencia}`);
     return response.data;
   }
 }

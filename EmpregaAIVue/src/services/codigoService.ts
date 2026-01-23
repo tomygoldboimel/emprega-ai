@@ -1,6 +1,6 @@
-import axios from 'axios'
+import api from '../api'
 
-const API_URL = 'https://emprega-ai-production.up.railway.app/api/Auth'
+const ROUTE = '/Auth';
 
 export interface Usuario {
   id: string
@@ -28,8 +28,8 @@ export interface ApiMessageResponse {
 export async function enviarCodigo(
   telefone: string
 ): Promise<ApiMessageResponse> {
-  const response = await axios.post<ApiMessageResponse>(
-    `${API_URL}/send-code`,
+  const response = await api.post<ApiMessageResponse>(
+    `${ROUTE}/send-code`,
     { telefone } as EnviarCodigoRequest
   )
 
@@ -43,8 +43,8 @@ export async function verificarCodigo(
   telefone: string,
   codigo: string
 ): Promise<Usuario> {
-  const response = await axios.post<Usuario>(
-    `${API_URL}/verify-code`,
+  const response = await api.post<Usuario>(
+    `${ROUTE}/verify-code`,
     {
       telefone,
       codigo,

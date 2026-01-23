@@ -1,20 +1,15 @@
-import axios from 'axios';
+import api from '../api';
 import type { Usuario } from 'src/models/Usuario';
 
-const API_URL = 'https://emprega-ai-production.up.railway.app/api/Usuario';
-
-const api = axios.create({
-  baseURL: 'http://emprega-ai-production.up.railway.app/api',
-  withCredentials: true
-});
+const ROUTE = '/Usuario';
 
 class UsuarioService {
   async adicionarUsuario(usuario: Omit<Usuario, 'id' | 'ativo' | 'excluido'>): Promise<Usuario> {
-    const response = await axios.post<Usuario>(API_URL, usuario);
+    const response = await api.post<Usuario>(ROUTE, usuario);
     return response.data;
   }
   async login(telefone: string): Promise<Usuario | null> {
-    const response = await axios.get<Usuario | null>(`${API_URL}/login`, {
+    const response = await api.get<Usuario | null>(`${ROUTE}/login`, {
       params: {
         telefone
       },
@@ -24,8 +19,8 @@ class UsuarioService {
   }
   async verificarSessao(): Promise<boolean> {
     try {
-      const response = await axios.get<{ autenticado: boolean }>(
-        `${API_URL}/verificar-sessao`,
+      const response = await api.get<{ autenticado: boolean }>(
+        `${ROUTE}/verificar-sessao`,
         { withCredentials: true }
       );
       return response.data.autenticado;
@@ -34,27 +29,27 @@ class UsuarioService {
     }
   }
   async logout(): Promise<void> {
-    await axios.post(`${API_URL}/logout`, {}, {
+    await api.post(`${ROUTE}/logout`, {}, {
       withCredentials: true
     });
   }
   async listarUsuarios(): Promise<Usuario[]> {
-    const response = await axios.get<Usuario[]>(API_URL);
+    const response = await api.get<Usuario[]>(ROUTE);
     return response.data;
   }
 
   async listarUsuarioPorId(id: string): Promise<Usuario> {
-    const response = await axios.get<Usuario>(`${API_URL}/${id}`);
+    const response = await api.get<Usuario>(`${ROUTE}/${id}`);
     return response.data;
   }
 
   async atualizarUsuario(usuario: Usuario): Promise<Usuario> {
-    const response = await axios.put<Usuario>(`${API_URL}/Atualizar`, usuario);
+    const response = await api.put<Usuario>(`${ROUTE}/Atualizar`, usuario);
     return response.data;
   }
 
   async excluirUsuario(usuario: Usuario): Promise<Usuario> {
-    const response = await axios.put<Usuario>(`${API_URL}/Deletar`, usuario);
+    const response = await api.put<Usuario>(`${ROUTE}/Deletar`, usuario);
     return response.data;
   }
 }
