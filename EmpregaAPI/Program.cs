@@ -62,7 +62,11 @@ var app = builder.Build();
 //if (app.Environment.IsDevelopment())
 //{
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "EmpregaAI API V1");
+        c.RoutePrefix = string.Empty; // Isso faz o Swagger abrir direto na URL principal
+    });
 //}
 
 app.UseCors("Producao"); // Este nome deve ser igual ao builder.Services.AddCors
