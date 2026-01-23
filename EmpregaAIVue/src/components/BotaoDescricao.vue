@@ -2,38 +2,54 @@
   <button
     @click="toggleActive"
     class="btn-audio-descricao"
-    :class="{ ativo: isActive }"  type="button"
-    :disabled="disabled"
+    :class="{ ativo: isActive }"
+    type="button"
+    :disabled="disabled || loading"
   >
     <img v-if="!loading" :src="soundIcon" alt="Áudio descrição" />
+    
     <span v-else class="loading-spinner"></span>
   </button>
 </template>
 
 <script setup lang="ts">
 import soundIcon from '@/assets/icons/soundIcon.svg'
-import { ref } from 'vue';
+import { ref, watch } from 'vue'
 
-defineProps<{
+// Recebe o estado inicial se necessário
+const props = defineProps<{
   loading?: boolean
   disabled?: boolean
   active?: boolean
 }>()
 
 const emit = defineEmits<{
-  click: [],
   toggle: [active: boolean]
 }>()
 
-const isActive = ref(false)
+const isActive = ref(props.active || false)
+
+// Garante que o estado interno mude se o pai mudar a prop 'active'
+watch(() => props.active, (newValue) => {
+  isActive.value = newValue || false
+})
 
 const toggleActive = () => {
   isActive.value = !isActive.value
+  // Envia true ou false para o componente pai
   emit('toggle', isActive.value)
 }
 </script>
 
 <style scoped>
+  .btn-audio-descricao.tocando {
+  animation: pulse-audio 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-audio {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
 .btn-audio-descricao {
   display: inline-flex;
   align-items: center;

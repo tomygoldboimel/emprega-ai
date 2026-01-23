@@ -1,23 +1,27 @@
 <template>
   <div class="auth-page">
     <div class="auth-container">
+      <div class="top-bar">
+        <BotaoDescricao @toggle="handleTutorialToggle"/>
+      </div>
       <div class="form-wrapper">
         <div class="form-content">
           <div class="icon-box">
             <img src="/profileIcon.svg" alt="User Icon" />
           </div>
           
-          <h1>Bem-vindo</h1>
-          <p class="subtitle">Insira seu telefone para começar</p>
+          <h1 @click="falarElemento">Bem-vindo</h1>
+          <p class="subtitle" @click="falarElemento">Insira seu telefone para começar</p>
 
           <div class="form-group">
-            <label>Telefone</label>
+            <label @click="falarElemento">Telefone</label>
             <input 
               type="tel" 
               v-model="cadastroTelefone"
               @input="formatarTelefone"
               @keyup.enter="handleCadastro"
               placeholder="(XX) XXXXX-XXXX"
+              @click="garantirVisibilidade"
             />
           </div>
 
@@ -30,11 +34,11 @@
             <div v-else class="spinner"></div>
           </button>
 
-          <div v-if="cadastroError" class="alert-error">
+          <div v-if="cadastroError" class="alert-error" @click="falarElemento">
             {{ cadastroError }}
           </div>
 
-          <div v-if="cadastroSuccess" class="alert-success">
+          <div v-if="cadastroSuccess" class="alert-success" @click="falarElemento">
             {{ cadastroSuccess }}
           </div>
         </div>
@@ -50,10 +54,14 @@
 <script>
 import { enviarCodigo } from '@/services/codigoService';
 import usuarioService from '@/services/usuarioService';
+import BotaoDescricao from '@/components/BotaoDescricao.vue';
 import Login from './Login.vue';
 
 export default {
   name: 'Cadastro',
+  components: {
+    BotaoDescricao,
+  },
   data() {
     return {
       loading: false,
@@ -64,6 +72,85 @@ export default {
     }
   },
   methods: {
+    handleTutorialToggle(ativo) {
+      this.mostrarTutorial = ativo;
+      localStorage.setItem('audioDescricaoAtiva', ativo);
+      if (ativo) {
+        this.executarBoasVindasNativo();
+      } else {
+        this.pararAudioTutorial();
+      }
+    },
+    falarElemento(event) {
+      const texto = event.target.innerText;
+      this.falarTexto(texto);
+    },
+    falarTexto(texto) {
+      // Só fala se o modo tutorial estiver ligado
+      if (!this.mostrarTutorial) return;
+
+      if (!window.speechSynthesis) return;
+
+      // Cancela falas anteriores para não encavalar
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;
+
+      // Tenta usar a voz do Google se disponível
+      const voices = window.speechSynthesis.getVoices();
+      const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
+      if (googleVoice) utterance.voice = googleVoice;
+
+      window.speechSynthesis.speak(utterance);
+    },
+
+    executarBoasVindasNativo() {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+
+      const texto = "Clique nos títulos para ouví-los";
+      this.audioTutorial = new SpeechSynthesisUtterance(texto);
+      this.audioTutorial.lang = 'pt-BR';
+      
+      // Ajuste fino para soar menos robótico
+      this.audioTutorial.rate = 0.9;  // Um pouco mais lento costuma soar mais natural
+      this.audioTutorial.pitch = 1.0; // Tom da voz
+
+      const selecionarMelhorVoz = () => {
+        const vozes = window.speechSynthesis.getVoices();
+        
+        // Procura especificamente pelas vozes neurais (Google ou Premium)
+        const melhorVoz = vozes.find(v => 
+          v.lang === 'pt-BR' && 
+          (v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Natural'))
+        );
+
+        if (melhorVoz) {
+          this.audioTutorial.voice = melhorVoz;
+        }
+        
+        window.speechSynthesis.speak(this.audioTutorial);
+      };
+
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = selecionarMelhorVoz;
+      } else {
+        selecionarMelhorVoz();
+      }
+    },
+
+    pararAudioTutorial() {
+      // Para todas as falas em execução no navegador
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    },
+
+    beforeUnmount() {
+      this.pararAudioTutorial();
+    },
     formatarTelefone(event) {
       let valor = event.target.value.replace(/\D/g, '');
 
@@ -141,7 +228,18 @@ export default {
       //   this.loading = false;
       // }
     },
+    garantirVisibilidade(event) {
+      const elemento = event.target;
 
+      setTimeout(() => {
+        if (elemento && elemento.scrollIntoView) {
+          elemento.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }
+      }, 300);
+    },
     limparFormularioCadastro() {
       this.cadastroTelefone = '';
     }
@@ -170,12 +268,32 @@ export default {
 
 .auth-container {
   position: relative;
-  z-index: 1;
+  /* Ocupa a altura total disponível para centralizar o conteúdo */
+  height: 100vh; 
   width: 100%;
   max-width: 440px;
   display: flex;
   flex-direction: column;
+  /* Centraliza o form-wrapper verticalmente */
+  justify-content: center; 
   align-items: center;
+}
+
+.top-bar {
+  /* Retira o botão do fluxo para não empurrar o container para baixo */
+  position: absolute;
+  top: 24px;
+  right: 40px; /* Alinhado com o padding do form-wrapper */
+  width: auto;
+  z-index: 10;
+}
+
+/* Ajuste para mobile para o botão não ficar colado na borda */
+@media (max-width: 768px) {
+  .top-bar {
+    right: 24px;
+    top: 16px;
+  }
 }
 
 .form-wrapper {
@@ -383,6 +501,7 @@ export default {
 @media (max-width: 768px) {
   .form-wrapper {
     padding: 0 24px;
+    margin-top: -50px;
   }
 
   .form-content {

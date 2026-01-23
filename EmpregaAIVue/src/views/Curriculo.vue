@@ -1,15 +1,11 @@
 <template>
   <div class="wrapper">
     <ModalCarregamento :isOpen="loading" />
-    <TutorialHand 
-      v-model="mostrarTutorial"
-      :handSrc="pointerHandIcon"
-    />
     <div class="container">
       <div class="top-bar">
         <LogoutButton @logout="abrirModal" />
         <div class="right-actions">
-          <BotaoDescricao @toggle="mostrarTutorial = $event"/>
+          <BotaoDescricao @toggle="handleTutorialToggle" :active="mostrarTutorial"/>
         </div>
       </div>
       <div class="header">
@@ -19,33 +15,33 @@
             <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
           </svg>
         </div>
-        <h1>{{ modoEdicao ? 'Editar Currículo' : 'Criar Currículo' }}</h1>
-        <p>Preencha seus dados profissionais</p>
+        <h1 @click="falarElemento">{{ modoEdicao ? 'Editar Currículo' : 'Criar Currículo' }}</h1>
+        <p @click="falarElemento">Preencha seus dados profissionais</p>
       </div>
 
       <div class="progress-bar">
         <div :class="['progress-step', { active: step >= 1 }]">
-          <div class="step-circle">1</div>
-          <span>Sobre você</span>
+          <div class="step-circle" @click="falarTexto('Sobre você')">1</div>
+          <span @click="falarElemento">Sobre você</span>
         </div>
         <div class="progress-line" :class="{ active: step >= 2 }"></div>
         <div :class="['progress-step', { active: step >= 2 }]">
-          <div class="step-circle">2</div>
-          <span>Trabalhos</span>
+          <div class="step-circle" @click="falarTexto('Trabalhos')">2</div>
+          <span @click="falarElemento">Trabalhos</span>
         </div>
         <div class="progress-line" :class="{ active: step >= 3 }"></div>
         <div :class="['progress-step', { active: step >= 3 }]">
-          <div class="step-circle">3</div>
-          <span>Estudos</span>
+          <div class="step-circle" @click="falarTexto('Estudos')">3</div>
+          <span @click="falarElemento">Estudos</span>
         </div>
       </div>
 
       <div v-if="step === 1" class="step-content">
-        <h2 class="step-title">Sobre você</h2>
+        <h2 class="step-title" @click="falarElemento">Sobre você</h2>
         <div class="form-group">
-          <label>Nome Completo*</label>
+          <label @click="falarTexto('Nome completo')">Nome Completo*</label>
           <div style="position: relative;">
-            <input type="text" v-model="curriculo.nomeCompleto" required placeholder="Seu nome todo..."/>
+            <input type="text" v-model="curriculo.nomeCompleto" required placeholder="Seu nome todo..." @click="garantirVisibilidade"/>
             <BotaoMicrofone 
               :isRecording="camposGravando.nomeCompleto" 
               @toggle="toggleGravacao('nomeCompleto', curriculo)"
@@ -55,14 +51,22 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Data de Nascimento</label>
+            <label @click="falarElemento">Data de Nascimento</label>
             <div style="position: relative;"> 
               <input
               type="date" 
               v-model="curriculo.dataNascimento"
               class="input-com-dois-icones"
+              @click="garantirVisibilidade"
               />
-              
+              <span class="icone-calendario"> 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </span>
               <BotaoMicrofone 
               :isRecording="gravandoDataFim" 
               @toggle="toggleGravacaoDataFim"
@@ -71,7 +75,7 @@
               </div>
           </div>
           <div class="form-group">
-            <label>Telefone</label>
+            <label @click="falarElemento">Telefone</label>
             <input 
               type="tel" 
               v-model="curriculo.telefone" 
@@ -85,7 +89,7 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Estado</label>
+            <label @click="falarElemento">Estado</label>
             <div style="position: relative;">
               <EstadoDropdown v-model="curriculo.estado" class="input-com-dois-icones"/>
               <BotaoMicrofone 
@@ -95,7 +99,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Cidade</label>
+            <label @click="falarElemento">Cidade</label>
             <div style="position: relative;">
               <CidadeDropdown 
                 v-model="curriculo.cidade" 
@@ -111,14 +115,15 @@
         </div>
 
         <div class="form-group">
-            <label>Objetivo Profissional</label>
+            <label @click="falarElemento">Objetivo Profissional</label>
               <div style="position: relative;">
                 <textarea 
                   v-model="curriculo.objetivo" 
                   rows="6" 
                   required
                   placeholder="No que você quer trabalhar?"
-                ></textarea>
+                  @click="garantirVisibilidade"
+                  ></textarea>
                 <BotaoMicrofone 
                   :isRecording="camposGravando.objetivo"
                   @toggle="toggleGravacao('objetivo', curriculo)"
@@ -139,16 +144,17 @@
       </div>
 
       <div v-if="step === 2" class="step-content">
-        <h2 class="step-title">Trabalhos</h2>
+        <h2 class="step-title" @click="falarElemento">Trabalhos</h2>
         <div class="form-card">
           <div class="form-group">
-            <label>Descrição das Atividades*</label>
+            <label @click="falarElemento">Descrição das Atividades*</label>
               <div style="position: relative;">
                 <textarea 
                   v-model="novaExperiencia.descricao" 
                   rows="6" 
                   required
                   placeholder="O que você fazia?"
+                  @click="garantirVisibilidade"
                 ></textarea>
                 <BotaoMicrofone 
                   :isRecording="camposGravando.descricao"
@@ -165,7 +171,7 @@
             <small v-if="iaMessage" :class="['ia-message', iaMessageType]">{{ iaMessage }}</small>
           </div>
           <div class="form-group">
-            <label>Empresa</label>
+            <label @click="falarElemento">Empresa</label>
             <div style="position: relative;">
               
               <input 
@@ -173,6 +179,7 @@
                 v-model="novaExperiencia.empresa" 
                 style="width: 100%;" 
                 placeholder="Onde você trabalhou? (opcional)"
+                @click="garantirVisibilidade"
               />
               
               <BotaoMicrofone 
@@ -184,16 +191,16 @@
           </div>
 
           <div class="form-group">
-            <label>Cargo</label>
+            <label @click="falarElemento">Cargo</label>
             <div style="position: relative;">
-              <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê? (opcional)"/>
+              <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê? (opcional)" @click="garantirVisibilidade"/>
               <BotaoMicrofone :isRecording="camposGravando.cargo" @toggle="toggleGravacao('cargo', novaExperiencia)"/>
             </div>
           </div>
           
           <div class="form-row">
             <div class="form-group">
-              <label>Data Início</label>
+              <label @click="falarElemento">Data Início</label>
               
               <div style="position: relative;">
                 
@@ -202,7 +209,14 @@
                 v-model="novaExperiencia.dataInicio"
                 class="input-com-dois-icones"
                 />
-                
+                <span class="icone-calendario"> 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </span>
                 <BotaoMicrofone 
                 :isRecording="gravandoDataInicioExperiencia" 
                 @toggle="toggleGravacaoDataInicioExperiencia"
@@ -211,7 +225,7 @@
               </div>
             </div>
             <div class="form-group">
-              <label>Data Fim</label>
+              <label @click="falarElemento">Data Fim</label>
               <div style="position: relative;"> 
                 <input v-if="!novaExperiencia.empregoAtual"
                 type="date" 
@@ -224,7 +238,14 @@
                 class="input-com-dois-icones"
                 disabled
                 />
-                
+                <span class="icone-calendario"> 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </span>
                 <BotaoMicrofone 
                 :isRecording="gravandoDataFim" 
                 @toggle="toggleGravacaoDataFim"
@@ -233,7 +254,7 @@
               </div>
               <div class="checkbox-wrapper">
                 <input type="checkbox" id="empregoAtual" v-model="novaExperiencia.empregoAtual" />
-                <label for="empregoAtual" style="margin: 0;">Trabalho aqui atualmente</label>
+                <label for="empregoAtual" style="margin: 0;" @click="falarElemento">Trabalho aqui atualmente</label>
               </div>
             </div>
           </div>
@@ -251,9 +272,9 @@
                 <i class="fas fa-pencil"></i>
               </button>
             <button class="btn-remove" @click="removerExperiencia(index)">×</button>
-            <h4>{{ exp.cargo ? exp.cargo : "Não Informado"}}</h4>
-            <p class="subtitle">{{ exp.empresa ? exp.empresa : "Não Informado"}}</p>
-            <p class="date">{{ formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual) }}</p>
+            <h4 @click="falarElemento">{{ exp.cargo ? exp.cargo : "Não Informado"}}</h4>
+            <p class="subtitle" @click="falarElemento">{{ exp.empresa ? exp.empresa : "Não Informado"}}</p>
+            <p class="date" @click="falarElemento">{{ formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual) }}</p>
             <p 
                 v-if="exp.descricao" 
                 class="description"
@@ -269,13 +290,13 @@
       </div>
 
       <div v-if="step === 3" class="step-content">
-        <h2 class="step-title">Estudos</h2>
+        <h2 class="step-title" @click="falarElemento">Estudos</h2>
 
         <div class="form-card">
           <div class="form-group">
-            <label>Instituição</label>
+            <label @click="falarElemento">Instituição</label>
             <div style="position: relative;">
-              <input type="text" v-model="novaFormacao.instituicao" placeholder="Nome da escola ou universidade..."/>
+              <input type="text" v-model="novaFormacao.instituicao" placeholder="Nome da escola ou universidade..." @click="garantirVisibilidade"/>
               <BotaoMicrofone 
                 :isRecording="camposGravando.instituicao" 
                 @toggle="toggleGravacao('instituicao', novaFormacao)"
@@ -283,9 +304,9 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Curso</label>
+            <label @click="falarElemento">Curso</label>
             <div style="position: relative;">
-              <input type="text" v-model="novaFormacao.curso" placeholder="Ex: Ensino Médio, Administração..."/>
+              <input type="text" v-model="novaFormacao.curso" placeholder="Ex: Ensino Médio, Administração..." @click="garantirVisibilidade"/>
               <BotaoMicrofone 
                 :isRecording="camposGravando.curso" 
                 @toggle="toggleGravacao('curso', novaFormacao)"
@@ -295,7 +316,7 @@
 
           <div class="checkbox-wrapper" style="margin-bottom: 15px;">
             <input type="checkbox" id="naoConcluiu" v-model="novaFormacao.status" />
-            <label for="naoConcluiu" style="margin: 0;">Curso incompleto?</label>
+            <label for="naoConcluiu" style="margin: 0;" @click="falarElemento">Curso incompleto?</label>
           
           </div>
 
@@ -310,8 +331,8 @@
               <i class="fas fa-pencil"></i>
             </button>
             <button class="btn-remove" @click="removerFormacao(index)">×</button>
-            <h4>{{ form.curso }} • {{ form.status === true ? 'Incompleto' : 'Completo' }}</h4>
-            <p class="subtitle">{{ form.instituicao }}</p>
+            <h4 @click="falarElemento">{{ form.curso }} • {{ form.status === true ? 'Incompleto' : 'Completo' }}</h4>
+            <p class="subtitle" @click="falarElemento">{{ form.instituicao }}</p>
           </div>
         </div>
 
@@ -436,6 +457,8 @@ export default {
       showConfirmModal: false,
       itemParaRemover: null,
       pointerHandIcon: pointerHandIcon,
+      mostrarTutorial: localStorage.getItem('audioDescricaoAtiva') === 'true',
+      audioTutorial: null,
       // Sistema genérico de gravação
       camposGravando: {
         descricao: false,
@@ -481,7 +504,7 @@ export default {
       
       cidades: [],
       carregandoCidades: false,
-      mostrarTutorial: false,
+      
 
       novaExperiencia: {
         empresa: '',
@@ -497,6 +520,12 @@ export default {
         curso: '',
         status: false,
       }
+    }
+  },
+  mounted() {
+    // Se o usuário já tinha ativado antes, o sistema pode dar as boas-vindas
+    if (this.mostrarTutorial) {
+      this.executarBoasVindasNativo();
     }
   },
   watch: {
@@ -595,9 +624,86 @@ export default {
 
     this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
   },
-
-
   methods: {
+    handleTutorialToggle(ativo) {
+      this.mostrarTutorial = ativo;
+
+      if (ativo) {
+        this.executarBoasVindasNativo();
+      } else {
+        this.pararAudioTutorial();
+      }
+    },
+    falarElemento(event) {
+      const texto = event.target.innerText;
+      this.falarTexto(texto);
+    },
+    falarTexto(texto) {
+      // Só fala se o modo tutorial estiver ligado
+      if (!this.mostrarTutorial) return;
+
+      if (!window.speechSynthesis) return;
+
+      // Cancela falas anteriores para não encavalar
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;
+
+      // Tenta usar a voz do Google se disponível
+      const voices = window.speechSynthesis.getVoices();
+      const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
+      if (googleVoice) utterance.voice = googleVoice;
+
+      window.speechSynthesis.speak(utterance);
+    },
+
+    executarBoasVindasNativo() {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+
+      const texto = "Clique nos títulos para ouví-los";
+      this.audioTutorial = new SpeechSynthesisUtterance(texto);
+      this.audioTutorial.lang = 'pt-BR';
+      
+      // Ajuste fino para soar menos robótico
+      this.audioTutorial.rate = 0.9;  // Um pouco mais lento costuma soar mais natural
+      this.audioTutorial.pitch = 1.0; // Tom da voz
+
+      const selecionarMelhorVoz = () => {
+        const vozes = window.speechSynthesis.getVoices();
+        
+        // Procura especificamente pelas vozes neurais (Google ou Premium)
+        const melhorVoz = vozes.find(v => 
+          v.lang === 'pt-BR' && 
+          (v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Natural'))
+        );
+
+        if (melhorVoz) {
+          this.audioTutorial.voice = melhorVoz;
+        }
+        
+        window.speechSynthesis.speak(this.audioTutorial);
+      };
+
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = selecionarMelhorVoz;
+      } else {
+        selecionarMelhorVoz();
+      }
+    },
+
+    pararAudioTutorial() {
+      // Para todas as falas em execução no navegador
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    },
+
+    beforeUnmount() {
+      this.pararAudioTutorial();
+    },
     getTextoStep1() {
       const campos = [];
       
@@ -833,7 +939,6 @@ export default {
           return;
         }
         
-        await navigator.mediaDevices.getUserMedia({ audio: true });
         
         this.recognition = new SpeechRecognition();
         this.recognition.lang = 'pt-BR';
@@ -1400,6 +1505,19 @@ export default {
         this.startRecordingDataInicioFormacao();
       }
     },
+
+    garantirVisibilidade(event) {
+      const elemento = event.target;
+
+      setTimeout(() => {
+        if (elemento && elemento.scrollIntoView) {
+          elemento.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }
+      }, 300);
+    },
     
     async startRecordingDataInicioFormacao() {
       try {
@@ -1759,17 +1877,42 @@ export default {
       return `${dia}/${mes}/${ano}`;
     },
     async adicionarExperiencia() {
-      if (!this.novaExperiencia.descricao) {
-        return this.mostrarErro('Preencha a descrição da atividade.');
+     if (!this.novaExperiencia.descricao || this.novaExperiencia.descricao.trim() === '') {
+        
+        const mensagem = 'Preencha a descrição da atividade.';
+
+        // 2. Se o tutorial estiver ativo, lê o erro em voz alta
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+
+        // 3. Mostra o Toast na tela (independente do tutorial)
+        return this.mostrarErro(mensagem);
       }
       else if (!this.novaExperiencia.dataInicio) {
-        return this.mostrarErro('Preencha a data de início da experiência.');
+        const mensagem = 'Preencha a data de início da experiência.';
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+
+        // 3. Mostra o Toast na tela (independente do tutorial)
+        return this.mostrarErro(mensagem);
       }
       else if(!this.novaExperiencia.empregoAtual && this.novaExperiencia.dataFim == ''){
-        return this.mostrarErro('Preencha a data fim da experiência.');
+        const mensagem = 'Preencha a data fim da experiência.';
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+
+        // 3. Mostra o Toast na tela (independente do tutorial)
+        return this.mostrarErro(mensagem);
       }
       else if(!this.novaExperiencia.empregoAtual && (this.novaExperiencia.dataFim < this.novaExperiencia.dataInicio)){
-        return this.mostrarErro('Data fim deve ser posterior à data de início.');
+        const mensagem = 'A data fim deve ser posterior à data de início.';
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        return this.mostrarErro(mensagem);
       }
 
       try {
@@ -2247,7 +2390,7 @@ export default {
 .logo-circle {
   width: 56px;
   height: 56px;
-  background: #000;
+  background: #000000;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -2387,6 +2530,9 @@ input:disabled { /* Fundo cinza bem claro */
   width: 100%; /* Espaço para Calendário/Dropdown + Microfone */
 }
 
+.icone-calendario{
+  color:#ff000000
+}
 
 /* 2. O MÁGICO: Empurra o ícone nativo do calendário para a esquerda */
 .input-com-dois-icones::-webkit-calendar-picker-indicator {
@@ -2468,7 +2614,6 @@ textarea {
 
 .btn-microfone:hover {
   opacity: 1;
-  transform: translateY(-50%) scale(1.1); /* Mantém o alinhamento vertical com o scale */
 }
 
 .btn-microfone:hover svg {
@@ -2476,8 +2621,8 @@ textarea {
 }
 
 .btn-microfone.gravando {
+  margin-top: 17px;
   opacity: 1;
-  animation: pulse-icon 1.5s ease-in-out infinite;
 }
 
 .btn-microfone.gravando svg {
@@ -2493,13 +2638,10 @@ textarea {
   }
 }
 
-.btn-microfone:focus {
+.btn-microfone:click {
   outline: none;
 }
 
-.btn-microfone:active {
-  transform: scale(0.95);
-}
 
 /* Transcrição em tempo real */
 .transcricao-tempo-real {
@@ -2551,14 +2693,26 @@ textarea {
     width: 32px;
     height: 32px;
     font-size: 1rem;
-  }
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    
+    /* Aumenta a área de clique em 20px para todos os lados */
+    padding: 20px; 
+    
+    /* Garante que o ícone não mude de lugar, apenas a área em volta dele cresça */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: 4px; /* Ajuste este valor para afastar da borda direita do input */
+  } 
   
   textarea {
     padding-right: 45px;
   }
 }
 
-input:focus, select:focus, textarea:focus {
+input:click, select:click, textarea:click {
   outline: none;
   border-color: #000;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
@@ -2911,21 +3065,37 @@ input::placeholder, textarea::placeholder {
 }
 
 .alert {
-  padding: 12px 14px;
-  border-radius: 8px;
+  /* Posicionamento fixo no topo */
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999; /* Garante que fique acima de tudo */
+  
+  /* Largura adaptável para mobile */
+  width: 90%;
+  max-width: 400px;
+  
+  /* Estilo visual */
+  padding: 16px;
+  border-radius: 12px;
   font-size: 14px;
-  margin-top: 16px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  /* Mantém sua animação */
   animation: slideDown 0.3s ease;
+  text-align: center;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translate(-50%, -20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, 0);
   }
 }
 
@@ -2961,6 +3131,38 @@ input::placeholder, textarea::placeholder {
     font-size: 16px; /* Evita que o iOS dê zoom automático ao clicar */
   }
 
+  input::placeholder {
+    font-size: 14px; /* Ajuste para o tamanho desejado */
+    color: #b4b4b4;    /* Opcional: ajusta a cor para melhorar o contraste */
+  }
+
+  textarea {
+    resize: none; /* Impede qualquer redimensionamento manual */
+  }
+
+  /* Remove a seta e o botão de limpeza padrão no Chrome/Android */
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="date"]::-webkit-calendar-picker-indicator {
+      display: none;
+      -webkit-appearance: none;
+  }
+
+  /* Garante que o input ocupe o espaço correto sem quebras */
+  input[type="date"] {
+      appearance: none;
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+  }
+  
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    display: block;
+    cursor: pointer;
+    /* Afasta o ícone para a esquerda para não  sobrepor o microfone */
+    margin-right: 35px; 
+    filter: invert(0.5);
+  }
+
   .header h1 {
     font-size: 22px;
   }
@@ -2977,6 +3179,22 @@ input::placeholder, textarea::placeholder {
   .progress-bar {
     /* No mobile, talvez precise de um pouco mais de respiro */
     padding: 0 25px;
+  }
+
+  .icone-calendario {
+    position: absolute;
+    right: 40px;
+    pointer-events: none; /* Garante que o clique abra o seletor de data do input */
+    font-size: 1rem;
+    z-index: 1;
+    color:#000000;
+    opacity: 0.23;
+  }
+
+  html, body {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .progress-step span {

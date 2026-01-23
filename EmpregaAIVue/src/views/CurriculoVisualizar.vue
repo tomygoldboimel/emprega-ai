@@ -34,6 +34,16 @@
               {{ curriculo.cidade }}, {{ curriculo.estado }}
             </span>
           </div>
+          
+          <div class="social-links" v-if="curriculo.linkedIn || curriculo.gitHub">
+            <a v-if="curriculo.linkedIn" :href="curriculo.linkedIn" target="_blank">
+              {{ curriculo.linkedIn }}
+            </a>
+            
+            <a v-if="curriculo.gitHub" :href="curriculo.gitHub" target="_blank">
+              {{ curriculo.gitHub }}
+            </a>
+          </div>
         </header>
 
         <!-- <section v-if="curriculo.resumoProfissional" class="cv-section">
@@ -339,7 +349,7 @@ export default {
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(100, 100, 100);
           const statusTexto = form.status === true ? 'Incompleto' : 'Completo';
-          const nivel = `${form.nivel || ''} ${statusTexto}`.trim();
+          const nivel = `${form.nivel || ''} • ${statusTexto}`.trim();
           doc.text(nivel, margin, yPosition);
           
           if (form.dataInicio) {
@@ -512,11 +522,10 @@ export default {
   gap: 20px;
   margin-bottom: 12px;
   color: #6b7280;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .cv-section {
-  margin-top: -10px;
   margin-bottom: 36px;
 }
 
@@ -568,10 +577,10 @@ export default {
 }
 
 .description {
-  font-size: 12px;
+  font-size: 14px;
   color: #4b5563;
   line-height: 1.6;
-  margin-top: -10px;
+  margin-top: 8px;
 }
 
 .cert-item {
