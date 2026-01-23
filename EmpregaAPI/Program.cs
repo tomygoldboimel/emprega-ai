@@ -59,11 +59,11 @@ var app = builder.Build();
 
 // Remova a linha "app.UseCors("AllowVueApp");" que estava aqui
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseCors("Producao"); // Este nome deve ser igual ao builder.Services.AddCors
 app.UseSession();
