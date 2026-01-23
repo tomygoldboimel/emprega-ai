@@ -7,8 +7,14 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("CurriculoConnection");
-Console.WriteLine($"String de Conexão: {connectionString}");
+var connectionString = builder.Configuration.GetConnectionString("CurriculoConnection")
+                      ?? Environment.GetEnvironmentVariable("CurriculoConnection");
+
+// Log para você conferir no painel do Railway (CUIDADO: não faça isso com senhas reais em produção)
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("ERRO: String de conexão não encontrada!");
+}
 
 builder.Services.AddDbContext<AplicacaoContext>(options =>
     options.UseNpgsql(connectionString));
