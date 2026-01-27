@@ -565,18 +565,18 @@ export default {
   async created() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      this.mostrarErro('Usuário não encontrado. Faça login novamente.');
-      this.$router.push('/login');
-      return;
-    }
+    // if (!userStr) {
+    //   this.mostrarErro('Usuário não encontrado. Faça login novamente.');
+    //   this.$router.push('/login');
+    //   return;
+    // }
 
     let user;
     try {
       user = JSON.parse(userStr);
     } catch (e) {
       this.mostrarErro('Erro ao carregar dados do usuário.');
-      this.$router.push('/login');
+      // this.$router.push('/login');
       return;
     }
 
