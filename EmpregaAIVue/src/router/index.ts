@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import Login from '../views/Login_new.vue'
+import Login from '../views/Login.vue'
 import Curriculo from '../views/Curriculo.vue'
 import Cadastro from '../views/Cadastro.vue'
 import CodigoVerificacao from '../views/CodigoVerificacao.vue'

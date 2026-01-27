@@ -22,7 +22,7 @@ class ExperienciaService {
   }
 
   async listarExperienciaPorIdCurriculo(curriculoId: string): Promise<Experiencia> {
-    const response = await api.get<Experiencia>(`${ROUTE}/PorCurriculo/${curriculoId}`);
+    const response = await api.get<Experiencia>(`${ROUTE}/ExperienciaPorCurriculo/${curriculoId}`);
     return response.data;
   }
 

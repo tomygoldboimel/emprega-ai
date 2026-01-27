@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // A URL base deve ir até a raiz da sua API no Railway
-  baseURL: 'https://emprega-ai-production.up.railway.app/api',
+  // O Vite escolhe a URL certa baseada no comando (npm run dev ou npm run build)
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials: true // Essencial se você usar Session/Cookies no .NET
+  withCredentials: true 
 });
 
 export default api;

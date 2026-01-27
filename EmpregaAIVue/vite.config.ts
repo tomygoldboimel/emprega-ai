@@ -7,11 +7,16 @@ export default defineConfig({
   
   server: {
     port: 5173,
+    allowedHosts: [
+      'dante-fibular-pulpily.ngrok-free.dev' // Adicione exatamente o link do seu ngrok aqui
+    ],
     proxy: {
+      
       '/api': {
-        target: 'https://localhost:7274',
+        target: '192.168.1.101:7274',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   },
