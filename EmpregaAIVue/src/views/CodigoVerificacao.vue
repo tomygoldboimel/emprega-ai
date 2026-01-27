@@ -1,18 +1,30 @@
 <template>
   <div class="auth-page">
-    
     <div class="auth-container">
       <div class="form-wrapper">
-        <div class="form-content">
-          <BackButton />
+        <div class="top-bar">
+          <BackButton @click="voltarTela()" /> 
           
-          <h1>Digite o código</h1>
-          <p class="subtitle">
+          <div class="right-actions">
+            <BotaoDescricao class="btn-descricao" @toggle="handleTutorialToggle" :active="mostrarTutorial"/>
+          </div>
+        </div>
+        <div class="form-content">
+          
+          <h1 @click="falarElemento">Digite o código</h1>
+          <p class="subtitle" @click="falarTexto('Enviamos um código para ' + falarTelefone(this.phone))">
             Enviamos um código para  <br>
             <strong>{{ maskedPhone }}</strong>.
           </p>
 
           <div class="otp-container">
+            <input
+              type="text"
+              autocomplete="one-time-code"
+              inputmode="numeric"
+              class="otp-hidden-input"
+              @input="handleAutoFill"
+            />
             <input 
               v-for="(digit, index) in otp" 
               :key="index"
@@ -38,12 +50,12 @@
           </button>
 
           <div class="footer-text">
-            <span>Não recebeu o código?</span>
+            <span @click="falarTexto('Não recebeu o código? Reenviar')">Não recebeu o código?</span>
             <a 
               @click="handleResend" 
               :class="{ 'disabled': timer > 0 }"
             >
-              {{ timer > 0 ? `Aguarde ${timer}s` : 'Reenviar' }}
+              {{ timer > 0 ? `Reenviar em 00:${timer}` : 'Reenviar código' }}
             </a>
           </div>
           
@@ -67,12 +79,14 @@
 
 <script>
 import BackButton from '@/components/BackButton.vue'
+import BotaoDescricao from '@/components/BotaoDescricao.vue'
 import { verificarCodigo } from '@/services/codigoService'
 
 export default {
   name: 'VerificationCode',
   components: {
-    BackButton
+    BackButton,
+    BotaoDescricao
   },
   data() {
     return {
@@ -81,7 +95,8 @@ export default {
       error: '',
       success: '',
       timer: 0,
-      phone: localStorage.getItem('telefoneVerificacao') || '5511999998888' // Fallback
+      phone: localStorage.getItem('telefoneVerificacao') || '5511999998888',
+      mostrarTutorial: localStorage.getItem('audioDescricaoAtiva') === 'true', // Fallback
     }
   },
   computed: {
@@ -97,23 +112,113 @@ export default {
     }
   },
   methods: {
-    // Gerencia a digitação e avança o foco
+    voltarTela() {
+      this.pararAudioTutorial();
+      this.$router.back();
+    },
+    handleTutorialToggle(ativo) {
+      this.mostrarTutorial = ativo;
+      // Atualiza o storage caso o usuário mude de ideia nesta tela
+      localStorage.setItem('audioDescricaoAtiva', ativo);
+      
+      if (ativo) {
+        this.executarBoasVindasNativo();
+      } else {
+        this.pararAudioTutorial();
+      }
+    },
+    handleAutoFill(event) {
+      const value = event.target.value;
+      if (value && value.length === 6) {
+        this.otp = value.split('');
+        this.handleVerify(); // Opcional: verifica automaticamente após preencher
+      }
+    },
+    falarTelefone(numero) {
+      console.log(this.phone)
+      if (!this.mostrarTutorial || !window.speechSynthesis) return;
+      const numeroEspacado = numero.replace(/\D/g, '').split('').join(' ');
+      return numeroEspacado;
+    },
+    falarElemento(event) {
+      const texto = event.target.innerText;
+      this.falarTexto(texto);
+    },
+    falarTexto(texto) {
+      // Só fala se o modo tutorial estiver ligado
+      if (!this.mostrarTutorial) return;
+
+      if (!window.speechSynthesis) return;
+
+      // Cancela falas anteriores para não encavalar
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;
+
+      // Tenta usar a voz do Google se disponível
+      const voices = window.speechSynthesis.getVoices();
+      const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
+      if (googleVoice) utterance.voice = googleVoice;
+
+      window.speechSynthesis.speak(utterance);
+    },
+
+    executarBoasVindasNativo() {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+
+      const texto = "Clique nos títulos para ouví-los";
+      this.audioTutorial = new SpeechSynthesisUtterance(texto);
+      this.audioTutorial.lang = 'pt-BR';
+      
+      // Ajuste fino para soar menos robótico
+      this.audioTutorial.rate = 0.9;  // Um pouco mais lento costuma soar mais natural
+      this.audioTutorial.pitch = 1.0; // Tom da voz
+
+      const selecionarMelhorVoz = () => {
+        const vozes = window.speechSynthesis.getVoices();
+        
+        // Procura especificamente pelas vozes neurais (Google ou Premium)
+        const melhorVoz = vozes.find(v => 
+          v.lang === 'pt-BR' && 
+          (v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Natural'))
+        );
+
+        if (melhorVoz) {
+          this.audioTutorial.voice = melhorVoz;
+        }
+        
+        window.speechSynthesis.speak(this.audioTutorial);
+      };
+
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = selecionarMelhorVoz;
+      } else {
+        selecionarMelhorVoz();
+      }
+    },
+
+    pararAudioTutorial() {
+      // Para todas as falas em execução no navegador
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    },
     handleInput(index, event) {
       const value = event.target.value;
       
-      // Garante que é número
       if (!/^\d*$/.test(value)) {
         this.otp[index] = '';
         return;
       }
 
-      // Avança o foco se digitou algo
       if (value && index < 5) {
         this.$refs.otpInput[index + 1].focus();
       }
     },
 
-    // Gerencia o Backspace para voltar o foco
     handleBackspace(index, event) {
       if (!this.otp[index] && index > 0) {
         this.otp[index - 1] = '';
@@ -121,7 +226,6 @@ export default {
       }
     },
 
-    // Permite colar o código inteiro (Ctrl+V)
     handlePaste(event) {
       event.preventDefault();
       const pastedData = event.clipboardData.getData('text').slice(0, 6);
@@ -144,7 +248,7 @@ export default {
       this.error = '';
       this.loading = true;
       const codigoCompleto = this.otp.join('');
-
+      this.pararAudioTutorial();
       try {
         const usuario = await verificarCodigo(this.phone, codigoCompleto);
 
@@ -152,13 +256,18 @@ export default {
         localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
 
         this.success = 'Código verificado com sucesso!';
-
+        if (this.mostrarTutorial) {
+          this.falarTexto('Código verificado com sucesso!');
+        }
         setTimeout(() => {
           localStorage.removeItem('telefoneVerificacao');
           this.$router.push('/curriculo');
-        }, 800);
+        }, 1500);
 
       } catch (e) {
+        if (this.mostrarTutorial) {
+          this.falarTexto('Código inválido. Tente novamente.');
+        }
         this.error = 'Código inválido. Tente novamente.';
         this.otp = ['', '', '', '', '', ''];
         this.$refs.otpInput[0].focus();
@@ -168,22 +277,27 @@ export default {
     },
 
 
+    startTimer() {
+      this.timer = 30; // Define 30 segundos
+      const interval = setInterval(() => {
+        if (this.timer > 0) {
+          this.timer--;
+        } else {
+          clearInterval(interval);
+        }
+      }, 1000);
+    },
+
     handleResend() {
       if (this.timer > 0) return;
-      
-      // Lógica de reenvio aqui
-      this.timer = 30;
       this.success = 'Novo código enviado!';
       setTimeout(() => this.success = '', 3000);
-
-      const interval = setInterval(() => {
-        this.timer--;
-        if (this.timer === 0) clearInterval(interval);
-      }, 1000);
+      
+      this.startTimer();
     }
   },
   mounted() {
-    // Foca no primeiro input ao carregar
+    this.startTimer();
     this.$nextTick(() => {
       if (this.$refs.otpInput && this.$refs.otpInput[0]) {
         this.$refs.otpInput[0].focus();
@@ -210,14 +324,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fafafa; /* Fundo cinza claro conforme Login_new.vue */
+  background: #fafafa;
 }
 
 .auth-container {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 440px; /* Ajustado para corresponder ao Login_new.vue */
+  max-width: 440px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -225,7 +339,54 @@ export default {
 
 .form-wrapper {
   width: 100%;
-  padding: 0 40px;
+  max-width: 420px; /* Alinha a largura da barra com a largura do card branco */
+  padding: 0; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between; /* Empurra BackButton para esquerda e right-actions para direita */
+  align-items: center;
+  width: 100%;
+  padding: 0 4px; /* Pequeno respiro nas bordas */
+  margin-bottom: 20px;
+  position: relative; /* Garante que não herde 'absolute' de outras classes */
+}
+
+.right-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Reforça o alinhamento à direita */
+}
+
+/* Ajuste opcional para dispositivos móveis */
+@media (max-width: 480px) {
+  .top-bar {
+    padding: 0 5px;
+  }
+}
+
+.btn-back, .btn-descricao, .btn-excel, .btn-pdf {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-back, .btn-descricao {
+  background: white;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-back:hover {
+  background: #f9fafb;
 }
 
 .form-content {
@@ -298,16 +459,22 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.otp-hidden-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+}
+
 .otp-container input.filled {
   border-color: #374151;
   background-color: #fafafa;
 }
 
-/* Botão Estilo "Cadastro" (Preto) */
 .btn-submit {
   width: 100%;
   padding: 16px;
-  border-radius: 12px; /* Pouco menos arredondado que os inputs */
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   border: none;
@@ -354,7 +521,9 @@ export default {
 
 .footer-text a.disabled {
   color: #9ca3af;
-  cursor: default;
+  cursor: not-allowed;
+  pointer-events: none; /* Impede cliques enquanto o timer corre */
+  text-decoration: none;
 }
 
 /* Spinner e Alerts (Reutilizados) */
@@ -426,10 +595,4 @@ export default {
   }
 }
 
-.btn-back {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 10;
-}
 </style>

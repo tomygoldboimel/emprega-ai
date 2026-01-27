@@ -40,13 +40,16 @@
         <h2 class="step-title" @click="falarElemento">Sobre você</h2>
         <div class="form-group">
           <label @click="falarTexto('Nome completo')">Nome Completo*</label>
-          <div style="position: relative;">
-            <input type="text" v-model="curriculo.nomeCompleto" required placeholder="Seu nome todo..." @click="garantirVisibilidade"/>
-            <BotaoMicrofone 
-              :isRecording="camposGravando.nomeCompleto" 
-              @toggle="toggleGravacao('nomeCompleto', curriculo)"
-            />
-          </div>
+          <form @submit.prevent="salvarCurriculo">
+            <div style="position: relative;">
+              <input type="text" v-model="curriculo.nomeCompleto" :class="{'input-erro': erroNome}" required placeholder="Seu nome todo..." @click="garantirVisibilidade"/>
+              <span v-if="erroNome" class="msg-erro">O nome é obrigatório!</span>
+              <BotaoMicrofone 
+                :isRecording="camposGravando.nomeCompleto" 
+                @toggle="toggleGravacao('nomeCompleto', curriculo)"
+              />
+            </div>
+          </form>
         </div>
 
         <div class="form-row">
@@ -68,8 +71,8 @@
                 </svg>
               </span>
               <BotaoMicrofone 
-              :isRecording="gravandoDataFim" 
-              @toggle="toggleGravacaoDataFim"
+              :isRecording="gravandoDataNascimento" 
+              @toggle="toggleGravacaoDataNascimento"
               />
                 
               </div>
@@ -455,6 +458,7 @@ export default {
       modalAvisoAberto: false,
       curriculoId: null,
       showConfirmModal: false,
+      erroNome: false,
       itemParaRemover: null,
       pointerHandIcon: pointerHandIcon,
       mostrarTutorial: localStorage.getItem('audioDescricaoAtiva') === 'true',
@@ -473,6 +477,7 @@ export default {
       },
       // Gravação de datas individuais
       gravandoDataFim: false,
+      gravandoDataNascimento: false,
       gravandoDataInicioExperiencia: false,
       gravandoDataInicioFormacao: false,
       gravandoDataConclusaoFormacao: false,
@@ -586,6 +591,7 @@ export default {
       const curriculoExistente = await curriculoService.listarCurriculosPorUsuario(user.id);
       
       if (curriculoExistente) {
+        console.log(curriculoExistente)
         const exps = await experienciaService.listarExperienciaPorIdCurriculo(curriculoExistente.id);
         const forms = await formacaoService.listarFormacoesPorCurriculoId(curriculoExistente.id);
         this.curriculo = {
@@ -1424,6 +1430,14 @@ export default {
         this.startRecordingDataFim();
       }
     },
+
+    toggleGravacaoDataNascimento() {
+      if (this.gravandoDataNascimento) {
+        this.stopRecording();
+      } else {
+        this.startRecordingDataNascimento();
+      }
+    },
     
     async startRecordingDataFim() {
       try {
@@ -1496,6 +1510,77 @@ export default {
         console.error('Erro ao iniciar gravação data fim:', error);
         this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
         this.gravandoDataFim = false;
+      }
+    },
+
+    async startRecordingDataNascimento() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          return;
+        }
+        
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        this.recognition = new SpeechRecognition();
+        this.recognition.lang = 'pt-BR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = true;
+        
+        this.recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          if (transcript) {
+            const dataFormatada = this.converterTextoParaDataISO(transcript);
+            
+            if (dataFormatada) {
+              // FORCE AQUI O CAMINHO CORRETO
+              this.curriculo.dataNascimento = dataFormatada; 
+              
+              // LOG DE SEGURANÇA (Para você ter certeza do que aconteceu)
+              console.log(`SUCESSO: Gravei ${dataFormatada} em NASCIMENTO`);
+            }
+          }
+        };
+        
+        this.recognition.onstart = () => {
+          this.gravandoDataNascimento = true;
+          this.erroAudio = null;
+          console.log('🎤 Gravação data fim iniciada');
+        };
+        
+        this.recognition.onend = () => {
+          this.gravandoDataNascimento = false;
+          console.log('🛑 Gravação data fim finalizada');
+        };
+        
+        this.recognition.onerror = (event) => {
+          this.gravandoDataNascimento = false;
+          
+          const errorMessages = {
+            'no-speech': 'Não detectei fala. Tente novamente.',
+            'audio-capture': 'Microfone não encontrado.',
+            'not-allowed': 'Permissão negada. Permita o microfone.',
+            'network': 'Erro de rede.',
+          };
+          
+          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
+          console.error('❌ Erro:', event.error);
+        };
+        
+        this.recognition.start();
+        
+      } catch (error) {
+        console.error('Erro ao iniciar gravação data fim:', error);
+        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.gravandoDataNascimento = false;
       }
     },
     toggleGravacaoDataInicioFormacao() {
@@ -2223,7 +2308,6 @@ export default {
             if (!exp.dataInicio || exp.dataInicio === "") exp.dataInicio = null;
           });
         }
-
         if (dadosParaEnviar.id) {
           await curriculoService.atualizarCurriculo(dadosParaEnviar);
           this.successMessage = 'Currículo atualizado com sucesso!';
@@ -2278,6 +2362,19 @@ export default {
       }
   },
   nextStepPerfil() {
+    console.log(this.curriculo.nomeCompleto)
+    if (this.curriculo.nomeCompleto == '' || !this.curriculo.nomeCompleto) {
+      
+      const mensagem = 'Preencha o nome completo.';
+
+      // 2. Se o tutorial estiver ativo, lê o erro em voz alta
+      if (this.mostrarTutorial) {
+        this.falarTexto(mensagem);
+      }
+
+      // 3. Mostra o Toast na tela (independente do tutorial)
+      return this.mostrarErro(mensagem);
+    }
     this.step++;
     window.scrollTo({
       top: 0,
@@ -2511,6 +2608,7 @@ export default {
 .form-group div[style*="position: relative"] {
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .posicao-lateral {
@@ -2527,7 +2625,9 @@ input:disabled { /* Fundo cinza bem claro */
 }
 
 .input-com-dois-icones {
-  width: 100%; /* Espaço para Calendário/Dropdown + Microfone */
+  width: 100% !important; /* O !important garante que ele ignore o tamanho padrão do navegador */
+  min-width: 100%;        /* Força a ocupação total da coluna */
+  box-sizing: border-box; /* Evita que o padding "estoure" a largura */
 }
 
 .icone-calendario{
