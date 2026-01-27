@@ -1,5 +1,6 @@
 ﻿using EmpregaAPI.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace EmpregaAI.Models
 {
@@ -19,6 +20,7 @@ namespace EmpregaAI.Models
         public bool EmpregoAtual { get; set; }
         public string? Descricao { get; set; }
         public bool? Excluido { get; set; }
+        [JsonIgnore]
         public Curriculo? Curriculo { get; set; }
     }
 }
