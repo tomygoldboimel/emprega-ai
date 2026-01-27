@@ -20,8 +20,7 @@ npm-debug.log
 # Vue
 dist/
 .DS_Store
-.env
-.env.local
+.env*
 
 [Bb]in/
 [Oo]bj/
