@@ -204,7 +204,7 @@ export default {
       //   this.loading = false;
       // }
       try {
-        // await enviarCodigo(this.cadastroTelefone.replace(/\D/g, ''));
+        await enviarCodigo(this.cadastroTelefone.replace(/\D/g, ''));
         
         this.cadastroSuccess = 'Código enviado com sucesso!';
         if (this.mostrarTutorial) {
