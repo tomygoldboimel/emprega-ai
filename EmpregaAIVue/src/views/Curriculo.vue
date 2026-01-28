@@ -472,7 +472,6 @@ export default {
         curso: false,
         estado: false,
         nomeCompleto: false,
-        email: false,
         cidade: false
       },
       // Gravação de datas individuais
@@ -496,12 +495,8 @@ export default {
         nomeCompleto: '',
         dataNascimento: '',
         telefone: '',
-        email: '',
-        endereco: '',
         cidade: '',
         estado: '',
-        linkedin: '',
-        github: '',
         resumoProfissional: '',
         experiencias: [],
         formacoes: []
@@ -565,18 +560,18 @@ export default {
   async created() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      this.mostrarErro('Usuário não encontrado. Faça login novamente.');
-      this.$router.push('/login');
-      return;
-    }
+    // if (!userStr) {
+    //   this.mostrarErro('Usuário não encontrado. Faça login novamente.');
+    //   this.$router.push('/login');
+    //   return;
+    // }
 
     let user;
     try {
       user = JSON.parse(userStr);
     } catch (e) {
       this.mostrarErro('Erro ao carregar dados do usuário.');
-      this.$router.push('/login');
+      // this.$router.push('/login');
       return;
     }
 
@@ -722,23 +717,11 @@ export default {
       if (this.telefoneFormatado) {
         campos.push(`Telefone: ${this.telefoneFormatado}`);
       }
-      if (this.curriculo.email) {
-        campos.push(`Email: ${this.curriculo.email}`);
-      }
       if (this.curriculo.estado) {
         campos.push(`Estado: ${this.curriculo.estado}`);
       }
       if (this.curriculo.cidade) {
         campos.push(`Cidade: ${this.curriculo.cidade}`);
-      }
-      if (this.curriculo.endereco) {
-        campos.push(`Endereço: ${this.curriculo.endereco}`);
-      }
-      if (this.curriculo.linkedIn) {
-        campos.push(`LinkedIn: ${this.curriculo.linkedIn}`);
-      }
-      if (this.curriculo.gitHub) {
-        campos.push(`GitHub: ${this.curriculo.gitHub}`);
       }
 
       if (campos.length === 0) {
@@ -786,9 +769,6 @@ export default {
           this.curriculo.dataNascimento = data.dadosPessoais.dataNascimento?.split('T')[0] || '';
           this.curriculo.cidade = data.dadosPessoais.cidade || '';
           this.curriculo.estado = data.dadosPessoais.estado || '';
-          this.curriculo.endereco = data.dadosPessoais.endereco || '';
-          this.curriculo.linkedIn = data.dadosPessoais.linkedIn || '';
-          this.curriculo.gitHub = data.dadosPessoais.gitHub || '';
 
           if (data.dadosPessoais.telefone) {
             this.telefoneFormatado = this.formatarTelefoneString(data.dadosPessoais.telefone);
@@ -2300,26 +2280,30 @@ export default {
 
     async salvarCurriculo() {
       try {
-        const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
+          const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
+          if (dadosParaEnviar.experiencias) {
+              dadosParaEnviar.experiencias.forEach(t => {
+                  t.dataFim = (t.dataFim === "" || !t.dataFim) ? null : t.dataFim;
+                  t.dataInicio = (t.dataInicio === "" || !t.dataInicio) ? null : t.dataInicio;
+              });
+          }
+          const idExistente = dadosParaEnviar.id;
 
-        if (dadosParaEnviar.experiencias) {
-          dadosParaEnviar.experiencias.forEach(exp => {
-            if (!exp.dataFim || exp.dataFim === "") exp.dataFim = null;
-            if (!exp.dataInicio || exp.dataInicio === "") exp.dataInicio = null;
-          });
-        }
-        if (dadosParaEnviar.id) {
-          await curriculoService.atualizarCurriculo(dadosParaEnviar);
-          this.successMessage = 'Currículo atualizado com sucesso!';
-        } else {
-          const data = await curriculoService.adicionarCurriculo(dadosParaEnviar);
-          this.curriculoId = data.id;
-          this.successMessage = 'Currículo salvo com sucesso!';
-        }
-        this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
-      } catch (error) {
-        console.error("Erro detalhado:", error.response?.data);
-        return this.mostrarErro('Erro ao salvar currículo');
+          if (idExistente) {
+              await curriculoService.atualizarCurriculo(dadosParaEnviar);
+              this.successMessage = "Currículo atualizado com sucesso!";
+          } else {
+              const resposta = await curriculoService.adicionarCurriculo(dadosParaEnviar);
+              this.curriculoId = resposta.id;
+              this.successMessage = "Currículo salvo com sucesso!";
+          }
+
+          const idFinal = idExistente || this.curriculoId;
+          this.$router.push(`/curriculo/visualizar/${idFinal}`);
+
+      } catch (err) {
+          console.error("Erro no Servidor:", err.response?.data || err.message);
+          this.mostrarErro("Erro interno no servidor ao processar a atualização.");
       }
     },
     async updateCurriculo() {

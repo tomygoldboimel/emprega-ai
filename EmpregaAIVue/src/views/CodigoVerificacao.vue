@@ -36,6 +36,8 @@
               @input="handleInput(index, $event)"
               @keydown.delete="handleBackspace(index, $event)"
               @paste="handlePaste"
+              @click="garantirVisibilidade"
+              @focus="garantirVisibilidade"
               :class="{ 'filled': otp[index] !== '' }"
             />
           </div>
@@ -131,8 +133,20 @@ export default {
       const value = event.target.value;
       if (value && value.length === 6) {
         this.otp = value.split('');
-        this.handleVerify(); // Opcional: verifica automaticamente após preencher
+        this.handleVerify();
       }
+    },
+    garantirVisibilidade(event) {
+      const container = event.target.parentNode;
+
+      setTimeout(() => {
+        if (container && container.scrollIntoView) {
+          container.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }
+      }, 300);
     },
     falarTelefone(numero) {
       console.log(this.phone)
