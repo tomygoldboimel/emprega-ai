@@ -2281,6 +2281,7 @@ export default {
     async salvarCurriculo() {
       try {
           const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
+          console.log(dadosParaEnviar)
           if (dadosParaEnviar.experiencias) {
               dadosParaEnviar.experiencias.forEach(t => {
                   t.dataFim = (t.dataFim === "" || !t.dataFim) ? null : t.dataFim;
