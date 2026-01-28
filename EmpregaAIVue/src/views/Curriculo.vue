@@ -2291,10 +2291,10 @@ export default {
           const idExistente = dadosParaEnviar.id || dadosParaEnviar.usuarioId;
 
           if (idExistente) {
-              await nr.atualizarCurriculo(dadosParaEnviar);
+              await curriculoService.atualizarCurriculo(dadosParaEnviar);
               this.successMessage = "Currículo atualizado com sucesso!";
           } else {
-              const resposta = await nr.adicionarCurriculo(dadosParaEnviar);
+              const resposta = await curriculoService.adicionarCurriculo(dadosParaEnviar);
               this.curriculoId = resposta.id;
               this.successMessage = "Currículo salvo com sucesso!";
           }
