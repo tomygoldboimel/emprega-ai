@@ -21,11 +21,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("verify-code")]
-    public async Task<IActionResult> VerificarCodigo(
-    [FromBody] VerificarCodigoRequest request,
-    [FromServices] IUsuarioService usuarioService
-)
+    public IActionResult VerificarCodigo([FromBody] VerificarCodigoRequest request)
     {
+        // Apenas valida se o código no cache coincide com o informado
         var valido = _smsService.VerificarCodigo(
             request.Telefone,
             request.Codigo
@@ -34,9 +32,8 @@ public class AuthController : ControllerBase
         if (!valido)
             return BadRequest("Código inválido ou expirado");
 
-        var usuario = await usuarioService.Login(request.Telefone);
-
-        return Ok(usuario);
+        // Retorna apenas sucesso. O Frontend receberá isso e saberá que pode prosseguir.
+        return Ok(new { message = "Código verificado com sucesso" });
     }
 }
 
