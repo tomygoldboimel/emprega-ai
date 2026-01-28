@@ -188,21 +188,21 @@ export default {
       }
 
       this.loading = true;
-      // try {
-      //   const user = await usuarioService.login(this.cadastroTelefone.replace(/\D/g, ''));
+      //try {
+      //  const user = await usuarioService.login(this.cadastroTelefone.replace(/\D/g, ''));
 
-      //   if (user) {
-      //     localStorage.setItem('user', JSON.stringify(user));
-      //   }
+      //  if (user) {
+      //    localStorage.setItem('user', JSON.stringify(user));
+      //  }
 
-      //   localStorage.setItem('telefoneVerificacao', this.cadastroTelefone.replace(/\D/g, ''));
-      //   this.$router.push('/curriculo');
-      // } catch (error) {
-      //   console.log('Erro no login:', error);
-      //   this.errorMessage = 'Erro ao fazer login. Tente novamente.';
-      // } finally {
-      //   this.loading = false;
-      // }
+      //  localStorage.setItem('telefoneVerificacao', this.cadastroTelefone.replace(/\D/g, ''));
+      //  this.$router.push('/curriculo');
+      //} catch (error) {
+      //  console.log('Erro no login:', error);
+      //  this.errorMessage = 'Erro ao fazer login. Tente novamente.';
+      //} finally {
+      //  this.loading = false;
+      //}
       try {
         await enviarCodigo(this.cadastroTelefone.replace(/\D/g, ''));
         

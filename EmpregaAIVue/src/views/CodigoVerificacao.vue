@@ -263,16 +263,25 @@ export default {
       this.loading = true;
       const codigoCompleto = this.otp.join('');
       this.pararAudioTutorial();
-      try {
-        const usuario = await verificarCodigo(this.phone, codigoCompleto);
 
-        // 🔐 salva usuário logado
+      try {
+        // 1. Apenas verifica se o código SMS é válido
+        const response = await verificarCodigo(this.phone, codigoCompleto);
+
+        // 2. Se a verificação passou, agora chamamos o login
+        // Como você já tem a lógica de login no backend que busca ou cria o usuário,
+        // usamos o telefone verificado para garantir o acesso.
+        const usuario = await loginUsuario(this.phone); 
+
+        // Salva os dados do usuário para manter a sessão ativa
         localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
 
         this.success = 'Código verificado com sucesso!';
+        
         if (this.mostrarTutorial) {
           this.falarTexto('Código verificado com sucesso!');
         }
+
         setTimeout(() => {
           localStorage.removeItem('telefoneVerificacao');
           this.$router.push('/curriculo');
