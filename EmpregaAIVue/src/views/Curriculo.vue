@@ -2280,26 +2280,31 @@ export default {
 
     async salvarCurriculo() {
       try {
-        const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
+          const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
 
-        if (dadosParaEnviar.experiencias) {
-          dadosParaEnviar.experiencias.forEach(exp => {
-            if (!exp.dataFim || exp.dataFim === "") exp.dataFim = null;
-            if (!exp.dataInicio || exp.dataInicio === "") exp.dataInicio = null;
-          });
-        }
-        if (dadosParaEnviar.id) {
-          await curriculoService.atualizarCurriculo(dadosParaEnviar);
-          this.successMessage = 'Currículo atualizado com sucesso!';
-        } else {
-          const data = await curriculoService.adicionarCurriculo(dadosParaEnviar);
-          this.curriculoId = data.id;
-          this.successMessage = 'Currículo salvo com sucesso!';
-        }
-        this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
-      } catch (error) {
-        console.error("Erro detalhado:", error.response?.data);
-        return this.mostrarErro('Erro ao salvar currículo');
+          if (dadosParaEnviar.experiencias) {
+              dadosParaEnviar.experiencias.forEach(t => {
+                  t.dataFim = (t.dataFim === "" || !t.dataFim) ? null : t.dataFim;
+                  t.dataInicio = (t.dataInicio === "" || !t.dataInicio) ? null : t.dataInicio;
+              });
+          }
+          const idExistente = dadosParaEnviar.id || dadosParaEnviar.usuarioId;
+
+          if (idExistente) {
+              await nr.atualizarCurriculo(dadosParaEnviar);
+              this.successMessage = "Currículo atualizado com sucesso!";
+          } else {
+              const resposta = await nr.adicionarCurriculo(dadosParaEnviar);
+              this.curriculoId = resposta.id;
+              this.successMessage = "Currículo salvo com sucesso!";
+          }
+
+          const idFinal = idExistente || this.curriculoId;
+          this.$router.push(`/curriculo/visualizar/${idFinal}`);
+
+      } catch (err) {
+          console.error("Erro no Servidor:", err.response?.data || err.message);
+          this.mostrarErro("Erro interno no servidor ao processar a atualização.");
       }
     },
     async updateCurriculo() {
