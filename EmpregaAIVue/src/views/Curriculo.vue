@@ -472,7 +472,6 @@ export default {
         curso: false,
         estado: false,
         nomeCompleto: false,
-        email: false,
         cidade: false
       },
       // Gravação de datas individuais
@@ -496,12 +495,8 @@ export default {
         nomeCompleto: '',
         dataNascimento: '',
         telefone: '',
-        email: '',
-        endereco: '',
         cidade: '',
         estado: '',
-        linkedin: '',
-        github: '',
         resumoProfissional: '',
         experiencias: [],
         formacoes: []
@@ -722,23 +717,11 @@ export default {
       if (this.telefoneFormatado) {
         campos.push(`Telefone: ${this.telefoneFormatado}`);
       }
-      if (this.curriculo.email) {
-        campos.push(`Email: ${this.curriculo.email}`);
-      }
       if (this.curriculo.estado) {
         campos.push(`Estado: ${this.curriculo.estado}`);
       }
       if (this.curriculo.cidade) {
         campos.push(`Cidade: ${this.curriculo.cidade}`);
-      }
-      if (this.curriculo.endereco) {
-        campos.push(`Endereço: ${this.curriculo.endereco}`);
-      }
-      if (this.curriculo.linkedIn) {
-        campos.push(`LinkedIn: ${this.curriculo.linkedIn}`);
-      }
-      if (this.curriculo.gitHub) {
-        campos.push(`GitHub: ${this.curriculo.gitHub}`);
       }
 
       if (campos.length === 0) {
@@ -786,9 +769,6 @@ export default {
           this.curriculo.dataNascimento = data.dadosPessoais.dataNascimento?.split('T')[0] || '';
           this.curriculo.cidade = data.dadosPessoais.cidade || '';
           this.curriculo.estado = data.dadosPessoais.estado || '';
-          this.curriculo.endereco = data.dadosPessoais.endereco || '';
-          this.curriculo.linkedIn = data.dadosPessoais.linkedIn || '';
-          this.curriculo.gitHub = data.dadosPessoais.gitHub || '';
 
           if (data.dadosPessoais.telefone) {
             this.telefoneFormatado = this.formatarTelefoneString(data.dadosPessoais.telefone);
