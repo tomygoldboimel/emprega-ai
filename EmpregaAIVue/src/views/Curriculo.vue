@@ -2281,14 +2281,13 @@ export default {
     async salvarCurriculo() {
       try {
           const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
-
           if (dadosParaEnviar.experiencias) {
               dadosParaEnviar.experiencias.forEach(t => {
                   t.dataFim = (t.dataFim === "" || !t.dataFim) ? null : t.dataFim;
                   t.dataInicio = (t.dataInicio === "" || !t.dataInicio) ? null : t.dataInicio;
               });
           }
-          const idExistente = dadosParaEnviar.id || dadosParaEnviar.usuarioId;
+          const idExistente = dadosParaEnviar.id;
 
           if (idExistente) {
               await curriculoService.atualizarCurriculo(dadosParaEnviar);
