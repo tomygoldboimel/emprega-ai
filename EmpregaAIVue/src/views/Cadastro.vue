@@ -53,7 +53,6 @@
 </template>
 
 <script>
-import { enviarCodigo } from '@/services/codigoService';
 
 export default {
   name: 'Cadastro',

@@ -1,7 +1,6 @@
-import api from '../api'; // Sua instância centralizada
+import api from '../api';
 import type { Formacao } from 'src/models/Formacao';
 
-// Agora você só define o "pedaço" final da URL
 const ROUTE = '/Formacao';
 
 class FormacaoService {

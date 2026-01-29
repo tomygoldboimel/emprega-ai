@@ -99,15 +99,15 @@ export default {
 .modal-buttons {
   display: flex;
   gap: 1rem;
-  justify-content: center; /* Alinha os botões ao centro horizontalmente */
+  justify-content: center;
   margin-top: 25px;
-  width: 100%; /* Garante que o container use a largura disponível */
+  width: 100%;
 }
 
 .btn-voltar,
 .btn-confirmar {
-  width: auto; /* Muda de 100% para auto para não forçar a largura total */
-  min-width: 140px; /* Define um tamanho mínimo para manter a simetria */
+  width: auto;
+  min-width: 140px;
   height: 55px;
   padding: 0.75rem 2rem;
   border-radius: 12px;

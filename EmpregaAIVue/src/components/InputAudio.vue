@@ -1,7 +1,5 @@
-<!-- src/components/VoiceInput.vue -->
 <template>
   <div class="voice-input">
-    <!-- Input normal -->
     <input
       v-model="localValue"
       :type="type"
@@ -11,7 +9,6 @@
       @input="$emit('update:modelValue', localValue)"
     />
 
-    <!-- Botão de microfone -->
     <button
       type="button"
       @click="toggleRecording"
@@ -20,16 +17,12 @@
       :disabled="!isSupported"
       :title="isSupported ? 'Gravar por voz' : 'Seu navegador não suporta reconhecimento de voz'"
     >
-      <span v-if="!isListening">🎤</span>
-      <span v-else>🔴</span>
     </button>
 
-    <!-- Mensagem de erro -->
     <div v-if="error" class="voice-input__error">
       {{ error }}
     </div>
 
-    <!-- Transcrição parcial -->
     <div v-if="interimTranscript && isListening" class="voice-input__interim">
       {{ interimTranscript }}
     </div>
@@ -69,12 +62,10 @@ const {
   stopRecording,
 } = useSpeechRecognition();
 
-// Sincronizar com prop
 watch(() => props.modelValue, (newValue) => {
   localValue.value = newValue;
 });
 
-// Quando reconhecimento termina
 watch(transcript, (newTranscript) => {
   if (newTranscript) {
     localValue.value = newTranscript;

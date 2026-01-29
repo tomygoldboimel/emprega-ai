@@ -29,14 +29,12 @@ const emit = defineEmits<{
 
 const isActive = ref(props.active || false)
 
-// Garante que o estado interno mude se o pai mudar a prop 'active'
 watch(() => props.active, (newValue) => {
   isActive.value = newValue || false
 })
 
 const toggleActive = () => {
   isActive.value = !isActive.value
-  // Envia true ou false para o componente pai
   emit('toggle', isActive.value)
 }
 </script>

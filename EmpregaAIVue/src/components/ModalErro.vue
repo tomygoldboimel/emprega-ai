@@ -54,12 +54,12 @@ export default {
 
 .modal-container {
   background: white;
-  border: 1px solid #000; /* Borda fina preta da imagem */
-  border-radius: 40px; /* Bordas bem arredondadas */
+  border: 1px solid #000;
+  border-radius: 40px;
   padding: 40px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centraliza tudo horizontalmente */
+  align-items: center;
   width: 500px;
   max-width: 90%;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -105,10 +105,10 @@ export default {
 }
 
 .btn-ok {
-  background-color: #000000; /* Verde escuro do botão da imagem */
+  background-color: #000000;
   color: white;
   border: none;
-  width: 250px; /* Botão largo */
+  width: 250px;
   padding: 18px 0;
   border-radius: 25px;
   font-size: 1.1rem;

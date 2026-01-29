@@ -1,4 +1,3 @@
-// ibgeService.ts
 import axios from 'axios';
 
 export interface Cidade {
@@ -12,8 +11,7 @@ const api = axios.create({
 
 export const ibgeService = {
   async listarCidades(uf: string): Promise<Cidade[]> {
-    if (!uf) return []; 
-    // O generic <Cidade[]> garante a tipagem do retorno
+    if (!uf) return [];
     const response = await api.get<Cidade[]>(`/estados/${uf}/municipios?orderBy=nome`);
     return response.data;
   }

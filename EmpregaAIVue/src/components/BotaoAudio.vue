@@ -64,40 +64,33 @@ export default {
       }
 
       if (!this.texto || this.texto.trim() === '') {
-        console.warn('❌ Nenhum texto');
         return;
       }
 
       try {
         this.carregando = true;
 
-        // Chamar API do backend
         const response = await axios.get('/api/audio/sintetizar', {
           params: { texto: this.texto },
-          responseType: 'blob' // IMPORTANTE: receber como blob
+          responseType: 'blob'
         });
 
-        // Criar URL do blob
         const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
         const audioUrl = URL.createObjectURL(audioBlob);
 
-        // Criar e reproduzir áudio
         this.audio = new Audio(audioUrl);
 
         this.audio.onplay = () => {
           this.carregando = false;
           this.falando = true;
-          console.log('🔊 Reproduzindo...');
         };
 
         this.audio.onended = () => {
           this.falando = false;
-          URL.revokeObjectURL(audioUrl); // Limpar memória
-          console.log('✅ Finalizado');
+          URL.revokeObjectURL(audioUrl);
         };
 
         this.audio.onerror = (e) => {
-          console.error('❌ Erro no áudio:', e);
           this.carregando = false;
           this.falando = false;
           alert('Erro ao reproduzir áudio');
@@ -106,7 +99,6 @@ export default {
         await this.audio.play();
 
       } catch (error) {
-        console.error('❌ Erro:', error);
         this.carregando = false;
         this.falando = false;
         alert('Erro ao carregar áudio do servidor');

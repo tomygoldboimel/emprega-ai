@@ -2,15 +2,12 @@
   <transition name="modal">
     <div v-if="show" class="modal-overlay" @click.self="fechar">
       <div class="modal-container">
-        
-        <!-- Botão X -->
         <button class="modal-close" @click="fechar" aria-label="Fechar">
           ×
         </button>
 
         <div class="modal-header">
           <div :class="['modal-icon', type]">
-            <!-- Ícone de aviso -->
             <svg
               v-if="type === 'aviso'"
               xmlns="http://www.w3.org/2000/svg"
@@ -178,11 +175,11 @@ export default {
   align-items: center;
   justify-content: center;
 
-  color: #000000; /* cinza discreto */
+  color: #000000;
 }
 
 .modal-close:hover {
-  color: #111827; /* escurece no hover */
+  color: #111827;
 }
 
 .modal-close:focus {

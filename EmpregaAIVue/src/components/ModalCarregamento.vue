@@ -47,19 +47,19 @@ export default {
   border-radius: 45px;
   padding: 35px 50px;
   display: flex;
-  flex-direction: column; /* Força o empilhamento vertical das linhas */
-  align-items: flex-start; /* Alinha o conteúdo à esquerda */
+  flex-direction: column;
+  align-items: flex-start;
   width: auto;
   min-width: 400px;
   height: 200px;
 }
 
 .modal-title {
-  margin: 10px 0 20px 0; /* Espaço abaixo do título para a próxima linha */
+  margin: 10px 0 20px 0;
   font-size: 1.8rem;
   font-weight: 600;
   color: #000;
-  width: 100%; /* Garante que ocupa a linha toda */
+  width: 100%;
 }
 
 .loading-row {
@@ -95,36 +95,31 @@ export default {
   to { transform: rotate(360deg); }
 }
 @media (max-width: 768px) {
-  /* Reduz o container e o espaçamento interno */
   .modal-container {
-    min-width: 75%; /* Ocupa a maior parte da largura da tela */
-    height: auto;   /* Permite que a altura se ajuste ao conteúdo menor */
+    min-width: 75%;
+    height: auto;
     padding: 20px 25px;
-    border-radius: 25px; /* Arredondamento mais suave para telas pequenas */
-    align-items: center; /* Centraliza o conteúdo no mobile para melhor equilíbrio */
+    border-radius: 25px;
+    align-items: center;
   }
 
-  /* Diminui o Título */
   .modal-title {
     font-size: 1.4rem;
     text-align: center;
     margin-bottom: 15px;
   }
 
-  /* Ajusta a linha de carregamento */
   .loading-row {
     gap: 20px;
-    margin-right: 0; /* Remove a margem grande que empurra o conteúdo */
+    margin-right: 0;
     align-items: center;
   }
 
-  /* Diminui o Ícone de Carregamento */
   .loading-icon {
     width: 60px;
     height: 60px;
   }
 
-  /* Diminui a Mensagem */
   .modal-message {
     font-size: 1.1rem;
     margin-top: 10px;
