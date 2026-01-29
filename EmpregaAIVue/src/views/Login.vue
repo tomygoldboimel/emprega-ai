@@ -188,55 +188,55 @@ export default {
       }
 
       this.loading = true;
-      //try {
-      //  const user = await usuarioService.login(this.cadastroTelefone.replace(/\D/g, ''));
-
-      //  if (user) {
-      //    localStorage.setItem('user', JSON.stringify(user));
-      //  }
-
-      //  localStorage.setItem('telefoneVerificacao', this.cadastroTelefone.replace(/\D/g, ''));
-      //  this.$router.push('/curriculo');
-      //} catch (error) {
-      //  console.log('Erro no login:', error);
-      //  this.errorMessage = 'Erro ao fazer login. Tente novamente.';
-      //} finally {
-      //  this.loading = false;
-      //}
       try {
-        await enviarCodigo(this.cadastroTelefone.replace(/\D/g, ''));
-        
-        this.cadastroSuccess = 'Código enviado com sucesso!';
-        if (this.mostrarTutorial) {
-          this.falarTexto('Código enviado com sucesso!');
+        const user = await usuarioService.login(this.cadastroTelefone.replace(/\D/g, ''));
+
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
         }
+
         localStorage.setItem('telefoneVerificacao', this.cadastroTelefone.replace(/\D/g, ''));
-
-        setTimeout(() => {
-          this.limparFormularioCadastro();
-          this.$router.push('/verificar-codigo');
-        }, 1500);
-
+        this.$router.push('/curriculo');
       } catch (error) {
-        if (error.response) {
-          if (this.mostrarTutorial) {
-            this.falarTexto('Erro ao enviar código.');
-          }
-          this.cadastroError = 'Erro ao enviar código.';
-        } else if (error.request) {
-          if (this.mostrarTutorial) {
-            this.falarTexto('Erro inesperado ao enviar código.');
-          }
-          this.cadastroError = 'Erro de conexão. Verifique se a API está rodando.';
-        } else {
-          if (this.mostrarTutorial) {
-            this.falarTexto('Erro inesperado ao enviar código.');
-          }
-          this.cadastroError = 'Erro inesperado ao enviar código.';
-        }  
+        console.log('Erro no login:', error);
+        this.errorMessage = 'Erro ao fazer login. Tente novamente.';
       } finally {
         this.loading = false;
       }
+      // try {
+      //   await enviarCodigo(this.cadastroTelefone.replace(/\D/g, ''));
+        
+      //   this.cadastroSuccess = 'Código enviado com sucesso!';
+      //   if (this.mostrarTutorial) {
+      //     this.falarTexto('Código enviado com sucesso!');
+      //   }
+      //   localStorage.setItem('telefoneVerificacao', this.cadastroTelefone.replace(/\D/g, ''));
+
+      //   setTimeout(() => {
+      //     this.limparFormularioCadastro();
+      //     this.$router.push('/verificar-codigo');
+      //   }, 1500);
+
+      // } catch (error) {
+      //   if (error.response) {
+      //     if (this.mostrarTutorial) {
+      //       this.falarTexto('Erro ao enviar código.');
+      //     }
+      //     this.cadastroError = 'Erro ao enviar código.';
+      //   } else if (error.request) {
+      //     if (this.mostrarTutorial) {
+      //       this.falarTexto('Erro inesperado ao enviar código.');
+      //     }
+      //     this.cadastroError = 'Erro de conexão. Verifique se a API está rodando.';
+      //   } else {
+      //     if (this.mostrarTutorial) {
+      //       this.falarTexto('Erro inesperado ao enviar código.');
+      //     }
+      //     this.cadastroError = 'Erro inesperado ao enviar código.';
+      //   }  
+      // } finally {
+      //   this.loading = false;
+      // }
     },
     garantirVisibilidade(event) {
       const elemento = event.target;

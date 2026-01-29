@@ -2281,13 +2281,12 @@ export default {
     async salvarCurriculo() {
       try {
           const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
-          console.log(dadosParaEnviar)
-          if (dadosParaEnviar.experiencias) {
-              dadosParaEnviar.experiencias.forEach(t => {
-                  t.dataFim = (t.dataFim === "" || !t.dataFim) ? null : t.dataFim;
-                  t.dataInicio = (t.dataInicio === "" || !t.dataInicio) ? null : t.dataInicio;
-              });
-          }
+          // if (dadosParaEnviar.experiencias) {
+          //     dadosParaEnviar.experiencias.forEach(t => {
+          //         t.dataFim = (t.dataFim === "" || !t.dataFim) ? null : t.dataFim;
+          //         t.dataInicio = (t.dataInicio === "" || !t.dataInicio) ? null : t.dataInicio;
+          //     });
+          // }
           const idExistente = dadosParaEnviar.id;
 
           if (idExistente) {
@@ -2298,7 +2297,6 @@ export default {
               this.curriculoId = resposta.id;
               this.successMessage = "Currículo salvo com sucesso!";
           }
-
           const idFinal = idExistente || this.curriculoId;
           this.$router.push(`/curriculo/visualizar/${idFinal}`);
 

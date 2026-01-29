@@ -107,10 +107,10 @@ export default {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const autenticado = await usuarioService.verificarSessao();
     
-    if (!autenticado) {
-      this.$router.replace('/login');
-      return;
-    }
+    // if (!autenticado) {
+    //   this.$router.replace('/login');
+    //   return;
+    // }
 
     const curriculoId = this.$route.params.id;
     if (curriculoId) {
