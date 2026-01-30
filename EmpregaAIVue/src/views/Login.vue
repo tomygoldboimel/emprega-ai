@@ -74,7 +74,6 @@ export default {
   methods: {
     handleTutorialToggle(ativo) {
       this.mostrarTutorial = ativo;
-      // Salva o estado globalmente no navegador
       localStorage.setItem('audioDescricaoAtiva', ativo); 
       
       if (ativo) {
@@ -88,19 +87,16 @@ export default {
       this.falarTexto(texto);
     },
     falarTexto(texto) {
-      // Só fala se o modo tutorial estiver ligado
       if (!this.mostrarTutorial) return;
 
       if (!window.speechSynthesis) return;
 
-      // Cancela falas anteriores para não encavalar
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(texto);
       utterance.lang = 'pt-BR';
       utterance.rate = 1.0;
 
-      // Tenta usar a voz do Google se disponível
       const voices = window.speechSynthesis.getVoices();
       const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
       if (googleVoice) utterance.voice = googleVoice;
@@ -116,14 +112,12 @@ export default {
       this.audioTutorial = new SpeechSynthesisUtterance(texto);
       this.audioTutorial.lang = 'pt-BR';
       
-      // Ajuste fino para soar menos robótico
-      this.audioTutorial.rate = 0.9;  // Um pouco mais lento costuma soar mais natural
-      this.audioTutorial.pitch = 1.0; // Tom da voz
+      this.audioTutorial.rate = 0.9;
+      this.audioTutorial.pitch = 1.0;
 
       const selecionarMelhorVoz = () => {
         const vozes = window.speechSynthesis.getVoices();
         
-        // Procura especificamente pelas vozes neurais (Google ou Premium)
         const melhorVoz = vozes.find(v => 
           v.lang === 'pt-BR' && 
           (v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Natural'))
@@ -144,7 +138,6 @@ export default {
     },
 
     pararAudioTutorial() {
-      // Para todas as falas em execução no navegador
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
@@ -203,40 +196,6 @@ export default {
       } finally {
         this.loading = false;
       }
-      // try {
-      //   await enviarCodigo(this.cadastroTelefone.replace(/\D/g, ''));
-        
-      //   this.cadastroSuccess = 'Código enviado com sucesso!';
-      //   if (this.mostrarTutorial) {
-      //     this.falarTexto('Código enviado com sucesso!');
-      //   }
-      //   localStorage.setItem('telefoneVerificacao', this.cadastroTelefone.replace(/\D/g, ''));
-
-      //   setTimeout(() => {
-      //     this.limparFormularioCadastro();
-      //     this.$router.push('/verificar-codigo');
-      //   }, 1500);
-
-      // } catch (error) {
-      //   if (error.response) {
-      //     if (this.mostrarTutorial) {
-      //       this.falarTexto('Erro ao enviar código.');
-      //     }
-      //     this.cadastroError = 'Erro ao enviar código.';
-      //   } else if (error.request) {
-      //     if (this.mostrarTutorial) {
-      //       this.falarTexto('Erro inesperado ao enviar código.');
-      //     }
-      //     this.cadastroError = 'Erro de conexão. Verifique se a API está rodando.';
-      //   } else {
-      //     if (this.mostrarTutorial) {
-      //       this.falarTexto('Erro inesperado ao enviar código.');
-      //     }
-      //     this.cadastroError = 'Erro inesperado ao enviar código.';
-      //   }  
-      // } finally {
-      //   this.loading = false;
-      // }
     },
     garantirVisibilidade(event) {
       const elemento = event.target;
@@ -278,23 +237,21 @@ export default {
 
 .auth-container {
   position: relative;
-  /* Ocupa a altura total disponível para centralizar o conteúdo */
   height: 100vh; 
   width: 100%;
   max-width: 440px;
   display: flex;
   flex-direction: column;
-  /* Centraliza o form-wrapper verticalmente */
   justify-content: center; 
   align-items: center;
 }
 
 .top-bar {
   display: flex;
-  justify-content: space-between; /* Empurra BackButton para esquerda e right-actions para direita */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 0 4px; /* Pequeno respiro nas bordas */
+  padding: 0 4px;
   margin-bottom: 20px;
   position: relative;
   display: flex;
@@ -302,7 +259,6 @@ export default {
   justify-content: flex-end;
 }
 
-/* Ajuste para mobile para o botão não ficar colado na borda */
 @media (max-width: 768px) {
   .top-bar {
     right: 24px;
@@ -312,7 +268,7 @@ export default {
 
 .form-wrapper {
   width: 100%;
-  max-width: 420px; /* Alinha a largura da barra com a largura do card branco */
+  max-width: 420px;
   padding: 0; 
   display: flex;
   flex-direction: column;
