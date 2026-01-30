@@ -2,9 +2,9 @@
   <div v-if="isOpen" class="modal-overlay" @click="fechar">
     <div class="modal-container" @click.stop>
       <div class="modal-content">
-        <h3 class="modal-title">Sair</h3>
+        <h3 class="modal-title" @click="$emit('falar', title)">{{ title }}</h3>
         
-        <p class="modal-message">Tem certeza que deseja encerrar sua sessão?</p>
+        <p class="modal-message" @click="$emit('falar', message)">{{ message }}</p>
         
         <div class="modal-buttons">
           <button class="btn-voltar" @click="fechar">
@@ -25,9 +25,17 @@ export default {
     isOpen: {
       type: Boolean,
       required: true
+    },
+    message: {
+      type: String,
+      default: 'Tem certeza que deseja encerrar sua sessão?'
+    },
+    title: {
+      type: String,
+      default: 'Sair'
     }
   },
-  emits: ['confirmar', 'fechar'],
+  emits: ['confirmar', 'fechar', 'falar'],
   methods: {
     confirmar() {
       this.$emit('confirmar');

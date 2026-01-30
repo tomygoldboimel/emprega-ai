@@ -3,9 +3,10 @@
     <ModalCarregamento :isOpen="loading" />
 
     <div v-if="!loading && curriculo" class="curriculo-container">
-      <div class="actions-bar">
+      <div class="top-bar">
         <BackButton @back="prevStep" />
-        <div class="action-buttons">
+        <div class="right-actions">
+          <BotaoDescricao @toggle="handleTutorialToggle" :active="mostrarTutorial" class="pr-20"/>
           <LogoutButton @logout="abrirModal" />
         </div>
       </div>
@@ -16,36 +17,35 @@
         </div>
 
         <header class="cv-header">
-          <h1>{{ curriculo.nomeCompleto }}</h1>
-          <div class="contact-info">
+          <h1 @click="falarElemento">{{ curriculo.nomeCompleto }}</h1>
+          <div class="contact-info" @click="falarElemento"> 
             {{ formatarInfoContato }}
           </div>
         </header>
 
         <section v-if="curriculo.objetivo" class="cv-section">
-          <h2>OBJETIVO</h2>
-          <p class="description-text">{{ curriculo.objetivo }}</p>
+          <h2 @click="falarElemento">OBJETIVO</h2>
+          <p class="description-text" @click="falarElemento">{{ curriculo.objetivo }}</p>
         </section>
 
         <section v-if="experiencias.length > 0" class="cv-section">
-          <h2>EXPERIÊNCIAS PROFISSIONAIS</h2>
+          <h2 @click="falarElemento">EXPERIÊNCIAS PROFISSIONAIS</h2>
           <div v-for="(exp, index) in experiencias" :key="index" class="cv-item">
-            <h3 class="item-title">{{ exp.cargo || "Cargo não Informado" }}</h3>
-            <p class="item-subtitle">{{ exp.empresa || "Empresa não Informada" }}</p>
-            <span class="period-text">{{ formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual) }}</span>
-            <p v-if="exp.descricao" class="description-text">{{ exp.descricao }}</p>
+            <h3 class="item-title" @click="falarElemento">{{ exp.empresa || "Empresa não Informada" }}</h3>
+            <p class="item-subtitle" @click="falarElemento">{{ exp.cargo || "Cargo não Informado" }}</p>
+            <span class="period-text" @click="falarElemento">{{ formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual) }}</span>
+            <p v-if="exp.descricao" class="description-text" @click="falarElemento">{{ exp.descricao }}</p>
           </div>
         </section>
 
         <section v-if="formacoes.length > 0" class="cv-section">
-          <h2>FORMAÇÃO ACADÊMICA</h2>
+          <h2 @click="falarElemento">FORMAÇÃO ACADÊMICA</h2>
           <div v-for="(form, index) in formacoes" :key="index" class="cv-item">
-            <h3 class="item-title">{{ form.curso }}</h3>
-            <p class="item-subtitle">{{ form.instituicao }}</p>
-            <span class="period-text">
+            <h3 class="college-title" @click="falarElemento">{{ form.instituicao || "Instituição não informada" }}</h3>
+            <p class="item-subtitle" @click="falarElemento">{{ form.curso || "Curso não informado" }}</p>
+            <span class="period-text" @click="falarElemento">
               {{ form.nivel }} • {{ form.status === true ? 'Incompleto' : 'Completo' }}
               <br>
-              {{ formatarData(form.dataInicio) }} - {{ form.dataConclusao ? formatarData(form.dataConclusao) : 'Em andamento' }}
             </span>
           </div>
         </section>
@@ -72,6 +72,7 @@ import BackButton from '@/components/BackButton.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
 import DownloadButton from '@/components/DownloadButton.vue';
 import ModalCarregamento from '@/components/ModalCarregamento.vue';
+import BotaoDescricao from '@/components/BotaoDescricao.vue';
 
 export default {
   name: 'CurriculoVisualizar',
@@ -80,7 +81,8 @@ export default {
     BackButton,
     LogoutButton,
     DownloadButton,
-    ModalCarregamento
+    ModalCarregamento,
+    BotaoDescricao
   },
   data() {
     return {
@@ -120,6 +122,100 @@ export default {
     }
   },
   methods: {
+    handleTutorialToggle(ativo) {
+      this.mostrarTutorial = ativo;
+
+      if (ativo) {
+        this.executarBoasVindasNativo();
+      } else {
+        this.pararAudioTutorial();
+      }
+    },
+    extensoMes(mesAno) {
+      if (!mesAno || !mesAno.includes('/')) return mesAno;
+
+      const [mes, ano] = mesAno.split('/');
+      const meses = {
+        '01': 'janeiro', '02': 'fevereiro', '03': 'março', 
+        '04': 'abril', '05': 'maio', '06': 'junho',
+        '07': 'julho', '08': 'agosto', '09': 'setembro', 
+        '10': 'outubro', '11': 'novembro', '12': 'dezembro'
+      };
+
+      const nomeMes = meses[mes];
+      return nomeMes ? `${nomeMes} de ${ano}` : mesAno;
+    },
+    falarElemento(event) {
+      let texto = event.target.innerText;
+
+      const regexData = /(\d{2})\/(\d{4})/g;
+
+      texto = texto.replace(regexData, (match) => {
+        return this.extensoMes(match);
+      });
+
+      this.falarTexto(texto);
+    },
+    falarTexto(texto) {
+      if (!this.mostrarTutorial) return;
+
+      if (!window.speechSynthesis) return;
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;
+
+      const voices = window.speechSynthesis.getVoices();
+      const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
+      if (googleVoice) utterance.voice = googleVoice;
+
+      window.speechSynthesis.speak(utterance);
+    },
+
+    executarBoasVindasNativo() {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+
+      const texto = "Descrição por áudio habilitada. Clique nos títulos para ouví-los";
+      this.audioTutorial = new SpeechSynthesisUtterance(texto);
+      this.audioTutorial.lang = 'pt-BR';
+      
+      this.audioTutorial.rate = 0.9;
+      this.audioTutorial.pitch = 1.0;
+
+      const selecionarMelhorVoz = () => {
+        const vozes = window.speechSynthesis.getVoices();
+        
+        const melhorVoz = vozes.find(v => 
+          v.lang === 'pt-BR' && 
+          (v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Natural'))
+        );
+
+        if (melhorVoz) {
+          this.audioTutorial.voice = melhorVoz;
+        }
+        
+        window.speechSynthesis.speak(this.audioTutorial);
+      };
+
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = selecionarMelhorVoz;
+      } else {
+        selecionarMelhorVoz();
+      }
+    },
+
+    pararAudioTutorial() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    },
+
+    beforeUnmount() {
+      this.pararAudioTutorial();
+    },
     abrirModal() { 
       this.modalAberto = true; 
     },
@@ -189,322 +285,153 @@ export default {
     },
 
     downloadPDF() {
-
       const doc = new jsPDF('p', 'mm', 'a4');
 
-     
-
       let yPosition = 20;
-
       const pageWidth = doc.internal.pageSize.getWidth();
-
       const margin = 15;
 
-
-
       doc.setFontSize(22);
-
       doc.setFont('helvetica', 'bold');
-
       doc.text(this.curriculo.nomeCompleto, pageWidth / 2, yPosition, { align: 'center' });
 
-     
-
       yPosition += 8;
-
       doc.setFontSize(10);
-
       doc.setFont('helvetica', 'normal');
-
       doc.setTextColor(60, 60, 60);
 
-     
-
       const localizacao = [this.curriculo.cidade, this.curriculo.estado]
-
         .filter(part => part && part.trim() !== '')
-
         .join(', ');
 
-
-
       const contato = [
-
         this.formatarTelefone(this.curriculo.telefone),
-
         this.curriculo.email,
-
-        localizacao // Se a localização for vazia, o filter abaixo remove ela
-
+        localizacao
       ].filter(item => item && item.trim() !== '').join(' | ');
 
-     
-
       doc.text(contato, pageWidth / 2, yPosition, { align: 'center' });
-
       yPosition += 6;
 
-     
-
       if (this.curriculo.linkedIn || this.curriculo.gitHub) {
-
         const social = [
-
           this.curriculo.linkedIn,
-
           this.curriculo.gitHub
-
         ].filter(item => item).join(' | ');
 
-       
-
         doc.setTextColor(30, 64, 175);
-
         doc.text(social, pageWidth / 2, yPosition, { align: 'center' });
-
         yPosition += 10;
-
       } else {
-
         yPosition += 5;
-
       }
-
-
-
       doc.setTextColor(0, 0, 0);
-
       if (this.curriculo.objetivo) {
-
           doc.setFontSize(14);
-
           doc.setFont('helvetica', 'bold');
-
           doc.text('OBJETIVO', margin, yPosition);
-
           yPosition += 2;
 
-
-
           doc.setDrawColor(0, 0, 0);
-
           doc.setLineWidth(0.5);
-
           doc.line(margin, yPosition, pageWidth - margin, yPosition);
-
           yPosition += 7;
 
-
-
           doc.setFontSize(11);
-
           doc.setFont('helvetica', 'normal');
-
           doc.setTextColor(40, 40, 40);
-
-         
-
-          // Faz o texto quebrar automaticamente se for muito longo
-
           const objetivoLines = doc.splitTextToSize(this.curriculo.objetivo, pageWidth - 2 * margin);
-
           doc.text(objetivoLines, margin, yPosition);
-
-         
-
-          yPosition += (objetivoLines.length * 5) + 10; // Ajusta o yPosition para a próxima seção
-
+          yPosition += (objetivoLines.length * 5) + 10;
       }
 
       if (this.experiencias.length > 0) {
-
         doc.setFontSize(14);
-
         doc.setFont('helvetica', 'bold');
-
         doc.text('EXPERIÊNCIAS PROFISSIONAIS', margin, yPosition);
-
         yPosition += 2;
 
-       
-
         doc.setDrawColor(0, 0, 0);
-
         doc.setLineWidth(0.5);
-
         doc.line(margin, yPosition, pageWidth - margin, yPosition);
-
         yPosition += 8;
-
-
 
         this.experiencias.forEach((exp) => {
-
           if (yPosition > 270) {
-
             doc.addPage();
-
-            yPosition = 20;
-
+            yPosition = 10;
           }
 
-
-
           doc.setFontSize(12);
-
           doc.setFont('helvetica', 'bold');
-
-          doc.text(exp.cargo || 'Cargo não informado', margin, yPosition);
-
-         
-
-          yPosition += 5;
-
-          doc.setFontSize(10);
-
-          doc.setFont('helvetica', 'italic');
-
-          doc.setTextColor(60, 60, 60);
-
           doc.text(exp.empresa || 'Empresa não informada', margin, yPosition);
 
-         
+          yPosition += 5;
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(60, 60, 60);
+          doc.text(exp.cargo || 'Cargo não informado', margin, yPosition);
 
           yPosition += 5;
-
           doc.setFont('helvetica', 'normal');
-
           doc.setTextColor(100, 100, 100);
-
           doc.text(this.formatarPeriodo(exp.dataInicio, exp.dataFim, exp.empregoAtual), margin, yPosition);
 
-         
-
           if (exp.descricao) {
-
             yPosition += 5;
-
             doc.setTextColor(40, 40, 40);
-
             const descricaoLines = doc.splitTextToSize(exp.descricao, pageWidth - 2 * margin);
-
             doc.text(descricaoLines, margin, yPosition);
-
             yPosition += (descricaoLines.length * 4);
-
           }
-
-         
-
-          yPosition += 10;
-
+          yPosition += 5;
           doc.setTextColor(0, 0, 0);
-
         });
-
       }
-
-
 
       if (this.formacoes.length > 0) {
-
         if (yPosition > 240) {
-
           doc.addPage();
-
           yPosition = 20;
-
         }
 
-
-
         doc.setFontSize(14);
-
         doc.setFont('helvetica', 'bold');
-
         doc.text('FORMAÇÃO ACADÊMICA', margin, yPosition);
-
         yPosition += 2;
 
-       
-
         doc.setDrawColor(0, 0, 0);
-
         doc.setLineWidth(0.5);
-
         doc.line(margin, yPosition, pageWidth - margin, yPosition);
-
         yPosition += 8;
 
-
-
         this.formacoes.forEach((form) => {
-
           if (yPosition > 270) {
-
             doc.addPage();
-
             yPosition = 20;
-
           }
-
-
 
           doc.setFontSize(12);
-
           doc.setFont('helvetica', 'bold');
-
-          doc.text(form.curso || 'Curso não informado', margin, yPosition);
-
-         
-
-          yPosition += 5;
-
-          doc.setFontSize(10);
-
-          doc.setFont('helvetica', 'italic');
-
-          doc.setTextColor(60, 60, 60);
-
           doc.text(form.instituicao || 'Instituição não informada', margin, yPosition);
 
-         
-
           yPosition += 5;
-
-          doc.setFont('helvetica', 'normal');
-
-          doc.setTextColor(100, 100, 100);
-
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(60, 60, 60);
           const statusTexto = form.status === true ? 'Incompleto' : 'Completo';
-
-          const nivel = `${form.nivel || ''} • ${statusTexto}`.trim();
-
-          doc.text(nivel, margin, yPosition);
-
-         
+          const text = `${form.curso || 'Curso não informado'} • ${statusTexto}`.trim();
+          doc.text(text, margin, yPosition);
 
           if (form.dataInicio) {
-
             yPosition += 5;
-
             const periodo = `${this.formatarData(form.dataInicio)} - ${form.dataConclusao ? this.formatarData(form.dataConclusao) : 'Em andamento'}`;
-
             doc.text(periodo, margin, yPosition);
-
           }
-
-         
-
           yPosition += 10;
-
           doc.setTextColor(0, 0, 0);
-
         });
-
       }
-
-
 
       doc.save(`Curriculo_${this.curriculo.nomeCompleto.replace(/\s/g, '_')}.pdf`);
 
@@ -514,7 +441,6 @@ export default {
 </script>
 
 <style scoped>
-/* Estilos ajustados para visualização "Papel A4" idêntica ao PDF */
 .wrapper {
   background: #f4f4f5;
   padding: 40px 20px;
@@ -590,10 +516,16 @@ export default {
   margin: 0;
 }
 
+.college-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 12px 0 0 0;
+}
+
 .item-subtitle {
   font-size: 14px;
   font-style: italic;
-  margin: 2px 0;
+  margin: 0 0 2px;
 }
 
 .period-text {
@@ -605,7 +537,7 @@ export default {
 .description-text {
   font-size: 14px;
   line-height: 1.5;
-  margin-top: 8px;
+  margin-top: 2px;
   text-align: justify;
 }
 
@@ -615,9 +547,11 @@ export default {
   right: 20px;
 }
 
-.actions-bar {
+.top-bar { 
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 24px; 
 }
+.right-actions { display: flex; gap: 12px; align-items: center; }
 </style>

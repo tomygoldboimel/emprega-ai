@@ -359,18 +359,13 @@
       :confirmText="modalConfig.confirmText"
       @confirmar="confirmarRemocao"
       @fechar="showConfirmModal = false"
+      @falar="falarTexto"
     />
     <ModalEncerramentoSessao
       :isOpen="modalAberto"
       @confirmar="confirmarSair"
-      @fechar="fecharModal"/>
-    <ModalAviso
-      :show="modalAvisoAberto"
-      title="Atenção"
-      message="Ao importar o currículo, a formatação da descrição pode ser alterada. Recomendamos revisar os textos após a importação."
-      type="aviso"
-      @fechar="fecharModalAviso"
-    />
+      @fechar="fecharModal"
+      @falar="falarTexto"/>
   </div>
 </template>
 
@@ -1431,8 +1426,12 @@ export default {
             1,
             { ...formacaoNormalizada }
           );
+          const mensagem = 'Formação atualizada!';
 
-          this.successMessage = 'Formação atualizada!';
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         } else {
           this.curriculoId = this.curriculo.id
           if (this.curriculoId) {
@@ -1445,8 +1444,12 @@ export default {
           } else {
             this.curriculo.formacoes.push({ ...formacaoNormalizada });
           }
+          const mensagem = 'Formação adicionada!';
 
-          this.successMessage = 'Formação adicionada!';
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         }
 
         this.resetarFormFormacao();
@@ -1535,7 +1538,12 @@ export default {
 
     async formatarDescricaoComIA() {
       if (!this.novaExperiencia.descricao || this.novaExperiencia.descricao.trim().length < 10) {
-        this.iaMessage = 'Digite pelo menos 10 caracteres';
+        const mensagem = 'Digite pelo menos 10 caracteres';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'info';
         setTimeout(() => {
           this.iaMessage = '';
@@ -1558,8 +1566,12 @@ export default {
         );
         
         this.novaExperiencia.descricao = descricaoMelhorada;
-        
-        this.iaMessage = 'Descrição melhorada!';
+        const mensagem = 'Descrição melhorada com sucesso!';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'success';
         
         setTimeout(() => {
@@ -1568,7 +1580,12 @@ export default {
         }, 3000);
 
       } catch (error) {
-        this.iaMessage = 'Erro ao melhorar. Tente novamente.';
+        const mensagem = 'Erro ao melhorar. Tente novamente.';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'error';
         
         setTimeout(() => {
@@ -1582,7 +1599,12 @@ export default {
 
     async formatarObjetivoComIA() {
       if (!this.curriculo.objetivo || this.curriculo.objetivo.trim().length < 10) {
-        this.iaMessage = 'Digite pelo menos 10 caracteres';
+        const mensagem = 'Digite pelo menos 10 caracteres';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'info';
         setTimeout(() => {
           this.iaMessage = '';
@@ -1603,8 +1625,12 @@ export default {
         );
         
         this.curriculo.objetivo = objetivoMelhorado;
-        
-        this.iaMessage = 'Objetivo melhorado!';
+        const mensagem = 'Objetivo melhorado com sucesso!';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'success';
         
         setTimeout(() => {
@@ -1613,7 +1639,12 @@ export default {
         }, 3000);
 
       } catch (error) {
-        this.iaMessage = 'Erro ao melhorar. Tente novamente.';
+        const mensagem = 'Erro ao melhorar. Tente novamente.';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'error';
         
         setTimeout(() => {
@@ -1637,15 +1668,30 @@ export default {
         }
         if (dadosParaEnviar.id) {
           await curriculoService.atualizarCurriculo(dadosParaEnviar);
-          this.successMessage = 'Currículo atualizado com sucesso!';
+          const mensagem = 'Currículo atualizado com sucesso!';
+
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         } else {
           const data = await curriculoService.adicionarCurriculo(dadosParaEnviar);
           this.curriculoId = data.id;
-          this.successMessage = 'Currículo salvo com sucesso!';
+          const mensagem = 'Currículo salvo com sucesso!';
+
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         }
         this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
       } catch (error) {
-        return this.mostrarErro('Erro ao salvar currículo');
+        const mensagem = 'Erro ao salvar currículo';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        return this.mostrarErro(mensagem);
       }
     },
 

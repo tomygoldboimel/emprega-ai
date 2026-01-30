@@ -15,11 +15,11 @@
               <line x1="9" y1="9" x2="15" y2="15"></line>
             </svg>
           </div>
-          <h3>{{ title }}</h3>
+          <h3 @click="$emit('falar', title)">{{ title }}</h3>
         </div>
 
         <div class="modal-body">
-          <p>{{ message }}</p>
+          <p @click="$emit('falar', message)">{{ message }}</p>
         </div>
 
         <div class="modal-footer">
