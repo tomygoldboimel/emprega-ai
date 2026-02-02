@@ -176,7 +176,7 @@
                 <input 
                   type="text"
                   inputmode="numeric"
-                  :value="formatarDataParaBR(novaExperiencia.dataInicio)"
+                  :value="formatarDataInicioParaBR(novaExperiencia.dataInicio)"
                   @input="handleInputDataInicio"
                   @focus="handleFocus"
                   @blur="validarDataInicio"
@@ -201,7 +201,7 @@
                   v-if="!novaExperiencia.empregoAtual"
                   type="text"
                   inputmode="numeric"
-                  :value="formatarDataParaBR(novaExperiencia.dataFim)"
+                  :value="formatarDataFimParaBR(novaExperiencia.dataFim)"
                   @input="handleInputDataFim"
                   @focus="handleFocus"
                   @blur="validarDataFim"
@@ -557,7 +557,20 @@ export default {
     this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
   },
   methods: {
-    formatarDataParaBR(dataISO) {
+    formatarDataInicioParaBR(dataISO) {
+      if (!dataISO) return '';
+      
+      if (dataISO.includes('/')) return dataISO;
+      
+      if (dataISO.includes('-')) {
+        const [ano, mes, dia] = dataISO.split('-');
+        return `${dia}/${mes}/${ano}`;
+      }
+      
+      return dataISO;
+    },
+
+    formatarDataFimParaBR(dataISO) {
       if (!dataISO) return '';
       
       if (dataISO.includes('/')) return dataISO;
@@ -629,7 +642,7 @@ export default {
     },
     
     validarDataInicio() {
-      const valorAtual = this.formatarDataParaBR(this.novaExperiencia.dataInicio);
+      const valorAtual = this.formatarDataInicioParaBR(this.novaExperiencia.dataInicio);
       
       if (valorAtual && valorAtual.length > 0 && valorAtual.length < 10) {
         this.erroDataInicio = true;
@@ -696,16 +709,7 @@ export default {
     },
     
     validarDataFim() {
-      const valorAtual = this.formatarDataParaBR(this.novaExperiencia.dataFim);
-      
-      if (valorAtual && valorAtual.length > 0 && valorAtual.length < 10) {
-        this.erroDataFim = true;
-        this.mensagemErroDataFim = 'Data incompleta';
-      }
-    },
-    
-    validarDataFim() {
-      const valorAtual = this.formatarDataParaBR(this.novaExperiencia.dataFim);
+      const valorAtual = this.formatarDataFimParaBR(this.novaExperiencia.dataFim);
       
       if (valorAtual && valorAtual.length > 0 && valorAtual.length < 10) {
         this.erroDataFim = true;
@@ -1445,6 +1449,7 @@ export default {
               const expId = this.curriculo.experiencias[this.editandoIndexExperiencia].id;
               
               if (expId) {
+                if (this.novaExperiencia.empregoAtual || this.novaExperiencia.dataFim != '')
                   await experienciaService.atualizarExperiencia(this.novaExperiencia);
               }
               
