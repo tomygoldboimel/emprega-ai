@@ -4,16 +4,7 @@
       <div class="modal-container">
         <div class="modal-header">
           <div :class="['modal-icon', type]">
-            <svg v-if="type === 'aviso'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <svg v-if="type === 'perigo'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
-              <line x1="15" y1="9" x2="9" y2="15"></line>
-              <line x1="9" y1="9" x2="15" y2="15"></line>
-            </svg>
+            <img src="@/assets/icons/circleXIcon.svg" alt="Return"/>
           </div>
           <h3 @click="$emit('falar', title)">{{ title }}</h3>
         </div>
@@ -22,9 +13,13 @@
           <p @click="$emit('falar', message)">{{ message }}</p>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn-cancel" @click="fechar">{{ cancelText }}</button>
-          <button :class="['btn-confirm', type]" @click="confirmar">{{ confirmText }}</button>
+        <div class="modal-buttons">
+          <button class="btn-voltar" @click="fechar">
+            <img src="@/assets/icons/returnIcon.svg" alt="Return"/>
+          </button>
+          <button class="btn-excluir" @click="confirmar">
+            <img src="@/assets/icons/trashIcon.svg" alt="Check" class="trash-icon"/>
+          </button>
         </div>
       </div>
     </div>
@@ -97,6 +92,54 @@ export default {
   animation: slideUp 0.3s ease-out;
 }
 
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 25px;
+  width: 100%;
+}
+
+.btn-voltar,
+.btn-excluir {
+  width: auto;
+  min-width: 140px;
+  height: 55px;
+  padding: 0.75rem 2rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid #333;
+}
+
+.btn-voltar {
+  background-color: white;
+  color: #333;
+}
+
+.btn-voltar:hover {
+  background-color: #f5f5f5;
+}
+
+.btn-excluir {
+  background-color: #fd0000;
+  color: white;
+  border-color: #fd0000;
+}
+
+.btn-excluir:hover {
+  background-color: #333;
+  border-color: #333;
+}
+
+.btn-voltar:focus,
+.btn-excluir:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -130,7 +173,7 @@ export default {
 
 .modal-icon.perigo {
   background: #fee2e2;
-  color: #ef4444;
+  color: #ffffff;
 }
 
 .modal-header h3 {
@@ -143,6 +186,10 @@ export default {
 .modal-body {
   padding: 0 24px 24px;
   text-align: center;
+}
+
+.trash-icon{
+  filter: brightness(0) invert(1);
 }
 
 .modal-body p {
@@ -196,11 +243,11 @@ export default {
 }
 
 .btn-confirm.perigo {
-  background: #ef4444;
+  background: #ffffff;
 }
 
 .btn-confirm.perigo:hover {
-  background: #dc2626;
+  background: #ffffff;
 }
 
 .btn-confirm:active {

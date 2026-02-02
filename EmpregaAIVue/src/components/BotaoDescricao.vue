@@ -16,7 +16,6 @@
 import soundIcon from '@/assets/icons/soundIcon.svg'
 import { ref, watch } from 'vue'
 
-// Recebe o estado inicial se necessário
 const props = defineProps<{
   loading?: boolean
   disabled?: boolean

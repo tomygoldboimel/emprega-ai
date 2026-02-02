@@ -57,7 +57,12 @@
       <button @click="voltar" class="btn-back">Voltar</button>
     </div>
 
-    <ModalEncerramentoSessao :isOpen="modalAberto" @confirmar="confirmarSair" @fechar="fecharModal" />
+    <ModalEncerramentoSessao
+    :isOpen="modalAberto"
+    @confirmar="confirmarSair"
+    @fechar="fecharModal"
+    @falar="falarTexto"
+    />
   </div>
 </template>
 
@@ -90,7 +95,15 @@ export default {
       curriculo: null,
       modalAberto: false,
       experiencias: [],
-      formacoes: []
+      formacoes: [],
+      mostrarTutorial: false,
+    }
+  },
+  mounted() {
+    const estadoSalvo = localStorage.getItem('audioDescricaoAtiva');
+
+    if (estadoSalvo !== null) {
+      this.mostrarTutorial = estadoSalvo === 'true';
     }
   },
   computed: {
@@ -109,11 +122,6 @@ export default {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const autenticado = await usuarioService.verificarSessao();
     
-    if (!autenticado) {
-      this.$router.replace('/login');
-      return;
-    }
-
     const curriculoId = this.$route.params.id;
     if (curriculoId) {
       await this.carregarCurriculo(curriculoId);
@@ -124,7 +132,7 @@ export default {
   methods: {
     handleTutorialToggle(ativo) {
       this.mostrarTutorial = ativo;
-
+      localStorage.setItem('audioDescricaoAtiva', ativo);
       if (ativo) {
         this.executarBoasVindasNativo();
       } else {
@@ -165,7 +173,7 @@ export default {
 
       const utterance = new SpeechSynthesisUtterance(texto);
       utterance.lang = 'pt-BR';
-      utterance.rate = 1.0;
+      utterance.rate = 1.1;
 
       const voices = window.speechSynthesis.getVoices();
       const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
@@ -182,7 +190,7 @@ export default {
       this.audioTutorial = new SpeechSynthesisUtterance(texto);
       this.audioTutorial.lang = 'pt-BR';
       
-      this.audioTutorial.rate = 0.9;
+      this.audioTutorial.rate = 1.1;
       this.audioTutorial.pitch = 1.0;
 
       const selecionarMelhorVoz = () => {
@@ -293,7 +301,13 @@ export default {
 
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.text(this.curriculo.nomeCompleto, pageWidth / 2, yPosition, { align: 'center' });
+      const nomeLines = doc.splitTextToSize(
+        this.curriculo.nomeCompleto,
+        pageWidth - 2 * margin
+      );
+
+      doc.text(nomeLines, pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += nomeLines.length * 8;
 
       yPosition += 8;
       doc.setFontSize(10);
@@ -491,6 +505,10 @@ export default {
   font-size: 32px;
   margin-bottom: 8px;
   font-weight: bold;
+  word-break: break-word;      /* quebra palavras grandes */
+  overflow-wrap: break-word;   /* fallback moderno */
+  hyphens: auto;
+  text-align: center;
 }
 
 .contact-info {

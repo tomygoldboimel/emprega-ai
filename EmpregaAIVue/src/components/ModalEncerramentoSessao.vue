@@ -8,10 +8,10 @@
         
         <div class="modal-buttons">
           <button class="btn-voltar" @click="fechar">
-            Voltar
+            <img src="@/assets/icons/returnIcon.svg" alt="Return"/>
           </button>
           <button class="btn-confirmar" @click="confirmar">
-            Confirmar
+            <img src="@/assets/icons/logoutIcon.svg" alt="Logout" class="logout-icon"/>
           </button>
         </div>
       </div>
@@ -124,6 +124,10 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   border: 2px solid #333;
+}
+
+.logout-icon{
+  filter: brightness(0) invert(1);
 }
 
 @media (max-width: 768px) {

@@ -10,10 +10,7 @@
       </div>
       <div class="header">
         <div class="logo-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-          </svg>
+          <img src="@/assets/icons/educationIcon.svg" alt="Atualizar" class="icon-education" />
         </div>
         <h1 @click="falarElemento">{{ modoEdicao ? 'Editar Currículo' : 'Criar Currículo' }}</h1>
         <p @click="falarElemento">Preencha seus dados profissionais</p>
@@ -52,42 +49,16 @@
           </form>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label @click="falarElemento">Data de Nascimento</label>
-            <div style="position: relative;"> 
-              <input
-              type="date" 
-              v-model="curriculo.dataNascimento"
-              class="input-com-dois-icones"
-              @click="garantirVisibilidade"
-              />
-              <span class="icone-calendario"> 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-              </span>
-              <BotaoMicrofone 
-              :isRecording="gravandoDataNascimento" 
-              @toggle="toggleGravacaoDataNascimento"
-              />
-                
-              </div>
-          </div>
-          <div class="form-group">
-            <label @click="falarElemento">Telefone</label>
-            <input 
-              type="tel" 
-              v-model="curriculo.telefone" 
-              @input="formatarTelefone"
-              placeholder="(XX) XXXXX-XXXX"
-              maxlength="15"
-              disabled
-            />
-          </div>
+        <div class="form-group">
+          <label @click="falarElemento">Telefone</label>
+          <input 
+            type="tel" 
+            v-model="curriculo.telefone" 
+            @input="formatarTelefone"
+            placeholder="(XX) XXXXX-XXXX"
+            maxlength="15"
+            disabled
+          />
         </div>
 
         <div class="form-row">
@@ -148,7 +119,7 @@
         <h2 class="step-title" @click="falarElemento">Trabalhos</h2>
         <div class="form-card">
           <div class="form-group">
-            <label @click="falarElemento">Descrição das Atividades*</label>
+            <label @click="falarElemento">Descrição das Atividades</label>
               <div style="position: relative;">
                 <textarea 
                   v-model="novaExperiencia.descricao" 
@@ -170,14 +141,14 @@
             <small v-if="iaMessage" :class="['ia-message', iaMessageType]">{{ iaMessage }}</small>
           </div>
           <div class="form-group">
-            <label @click="falarElemento">Empresa</label>
+            <label @click="falarElemento">Empresa (opcional)</label>
             <div style="position: relative;">
               
               <input 
                 type="text" 
                 v-model="novaExperiencia.empresa" 
                 style="width: 100%;" 
-                placeholder="Onde você trabalhou? (opcional)"
+                placeholder="Onde você trabalhou?"
                 @click="garantirVisibilidade"
               />
               
@@ -190,9 +161,9 @@
           </div>
 
           <div class="form-group">
-            <label @click="falarElemento">Cargo</label>
+            <label @click="falarElemento">Cargo (opcional)</label>
             <div style="position: relative;">
-              <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê? (opcional)" @click="garantirVisibilidade"/>
+              <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê?" @click="garantirVisibilidade"/>
               <BotaoMicrofone :isRecording="camposGravando.cargo" @toggle="toggleGravacao('cargo', novaExperiencia)"/>
             </div>
           </div>
@@ -209,12 +180,7 @@
                 class="input-com-dois-icones"
                 />
                 <span class="icone-calendario"> 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
+                  <img src="@/assets/icons/calendarIcon.svg" alt="Calendar"/>
                 </span>
                 <BotaoMicrofone 
                 :isRecording="gravandoDataInicioExperiencia" 
@@ -238,12 +204,7 @@
                 disabled
                 />
                 <span class="icone-calendario"> 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
+                  <img src="@/assets/icons/calendarIcon.svg" alt="Calendar" />
                 </span>
                 <BotaoMicrofone 
                 :isRecording="gravandoDataFim" 
@@ -378,7 +339,6 @@ import formacaoService from '@/services/formacaoService';
 import usuarioService from '@/services/usuarioService';
 import '@fortawesome/fontawesome-free/css/all.css';
 import ModalEncerramentoSessao from '@/components/ModalEncerramentoSessao.vue';
-import ModalAviso from '@/components/AvisoDescricao.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
 import BotaoMicrofone from '@/components/BotaoMicrofone.vue';
 import BotaoDescricao from '@/components/BotaoDescricao.vue';
@@ -397,7 +357,6 @@ export default {
     ModalExclusao,
     ModalEncerramentoSessao,
     ModalCarregamento,
-    ModalAviso,
     LogoutButton,
     BotaoMicrofone,
     BotaoDescricao,
@@ -428,7 +387,7 @@ export default {
       showConfirmModal: false,
       erroNome: false,
       itemParaRemover: null,
-      mostrarTutorial: localStorage.getItem('audioDescricaoAtiva') === 'true',
+      mostrarTutorial: false,
       audioTutorial: null,
       camposGravando: {
         descricao: false,
@@ -493,6 +452,11 @@ export default {
   mounted() {
     if (this.mostrarTutorial) {
       this.executarBoasVindasNativo();
+    }
+    const estadoSalvo = localStorage.getItem('audioDescricaoAtiva');
+
+    if (estadoSalvo !== null) {
+      this.mostrarTutorial = estadoSalvo === 'true';
     }
   },
   watch: {
@@ -580,7 +544,7 @@ export default {
   methods: {
     handleTutorialToggle(ativo) {
       this.mostrarTutorial = ativo;
-
+      localStorage.setItem('audioDescricaoAtiva', ativo);
       if (ativo) {
         this.executarBoasVindasNativo();
       } else {
@@ -600,7 +564,7 @@ export default {
 
       const utterance = new SpeechSynthesisUtterance(texto);
       utterance.lang = 'pt-BR';
-      utterance.rate = 1.0;
+      utterance.rate = 1.1;
 
       const voices = window.speechSynthesis.getVoices();
       const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
@@ -613,11 +577,11 @@ export default {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
 
-      const texto = "Clique nos títulos para ouví-los";
+      const texto = "Descrição por áudio habilitada. Clique nos títulos para ouví-los";
       this.audioTutorial = new SpeechSynthesisUtterance(texto);
       this.audioTutorial.lang = 'pt-BR';
       
-      this.audioTutorial.rate = 0.9;
+      this.audioTutorial.rate = 1.1;
       this.audioTutorial.pitch = 1.0;
 
       const selecionarMelhorVoz = () => {
@@ -1319,7 +1283,7 @@ export default {
         return this.mostrarErro(mensagem);
       }
       else if(!this.novaExperiencia.empregoAtual && (this.novaExperiencia.dataFim < this.novaExperiencia.dataInicio)){
-        const mensagem = 'A data fim deve ser posterior à data de início.';
+        const mensagem = 'A data fim não pode ser anterior à data de início.';
         if (this.mostrarTutorial) {
           this.falarTexto(mensagem);
         }
@@ -1337,7 +1301,12 @@ export default {
               }
               
               this.curriculo.experiencias.splice(this.editandoIndexExperiencia, 1, { ...this.novaExperiencia });
-              this.successMessage = 'Experiência atualizada!';
+              const mensagem = 'Experiência atualizada!';
+
+              if (this.mostrarTutorial) {
+                this.falarTexto(mensagem);
+              }
+              this.successMessage = mensagem;
 
           } else {
               if (this.curriculo.id) {
@@ -1355,8 +1324,12 @@ export default {
               } else {
                   this.curriculo.experiencias.push({ ...this.novaExperiencia });
               }
-              
-              this.successMessage = 'Experiência adicionada!';
+              const mensagem = 'Experiência adicionada!';
+
+              if (this.mostrarTutorial) {
+                this.falarTexto(mensagem);
+              }
+              this.successMessage = mensagem;
           }
           
           this.resetarFormExperiencia(); 
@@ -1507,8 +1480,12 @@ export default {
             } else if (this.editandoIndexExperiencia !== null && index < this.editandoIndexExperiencia) {
               this.editandoIndexExperiencia--;
             }
-            
-            this.successMessage = 'Experiência removida!';
+            const mensagemExp = 'Experiência removida com sucesso!';
+
+            if (this.mostrarTutorial) {
+              this.falarTexto(mensagemExp);
+            }
+            this.successMessage = mensagemExp;
             break;
             
           case 'formacao':
@@ -1522,8 +1499,12 @@ export default {
             } else if (this.editandoIndexFormacao !== null && index < this.editandoIndexFormacao) {
               this.editandoIndexFormacao--;
             }
-            
-            this.successMessage = 'Formação removida!';
+            const mensagemForm = 'Formação removida com sucesso!';
+
+            if (this.mostrarTutorial) {
+              this.falarTexto(mensagemForm);
+            }
+            this.successMessage = mensagemForm;
             break;
         }
 
@@ -1580,7 +1561,7 @@ export default {
         }, 3000);
 
       } catch (error) {
-        const mensagem = 'Erro ao melhorar. Tente novamente.';
+        const mensagem = 'Erro ao melhorar. Tente novamente mais tarde.';
 
         if (this.mostrarTutorial) {
           this.falarTexto(mensagem);
@@ -1614,7 +1595,12 @@ export default {
       }
 
       this.loadingIA = true;
-      this.iaMessage = 'Melhorando objetivo...';
+      const mensagem = 'Melhorando objetivo...';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+      this.iaMessage = mensagem;
       this.iaMessageType = 'info';
 
       try {
@@ -1639,7 +1625,7 @@ export default {
         }, 3000);
 
       } catch (error) {
-        const mensagem = 'Erro ao melhorar. Tente novamente.';
+        const mensagem = 'Erro ao melhorar. Tente novamente mais tarde.';
 
         if (this.mostrarTutorial) {
           this.falarTexto(mensagem);
@@ -1824,7 +1810,7 @@ export default {
 
 .progress-bar {
   display: flex;
-  align-items: center; /* Alinha pelo topo para o cálculo da linha ser fixo */
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 40px;
   padding: 0 10px; 
@@ -1837,8 +1823,8 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  min-width: 80px; /* Garante que cada etapa tenha uma área mínima para não "esmagar" o círculo */
-  z-index: 1; /* Garante que o círculo fique acima da linha se eles se sobrepuserem */
+  min-width: 80px;
+  z-index: 1;
 }
 
 .step-circle {
@@ -1931,26 +1917,23 @@ export default {
   transform: translateY(-50%);
 }
 
-input:disabled { /* Fundo cinza bem claro */
-  color: #999999;       /* Muda o cursor para um sinal de "proibido" */
-  border: 1px solid #dddddd; /* Borda suave */
-  opacity: 0.7;              /* Garante que pareça levemente desbotado */
+input:disabled {
+  color: #999999;
+  border: 1px solid #dddddd;
+  opacity: 0.7;
 }
 
 .input-com-dois-icones {
-  width: 100% !important; /* O !important garante que ele ignore o tamanho padrão do navegador */
-  min-width: 100%;        /* Força a ocupação total da coluna */
-  box-sizing: border-box; /* Evita que o padding "estoure" a largura */
+  width: 100% !important;
+  min-width: 100%;
+  box-sizing: border-box;
 }
 
 .icone-calendario{
-  color:#ff000000
+  opacity: 0;
 }
 
-/* 2. O MÁGICO: Empurra o ícone nativo do calendário para a esquerda */
 .input-com-dois-icones::-webkit-calendar-picker-indicator {
-  /* Move o ícone do calendário para longe da borda direita, 
-     dando espaço para o microfone entrar */
   margin-right: 25px; 
   cursor: pointer;
   opacity: 0.3;
@@ -1960,7 +1943,7 @@ input:disabled { /* Fundo cinza bem claro */
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-  align-items: start; /* Garante que os labels fiquem alinhados no topo */
+  align-items: start;
 }
 
 label {
@@ -1999,9 +1982,9 @@ textarea {
 
 .btn-microfone {
   position: absolute;
-  right: 8px; /* Ajuste este valor para afastar da borda direita do input */
-  top: 50%;   /* Centraliza verticalmente */
-  transform: translateY(-50%); /* Ajuste fino para a centralização vertical */
+  right: 8px;
+  top: 50%; 
+  transform: translateY(-50%); 
   
   width: 36px;
   height: 36px;
@@ -2039,7 +2022,7 @@ textarea {
 }
 
 .btn-microfone.gravando svg {
-  color: #ef4444; /* ← Vermelho quando grava */
+  color: #ef4444;
 }
 
 @keyframes pulse-icon {
@@ -2056,7 +2039,6 @@ textarea {
 }
 
 
-/* Transcrição em tempo real */
 .transcricao-tempo-real {
   margin-top: 10px;
   padding: 10px 12px;
@@ -2073,7 +2055,6 @@ textarea {
   display: block;
 }
 
-/* Erro de áudio */
 .erro-audio {
   margin-top: 10px;
   padding: 10px 12px;
@@ -2109,15 +2090,12 @@ textarea {
     background: transparent;
     border: none;
     cursor: pointer;
-    
-    /* Aumenta a área de clique em 20px para todos os lados */
     padding: 20px; 
     
-    /* Garante que o ícone não mude de lugar, apenas a área em volta dele cresça */
     display: flex;
     align-items: center;
     justify-content: center;
-    right: 4px; /* Ajuste este valor para afastar da borda direita do input */
+    right: 4px;
   } 
   
   textarea {
@@ -2161,7 +2139,7 @@ input::placeholder, textarea::placeholder {
 
 .btn-primary {
   width: 100%;
-  padding: 12px 60px 12px 12px; /* Padding extra à direita para o botão de áudio */
+  padding: 12px 60px 12px 12px; 
   background: #000;
   color: white;
   border: none;
@@ -2291,9 +2269,9 @@ input::placeholder, textarea::placeholder {
 
 .btn-ia {
   position: absolute;
-  right: 5px; /* Ajuste este valor para afastar da borda direita do input */
-  top: 20%;   /* Centraliza verticalmente */
-  transform: translateY(-50%); /* Ajuste fino para a centralização vertical */
+  right: 5px;
+  top: 20%;
+  transform: translateY(-50%);
   
   width: 36px;
   height: 36px;
@@ -2313,6 +2291,10 @@ input::placeholder, textarea::placeholder {
 
 .icon-update {
   filter: brightness(0) invert(1);
+}
+.icon-education {
+  filter: brightness(0) invert(1);
+  height: 25px;
 }
 
 .icon-update {
@@ -2478,25 +2460,19 @@ input::placeholder, textarea::placeholder {
 }
 
 .alert {
-  /* Posicionamento fixo no topo */
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999; /* Garante que fique acima de tudo */
-  
-  /* Largura adaptável para mobile */
+  z-index: 9999;
   width: 90%;
   max-width: 400px;
-  
-  /* Estilo visual */
   padding: 16px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   
-  /* Mantém sua animação */
   animation: slideDown 0.3s ease;
   text-align: center;
 }
@@ -2526,41 +2502,37 @@ input::placeholder, textarea::placeholder {
 
 @media (max-width: 728px) {
   .wrapper {
-    padding: 0; /* Remove o respiro externo para o card encostar na lateral se necessário */
-    background: rgb(255, 255, 255); /* Opcional: tira o fundo cinza para parecer um app nativo */
-    align-items: flex-start; /* Alinha o conteúdo no topo */
+    padding: 0;
+    background: rgb(255, 255, 255); 
+    align-items: flex-start;
   }
 
   .container {
-    padding: 20px; /* Reduz drasticamente o padding interno */
-    border-radius: 0; /* Remove arredondamento para ocupar os cantos da tela */
-    border: none; /* Remove a borda para um visual mais limpo */
-    max-width: 100vw; /* Garante 100% da largura da visualização */
-    min-height: 100vh; /* Faz o branco ocupar a altura toda do celular */
+    padding: 20px;
+    border-radius: 0;
+    border: none;
+    max-width: 100vw;
+    min-height: 100vh;
   }
-  
-  /* Ajuste para que os inputs fiquem confortáveis */
   input, select, textarea {
-    font-size: 16px; /* Evita que o iOS dê zoom automático ao clicar */
+    font-size: 16px;
   }
 
   input::placeholder {
-    font-size: 14px; /* Ajuste para o tamanho desejado */
-    color: #b4b4b4;    /* Opcional: ajusta a cor para melhorar o contraste */
+    font-size: 14px;
+    color: #b4b4b4;
   }
 
   textarea {
-    resize: none; /* Impede qualquer redimensionamento manual */
+    resize: none;
   }
 
-  /* Remove a seta e o botão de limpeza padrão no Chrome/Android */
   input[type="date"]::-webkit-inner-spin-button,
   input[type="date"]::-webkit-calendar-picker-indicator {
       display: none;
       -webkit-appearance: none;
   }
 
-  /* Garante que o input ocupe o espaço correto sem quebras */
   input[type="date"] {
       appearance: none;
       -moz-appearance: none;
@@ -2571,7 +2543,6 @@ input::placeholder, textarea::placeholder {
   input[type="date"]::-webkit-calendar-picker-indicator {
     display: block;
     cursor: pointer;
-    /* Afasta o ícone para a esquerda para não  sobrepor o microfone */
     margin-right: 35px; 
     filter: invert(0.5);
   }
@@ -2581,8 +2552,8 @@ input::placeholder, textarea::placeholder {
   }
 
   .form-row {
-    grid-template-columns: 1fr; /* Um campo por linha no celular */
-    gap: 0; /* O margin-bottom do form-group já cuidará do espaço */
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 
   .button-group {
@@ -2590,14 +2561,14 @@ input::placeholder, textarea::placeholder {
   }
 
   .progress-bar {
-    /* No mobile, talvez precise de um pouco mais de respiro */
     padding: 0 25px;
   }
 
   .icone-calendario {
     position: absolute;
+    top: 8px;
     right: 40px;
-    pointer-events: none; /* Garante que o clique abra o seletor de data do input */
+    pointer-events: none;
     font-size: 1rem;
     z-index: 1;
     color:#000000;
