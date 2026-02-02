@@ -421,7 +421,6 @@ export default {
         objetivo: false
       },
       gravandoDataFim: false,
-      gravandoDataNascimento: false,
       gravandoDataInicioExperiencia: false,
       transcricaoAtual: '',
       erroAudio: null,
@@ -554,20 +553,14 @@ export default {
       this.curriculoId = this.$route.params.id;
     }
 
-    if (this.curriculo.dataNascimento) {
-      this.curriculo.dataNascimento = this.curriculo.dataNascimento.split('T')[0];
-    }
-
     this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
   },
   methods: {
     formatarDataParaBR(dataISO) {
       if (!dataISO) return '';
       
-      // Se já está em formato BR, retorna como está
       if (dataISO.includes('/')) return dataISO;
       
-      // Converte ISO para BR
       if (dataISO.includes('-')) {
         const [ano, mes, dia] = dataISO.split('-');
         return `${dia}/${mes}/${ano}`;
@@ -720,7 +713,6 @@ export default {
     },
     
     handleFocus(event) {
-      // Garante visibilidade no mobile
       setTimeout(() => {
         event.target.scrollIntoView({
           behavior: 'smooth',
@@ -734,16 +726,13 @@ export default {
       const mesNum = parseInt(mes);
       const anoNum = parseInt(ano);
       
-      // Validações básicas
       if (diaNum < 1 || diaNum > 31) return false;
       if (mesNum < 1 || mesNum > 12) return false;
       if (anoNum < 1900 || anoNum > new Date().getFullYear() + 10) return false;
       
-      // Valida dias por mês
       const diasPorMes = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
       if (diaNum > diasPorMes[mesNum - 1]) return false;
       
-      // Valida ano bissexto para fevereiro
       if (mesNum === 2 && diaNum === 29) {
         const bissexto = (anoNum % 4 === 0 && anoNum % 100 !== 0) || (anoNum % 400 === 0);
         if (!bissexto) return false;
@@ -912,11 +901,10 @@ export default {
     },
 
     processarTranscricao(fieldName, objeto, transcript) {
-      if (['dataInicio', 'dataFim', 'dataNascimento'].includes(fieldName)) {
+      if (['dataInicio', 'dataFim'].includes(fieldName)) {
         const dataFormatada = this.interpretarDataFalada(transcript);
         
         if (dataFormatada) {
-          // Atribui o valor YYYY-MM-DD ao objeto (novaExperiencia ou curriculo)
           objeto[fieldName] = dataFormatada;
           this.falarTexto("Data gravada");
         } else {
@@ -924,7 +912,6 @@ export default {
           this.falarTexto("Não entendi a data. Tente falar o dia, o mês e o ano.");
         }
       } 
-      // Caso 2: Estado
       else if (fieldName === 'estado') {
         const sigla = this.converterEstadoParaSigla(transcript);
         if (sigla) objeto[fieldName] = sigla;
@@ -933,8 +920,7 @@ export default {
       else if (fieldName === 'cidade') {
         const cidadeValida = this.validarEConverterCidade(transcript);
         if (cidadeValida) objeto[fieldName] = cidadeValida;
-      } 
-      // Caso 4: Texto Comum (Cargo, Empresa, Nome...)
+      }
       else {
         objeto[fieldName] = this.capitalizeText(transcript);
       }
@@ -1141,14 +1127,6 @@ export default {
         this.startRecordingDataFim();
       }
     },
-
-    toggleGravacaoDataNascimento() {
-      if (this.gravandoDataNascimento) {
-        this.stopRecording();
-      } else {
-        this.startRecordingDataNascimento();
-      }
-    },
     
     async startRecordingDataFim() {
       try {
@@ -1219,7 +1197,6 @@ export default {
 
       let texto = transcript.toLowerCase().replace(/ de /g, ' ').replace(/\./g, '').trim();
 
-      // Procura por: [1 ou 2 números] [espaço] [palavra ou número] [espaço] [4 números]
       const regex = /(\d{1,2})\s+([a-zç0-9]+)\s+(\d{4})/;
       const match = texto.match(regex);
 
@@ -1229,76 +1206,12 @@ export default {
         let ano = match[3];
         let mes = meses[mesCapturado] || mesCapturado.padStart(2, '0');
 
-        // Validação simples
         if (parseInt(mes) > 12 || parseInt(dia) > 31) return null;
 
         return `${ano}-${mes}-${dia}`;
       }
 
-      return null; // Se não falou completo, não preenche nada.
-    },
-
-    async startRecordingDataNascimento() {
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
-          return;
-        }
-        
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'pt-BR';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            const dataFormatada = this.converterTextoParaDataISO(transcript);
-            
-            if (dataFormatada) {
-              this.curriculo.dataNascimento = dataFormatada;
-            }
-          }
-        };
-        
-        this.recognition.onstart = () => {
-          this.gravandoDataNascimento = true;
-          this.erroAudio = null;
-        };
-        
-        this.recognition.onend = () => {
-          this.gravandoDataNascimento = false;
-        };
-        
-        this.recognition.onerror = (event) => {
-          this.gravandoDataNascimento = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-        };
-        
-        this.recognition.start();
-        
-      } catch (error) {
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
-        this.gravandoDataNascimento = false;
-      }
+      return null;
     },
 
     garantirVisibilidade(event) {
