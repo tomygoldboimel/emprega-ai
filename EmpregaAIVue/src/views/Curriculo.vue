@@ -1191,33 +1191,39 @@ export default {
       }
     },
 
-    interpretarDataFalada(texto) {
+    interpretarDataFalada(transcript) {
+      // 1. Dicionário para meses falados
       const meses = {
         'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
         'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
         'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
       };
 
-      let limpo = texto.replace(/ de /g, '/').replace(/\s/g, '/');
-      
-      const partes = limpo.split('/');
-      
-      let dia = partes[0].padStart(2, '0');
-      let mesTexto = partes[1];
-      let ano = partes[2];
+      // 2. Limpeza básica: remove "de" e pontos finais que o celular coloca
+      let texto = transcript.toLowerCase().replace(/ de /g, ' ').replace(/\./g, '');
 
-      if (meses[mesTexto]) {
-        mesTexto = meses[mesTexto];
-      } else {
-        mesTexto = mesTexto.padStart(2, '0');
+      // 3. Tenta encontrar Dia, Mes e Ano
+      // Regex aceita: "10 maio 2020", "10 05 2020" ou "10/05/2020"
+      const regex = /(\d{1,2})\s+([a-zç0-9]+)\s+(\d{4})/;
+      const match = texto.match(regex);
+
+      if (match) {
+        let dia = match[1].padStart(2, '0');
+        let mesCapturado = match[2];
+        let ano = match[3];
+
+        // Se o mês for texto (ex: "maio"), converte. Se for número, mantém.
+        let mes = meses[mesCapturado] || mesCapturado.padStart(2, '0');
+
+        // Retorna no formato ISO (YYYY-MM-DD) para facilitar a vida do C#
+        return `${ano}-${mes}-${dia}`;
       }
 
-      if (ano && ano.length === 2) {
-        ano = parseInt(ano) > 25 ? '19' + ano : '20' + ano;
-      }
-
-      if (dia.length === 2 && mesTexto.length === 2 && ano?.length === 4) {
-        return `${ano}-${mesTexto}-${dia}`;
+      // Caso o usuário fale só o ano (ex: "trabalhei em dois mil e vinte")
+      const regexAnoApenas = /(\d{4})/;
+      const matchAno = texto.match(regexAnoApenas);
+      if (matchAno) {
+        return `${matchAno[1]}-01-01`; // Salva o primeiro dia do ano como padrão
       }
 
       return null;
