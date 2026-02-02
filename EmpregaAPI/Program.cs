@@ -26,7 +26,6 @@ builder.Services.AddScoped<ICertificacaoService, CertificacaoService>();
 builder.Services.AddScoped<IExperienciaService, ExperienciaService>();
 builder.Services.AddScoped<IFormacaoService, FormacaoService>();
 builder.Services.AddScoped<IExtratorService, ExtratorService>();
-builder.Services.AddScoped<VonageSmsService>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IProcessadorGroqService, ProcessadorGroqService>();
@@ -53,7 +52,6 @@ builder.Services.AddCors(options => {
     });
 });
 
-builder.Services.Configure<VonageSettings>(builder.Configuration.GetSection("Vonage"));
 builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = 10 * 1024 * 1024);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

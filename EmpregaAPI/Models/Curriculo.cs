@@ -12,7 +12,6 @@ namespace EmpregaAPI.Models
         [Required]
         public Guid UsuarioId { get; set; }
         public string? NomeCompleto { get; set; }
-        public DateTime? DataNascimento { get; set; }
         public string? Cidade { get; set; }
         public string? Estado { get; set; }
         public string? Objetivo { get; set; }
