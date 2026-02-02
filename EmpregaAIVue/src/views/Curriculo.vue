@@ -188,8 +188,8 @@
                   <img src="@/assets/icons/calendarIcon.svg" alt="Calendar"/>
                 </span>
                 <BotaoMicrofone 
-                  :isRecording="gravandoDataInicioExperiencia" 
-                  @toggle="toggleGravacaoDataInicioExperiencia"
+                  :isRecording="camposGravando.dataInicio" 
+                  @toggle="toggleGravacao('dataInicio', novaExperiencia)"
                 />
               </div>
               <span v-if="erroDataInicio" class="msg-erro">{{ mensagemErroDataInicio }}</span>
@@ -220,8 +220,8 @@
                   <img src="@/assets/icons/calendarIcon.svg" alt="Calendar" />
                 </span>
                 <BotaoMicrofone 
-                  :isRecording="gravandoDataFim" 
-                  @toggle="toggleGravacaoDataFim"
+                  :isRecording="camposGravando.dataFim" 
+                  @toggle="toggleGravacao('dataFim', novaExperiencia)"
                 />
               </div>
               <span v-if="erroDataFim" class="msg-erro">{{ mensagemErroDataFim }}</span>
@@ -416,6 +416,8 @@ export default {
         nomeCompleto: false,
         email: false,
         cidade: false,
+        dataInicio: false,
+        dataFim: false,
         objetivo: false
       },
       gravandoDataFim: false,
@@ -910,13 +912,30 @@ export default {
     },
 
     processarTranscricao(fieldName, objeto, transcript) {
-      if (fieldName === 'estado') {
+      if (['dataInicio', 'dataFim', 'dataNascimento'].includes(fieldName)) {
+        const dataFormatada = this.interpretarDataFalada(transcript);
+        
+        if (dataFormatada) {
+          // Atribui o valor YYYY-MM-DD ao objeto (novaExperiencia ou curriculo)
+          objeto[fieldName] = dataFormatada;
+          this.falarTexto("Data gravada");
+        } else {
+          this.mostrarErro(`Não entendi a data. Fale o dia, mês e ano.`);
+          this.falarTexto("Não entendi a data. Tente falar o dia, o mês e o ano.");
+        }
+      } 
+      // Caso 2: Estado
+      else if (fieldName === 'estado') {
         const sigla = this.converterEstadoParaSigla(transcript);
         if (sigla) objeto[fieldName] = sigla;
-      } else if (fieldName === 'cidade') {
+      } 
+      // Caso 3: Cidade
+      else if (fieldName === 'cidade') {
         const cidadeValida = this.validarEConverterCidade(transcript);
         if (cidadeValida) objeto[fieldName] = cidadeValida;
-      } else {
+      } 
+      // Caso 4: Texto Comum (Cargo, Empresa, Nome...)
+      else {
         objeto[fieldName] = this.capitalizeText(transcript);
       }
     },
@@ -1192,18 +1211,15 @@ export default {
     },
 
     interpretarDataFalada(transcript) {
-      // 1. Dicionário para meses falados
       const meses = {
         'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
         'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
         'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
       };
 
-      // 2. Limpeza básica: remove "de" e pontos finais que o celular coloca
-      let texto = transcript.toLowerCase().replace(/ de /g, ' ').replace(/\./g, '');
+      let texto = transcript.toLowerCase().replace(/ de /g, ' ').replace(/\./g, '').trim();
 
-      // 3. Tenta encontrar Dia, Mes e Ano
-      // Regex aceita: "10 maio 2020", "10 05 2020" ou "10/05/2020"
+      // Procura por: [1 ou 2 números] [espaço] [palavra ou número] [espaço] [4 números]
       const regex = /(\d{1,2})\s+([a-zç0-9]+)\s+(\d{4})/;
       const match = texto.match(regex);
 
@@ -1211,22 +1227,15 @@ export default {
         let dia = match[1].padStart(2, '0');
         let mesCapturado = match[2];
         let ano = match[3];
-
-        // Se o mês for texto (ex: "maio"), converte. Se for número, mantém.
         let mes = meses[mesCapturado] || mesCapturado.padStart(2, '0');
 
-        // Retorna no formato ISO (YYYY-MM-DD) para facilitar a vida do C#
+        // Validação simples
+        if (parseInt(mes) > 12 || parseInt(dia) > 31) return null;
+
         return `${ano}-${mes}-${dia}`;
       }
 
-      // Caso o usuário fale só o ano (ex: "trabalhei em dois mil e vinte")
-      const regexAnoApenas = /(\d{4})/;
-      const matchAno = texto.match(regexAnoApenas);
-      if (matchAno) {
-        return `${matchAno[1]}-01-01`; // Salva o primeiro dia do ano como padrão
-      }
-
-      return null;
+      return null; // Se não falou completo, não preenche nada.
     },
 
     async startRecordingDataNascimento() {
