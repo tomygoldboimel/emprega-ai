@@ -391,6 +391,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   background: #000;
   color: #fff;
 }
@@ -403,6 +404,12 @@ export default {
 .btn-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn-submit span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .spinner {
@@ -444,7 +451,10 @@ export default {
   border: 1px solid #fecaca;
 }
 
-.arrow-icon{
+.arrow-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
   filter: brightness(0) invert(1);
 }
 
