@@ -36,7 +36,7 @@
       <div v-if="step === 1" class="step-content">
         <h2 class="step-title" @click="falarElemento">Sobre você</h2>
         <div class="form-group">
-          <label @click="falarTexto('Nome completo')">Nome Completo*</label>
+          <label @click="falarElemento">Nome Completo</label>
           <form @submit.prevent="salvarCurriculo">
             <div style="position: relative;">
               <input type="text" v-model="curriculo.nomeCompleto" :class="{'input-erro': erroNome}" required placeholder="Seu nome todo..." @click="garantirVisibilidade"/>
@@ -63,7 +63,7 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label @click="falarElemento">Estado</label>
+            <label @click="falarElemento">Estado (opcional)</label>
             <div style="position: relative;">
               <EstadoDropdown v-model="curriculo.estado" class="input-com-dois-icones"/>
               <BotaoMicrofone 
@@ -73,7 +73,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label @click="falarElemento">Cidade</label>
+            <label @click="falarElemento">Cidade (opcional)</label>
             <div style="position: relative;">
               <CidadeDropdown 
                 v-model="curriculo.cidade" 
@@ -89,7 +89,7 @@
         </div>
 
         <div class="form-group">
-            <label @click="falarElemento">Objetivo Profissional</label>
+            <label @click="falarElemento">Objetivo Profissional (opcional)</label>
               <div style="position: relative;">
                 <textarea 
                   v-model="curriculo.objetivo" 
@@ -116,7 +116,7 @@
       </div>
 
       <div v-if="step === 2" class="step-content">
-        <h2 class="step-title" @click="falarElemento">Trabalhos</h2>
+        <h2 class="step-title" @click="falarElemento">Trabalhos (opcional)</h2>
         <div class="form-card">
           <div class="form-group">
             <label @click="falarElemento">Descrição das Atividades</label>
@@ -263,7 +263,7 @@
       </div>
 
       <div v-if="step === 3" class="step-content">
-        <h2 class="step-title" @click="falarElemento">Estudos</h2>
+        <h2 class="step-title" @click="falarElemento">Estudos (opcional)</h2>
 
         <div class="form-card">
           <div class="form-group">
