@@ -234,8 +234,7 @@
           </div>
 
           <button class="btn-add" @click="adicionarExperiencia">
-            <span v-if="!editandoIndexExperiencia">+</span>
-            <img v-else src="@/assets/icons/updateIcon.svg" alt="Atualizar" class="icon-update" />
+            <span>+</span>
           </button>
         </div>
 
