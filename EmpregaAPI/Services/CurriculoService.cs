@@ -21,7 +21,6 @@ namespace EmpregaAI.Services
         {
             curriculo.Id = Guid.NewGuid();
             curriculo.Excluido = false;
-            // 2. Importante: Se houver experiências ou formações, as datas delas também darão erro!
             if (curriculo.Experiencias != null)
             {
                 foreach (var exp in curriculo.Experiencias)

@@ -57,7 +57,6 @@ namespace EmpregaAI.Services
             var response = await _httpClient.SendAsync(request);
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            // Log para debug (opcional, pode remover depois)
             try
             {
                 var logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "groq_debug");
@@ -67,7 +66,7 @@ namespace EmpregaAI.Services
                     responseContent
                 );
             }
-            catch { /* ignora erro de log */ }
+            catch {}
 
             if (!response.IsSuccessStatusCode)
             {
@@ -86,14 +85,11 @@ namespace EmpregaAI.Services
                 throw new Exception("Resposta da IA vazia ou inválida");
             }
 
-            // ===== LIMPEZA DO JSON =====
-            // O content vem com \n, \r, \t que precisam ser removidos
             var cleanJson = jsonContent
                 .Replace("\\n", "")
                 .Replace("\\r", "")
                 .Replace("\\t", "")
                 .Trim();
-            // ===========================
 
             try
             {
