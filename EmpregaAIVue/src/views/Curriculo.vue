@@ -341,6 +341,12 @@
       @confirmar="confirmarSair"
       @fechar="fecharModal"
       @falar="falarTexto"/>
+    <ModalPermissaoMicrofone 
+      :isOpen="exibirModalPermissao" 
+      @fechar="exibirModalPermissao = false"
+      @permitido="confirmarPermissao"
+      @falar="falarTexto"
+    />
   </div>
 </template>
 
@@ -362,6 +368,7 @@ import BackButton from '@/components/BackButton.vue';
 import SaveButton from '@/components/SaveButton.vue';
 import CidadeDropdown from '@/components/CidadeDropdown.vue';
 import ModalCarregamento from '@/components/ModalCarregamento.vue';
+import ModalPermissaoMicrofone from '@/components/ModalPermissaoMicrofone.vue';
 
 export default {
   name: 'CurriculoForm',
@@ -377,7 +384,8 @@ export default {
     BotaoProximo,
     BackButton,
     SaveButton,
-    CidadeDropdown
+    CidadeDropdown,
+    ModalPermissaoMicrofone
   },
   data() {
     return {
@@ -406,6 +414,8 @@ export default {
       itemParaRemover: null,
       mostrarTutorial: false,
       audioTutorial: null,
+      exibirModalPermissao: false,
+      funcaoPendente: null,
       camposGravando: {
         descricao: false,
         empresa: false,
@@ -556,6 +566,44 @@ export default {
     this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
   },
   methods: {
+    async verificarEPedirPermissao(callbackOriginal) {
+      try {
+        const result = await navigator.permissions.query({ name: 'microphone' });
+        
+        if (result.state === 'granted') {
+          callbackOriginal();
+        } else {
+          this.exibirModalPermissao = true;
+          this.pendingAction = callbackOriginal;
+        }
+      } catch (e) {
+        this.exibirModalPermissao = true;
+        this.pendingAction = callbackOriginal;
+      }
+    },
+    async executarComVerificacao(callback) {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const status = await navigator.permissions.query({ name: 'microphone' });
+
+          if (status.state === 'granted') {
+            callback();
+            return;
+          }
+
+          if (status.state === 'denied') {
+            alert("O microfone está bloqueado nas configurações do seu navegador. Clique no ícone de 'Cadeado' ao lado da barra de endereços para liberar.");
+            return;
+          }
+        }
+        
+        this.funcaoPendente = callback;
+        this.exibirModalPermissao = true;
+
+      } catch (error) {
+        this.exibirModalPermissao = true;
+      }
+    },
     formatarDataParaBR(dataISO) {
       if (!dataISO) return '';
       
