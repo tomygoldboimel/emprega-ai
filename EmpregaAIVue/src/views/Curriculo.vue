@@ -173,45 +173,59 @@
               <label @click="falarElemento">Data Início</label>
               
               <div style="position: relative;">
-                
                 <input 
-                type="date" 
-                v-model="novaExperiencia.dataInicio"
-                class="input-com-dois-icones"
+                  type="text"
+                  inputmode="numeric"
+                  :value="formatarDataParaBR(novaExperiencia.dataInicio)"
+                  @input="handleInputDataInicio"
+                  @focus="handleFocus"
+                  @blur="validarDataInicio"
+                  placeholder="DD/MM/AAAA"
+                  maxlength="10"
+                  class="input-com-dois-icones"
                 />
                 <span class="icone-calendario"> 
                   <img src="@/assets/icons/calendarIcon.svg" alt="Calendar"/>
                 </span>
                 <BotaoMicrofone 
-                :isRecording="gravandoDataInicioExperiencia" 
-                @toggle="toggleGravacaoDataInicioExperiencia"
+                  :isRecording="gravandoDataInicioExperiencia" 
+                  @toggle="toggleGravacaoDataInicioExperiencia"
                 />
-                
               </div>
+              <span v-if="erroDataInicio" class="msg-erro">{{ mensagemErroDataInicio }}</span>
             </div>
             <div class="form-group">
               <label @click="falarElemento">Data Fim</label>
               <div style="position: relative;"> 
-                <input v-if="!novaExperiencia.empregoAtual"
-                type="date" 
-                v-model="novaExperiencia.dataFim"
-                class="input-com-dois-icones"
+                <input 
+                  v-if="!novaExperiencia.empregoAtual"
+                  type="text"
+                  inputmode="numeric"
+                  :value="formatarDataParaBR(novaExperiencia.dataFim)"
+                  @input="handleInputDataFim"
+                  @focus="handleFocus"
+                  @blur="validarDataFim"
+                  placeholder="DD/MM/AAAA"
+                  maxlength="10"
+                  class="input-com-dois-icones"
                 />
-                <input v-else
-                type="date" 
-                v-model="novaExperiencia.dataFim"
-                class="input-com-dois-icones"
-                disabled
+                <input 
+                  v-else
+                  type="text" 
+                  value="Trabalho atual"
+                  class="input-com-dois-icones"
+                  disabled
                 />
                 <span class="icone-calendario"> 
                   <img src="@/assets/icons/calendarIcon.svg" alt="Calendar" />
                 </span>
                 <BotaoMicrofone 
-                :isRecording="gravandoDataFim" 
-                @toggle="toggleGravacaoDataFim"
+                  :isRecording="gravandoDataFim" 
+                  @toggle="toggleGravacaoDataFim"
                 />
-                
               </div>
+              <span v-if="erroDataFim" class="msg-erro">{{ mensagemErroDataFim }}</span>
+              
               <div class="checkbox-wrapper">
                 <input type="checkbox" id="empregoAtual" v-model="novaExperiencia.empregoAtual" />
                 <label for="empregoAtual" style="margin: 0;" @click="falarElemento">Trabalho aqui atualmente</label>
@@ -363,12 +377,15 @@ export default {
     BotaoProximo,
     BackButton,
     SaveButton,
-    CidadeDropdown,
-    ModalCarregamento
+    CidadeDropdown
   },
   data() {
     return {
       step: 1,
+      erroDataInicio: false,
+      mensagemErroDataInicio: '',
+      erroDataFim: false,
+      mensagemErroDataFim: '',
       editandoIndexExperiencia: null,
       editandoExperiencia: false,
       editandoIndexFormacao: null,
@@ -542,6 +559,197 @@ export default {
     this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
   },
   methods: {
+    formatarDataParaBR(dataISO) {
+      if (!dataISO) return '';
+      
+      // Se já está em formato BR, retorna como está
+      if (dataISO.includes('/')) return dataISO;
+      
+      // Converte ISO para BR
+      if (dataISO.includes('-')) {
+        const [ano, mes, dia] = dataISO.split('-');
+        return `${dia}/${mes}/${ano}`;
+      }
+      
+      return dataISO;
+    },
+    
+    handleInputDataInicio(event) {
+      let v = event.target.value.replace(/\D/g, '');
+      let finalValue = '';
+
+      if (v.length >= 1) {
+        let dia = v.substring(0, 2);
+        if (dia.length === 1 && parseInt(dia) > 3) {
+          dia = '0' + dia;
+          v = dia + v.substring(1);
+        } else if (dia.length === 2) {
+          if (parseInt(dia) > 31) dia = '31';
+          if (parseInt(dia) === 0) dia = '01';
+        }
+        finalValue = dia;
+      }
+
+      if (v.length >= 3) {
+        let mes = v.substring(2, 4);
+        if (mes.length === 1 && parseInt(mes) > 1) {
+          mes = '0' + mes;
+          v = v.substring(0, 2) + mes + v.substring(3);
+        } else if (mes.length === 2) {
+          if (parseInt(mes) > 12) mes = '12';
+          if (parseInt(mes) === 0) mes = '01';
+        }
+        finalValue += '/' + mes;
+      }
+
+      if (v.length >= 5) {
+        let ano = v.substring(4, 8);
+        finalValue += '/' + ano;
+      }
+
+      event.target.value = finalValue;
+
+      if (v.length >= 4) {
+        const d = parseInt(v.substring(0, 2));
+        const m = parseInt(v.substring(2, 4));
+        
+        const diasNoMes = new Date(2024, m, 0).getDate();
+        if (d > diasNoMes && m !== 0) {
+          const diaCorrigido = String(diasNoMes).padStart(2, '0');
+          event.target.value = diaCorrigido + finalValue.substring(2);
+          v = diaCorrigido + v.substring(2);
+        }
+      }
+
+      if (v.length === 8) {
+        const dia = v.slice(0, 2);
+        const mes = v.slice(2, 4);
+        const ano = v.slice(4, 8);
+        this.novaExperiencia.dataInicio = `${ano}-${mes}-${dia}`;
+        this.erroDataInicio = false;
+      } else {
+        this.novaExperiencia.dataInicio = '';
+      }
+    },
+    
+    validarDataInicio() {
+      const valorAtual = this.formatarDataParaBR(this.novaExperiencia.dataInicio);
+      
+      if (valorAtual && valorAtual.length > 0 && valorAtual.length < 10) {
+        this.erroDataInicio = true;
+        this.mensagemErroDataInicio = 'Data incompleta';
+      }
+    },
+    
+    handleInputDataFim(event) {
+      let v = event.target.value.replace(/\D/g, '');
+      let finalValue = '';
+
+      if (v.length >= 1) {
+        let dia = v.substring(0, 2);
+        if (dia.length === 1 && parseInt(dia) > 3) {
+          dia = '0' + dia;
+          v = dia + v.substring(1);
+        } else if (dia.length === 2) {
+          if (parseInt(dia) > 31) dia = '31';
+          if (parseInt(dia) === 0) dia = '01';
+        }
+        finalValue = dia;
+      }
+
+      if (v.length >= 3) {
+        let mes = v.substring(2, 4);
+        if (mes.length === 1 && parseInt(mes) > 1) {
+          mes = '0' + mes;
+          v = v.substring(0, 2) + mes + v.substring(3);
+        } else if (mes.length === 2) {
+          if (parseInt(mes) > 12) mes = '12';
+          if (parseInt(mes) === 0) mes = '01';
+        }
+        finalValue += '/' + mes;
+      }
+
+      if (v.length >= 5) {
+        let ano = v.substring(4, 8);
+        finalValue += '/' + ano;
+      }
+
+      event.target.value = finalValue;
+
+      if (v.length >= 4) {
+        const d = parseInt(v.substring(0, 2));
+        const m = parseInt(v.substring(2, 4));
+        
+        const diasNoMes = new Date(2024, m, 0).getDate();
+        if (d > diasNoMes && m !== 0) {
+          const diaCorrigido = String(diasNoMes).padStart(2, '0');
+          event.target.value = diaCorrigido + finalValue.substring(2);
+          v = diaCorrigido + v.substring(2);
+        }
+      }
+
+      if (v.length === 8) {
+        const dia = v.slice(0, 2);
+        const mes = v.slice(2, 4);
+        const ano = v.slice(4, 8);
+        this.novaExperiencia.dataFim = `${ano}-${mes}-${dia}`;
+        this.erroDataFim = false;
+      } else {
+        this.novaExperiencia.dataInicio = '';
+      }
+    },
+    
+    validarDataFim() {
+      const valorAtual = this.formatarDataParaBR(this.novaExperiencia.dataFim);
+      
+      if (valorAtual && valorAtual.length > 0 && valorAtual.length < 10) {
+        this.erroDataFim = true;
+        this.mensagemErroDataFim = 'Data incompleta';
+      }
+    },
+    
+    validarDataFim() {
+      const valorAtual = this.formatarDataParaBR(this.novaExperiencia.dataFim);
+      
+      if (valorAtual && valorAtual.length > 0 && valorAtual.length < 10) {
+        this.erroDataFim = true;
+        this.mensagemErroDataFim = 'Data incompleta';
+      }
+    },
+    
+    handleFocus(event) {
+      // Garante visibilidade no mobile
+      setTimeout(() => {
+        event.target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 300);
+    },
+    
+    validarData(dia, mes, ano) {
+      const diaNum = parseInt(dia);
+      const mesNum = parseInt(mes);
+      const anoNum = parseInt(ano);
+      
+      // Validações básicas
+      if (diaNum < 1 || diaNum > 31) return false;
+      if (mesNum < 1 || mesNum > 12) return false;
+      if (anoNum < 1900 || anoNum > new Date().getFullYear() + 10) return false;
+      
+      // Valida dias por mês
+      const diasPorMes = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      if (diaNum > diasPorMes[mesNum - 1]) return false;
+      
+      // Valida ano bissexto para fevereiro
+      if (mesNum === 2 && diaNum === 29) {
+        const bissexto = (anoNum % 4 === 0 && anoNum % 100 !== 0) || (anoNum % 400 === 0);
+        if (!bissexto) return false;
+      }
+      
+      return true;
+    },
+
     handleTutorialToggle(ativo) {
       this.mostrarTutorial = ativo;
       localStorage.setItem('audioDescricaoAtiva', ativo);
