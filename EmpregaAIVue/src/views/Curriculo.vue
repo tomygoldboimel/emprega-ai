@@ -54,18 +54,16 @@
             <label @click="falarElemento">Data de Nascimento</label>
             <div style="position: relative;"> 
               <input
-              type="date" 
+              type="text" 
               v-model="curriculo.dataNascimento"
+              placeholder="DD/MM/AAAA"
+              maxlength="10"
+              @input="aplicarMascaraData"
               class="input-com-dois-icones"
               @click="garantirVisibilidade"
               />
-              <span class="icone-calendario"> 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
+              <span class="icone-calendario">
+                <img src="@/assets/icons/calendarIcon.svg" alt="Calendar"/>
               </span>
               <BotaoMicrofone 
               :isRecording="gravandoDataNascimento" 
@@ -969,7 +967,41 @@ export default {
         this.startRecordingDataNascimento();
       }
     },
-    
+    aplicarMascaraData(event) {
+      let value = event.target.value.replace(/\D/g, '');
+      if (value.length > 8) value = value.slice(0, 8);
+      
+      if (value.length > 4) {
+        value = value.replace(/^(\d{2})(\d{2})(\d{4}).*/, '$1/$2/$3');
+      } else if (value.length > 2) {
+        value = value.replace(/^(\d{2})(\d{0,2}).*/, '$1/$2');
+      }
+      
+      this.curriculo.dataNascimento = value;
+    },
+    converterTextoParaDataBR(texto) {
+      if (!texto) return '';
+      texto = texto.toLowerCase().trim();
+
+      const meses = {
+        'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
+        'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
+        'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
+      };
+
+      const regex = /(\d{1,2})\s*(?:de|[\/\s])\s*([a-zç0-9]+)\s*(?:de|[\/\s])\s*(\d{4})/i;
+      const match = texto.match(regex);
+
+      if (match) {
+        const dia = match[1].padStart(2, '0');
+        const mesCapturado = match[2];
+        const ano = match[3];
+        const mes = meses[mesCapturado] || mesCapturado.padStart(2, '0');
+
+        return `${dia}/${mes}/${ano}`;
+      }
+      return null;
+    },
     async startRecordingDataFim() {
       try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
