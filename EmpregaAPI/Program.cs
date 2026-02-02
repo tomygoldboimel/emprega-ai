@@ -22,13 +22,10 @@ builder.Services.AddResponseCompression(options => {
 
 builder.Services.AddScoped<ICurriculoService, CurriculoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-builder.Services.AddScoped<ICertificacaoService, CertificacaoService>();
 builder.Services.AddScoped<IExperienciaService, ExperienciaService>();
 builder.Services.AddScoped<IFormacaoService, FormacaoService>();
-builder.Services.AddScoped<IExtratorService, ExtratorService>();
 
 builder.Services.AddHttpClient();
-builder.Services.AddHttpClient<IProcessadorGroqService, ProcessadorGroqService>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options => {
