@@ -1,11 +1,13 @@
 <template>
   <div class="auth-page">
     <div class="auth-container">
-      <div class="top-bar">
-        <BotaoDescricao @toggle="handleTutorialToggle"/>
-      </div>
       <div class="form-wrapper">
         <div class="form-content">
+          <div class="top-bar">
+            <div class="right-actions">
+              <BotaoDescricao @toggle="handleTutorialToggle"  :active="mostrarTutorial"/>
+            </div>
+          </div>
           <div class="icon-box">
             <img src="/profileIcon.svg" alt="User Icon" />
           </div>
@@ -22,6 +24,7 @@
               @keyup.enter="handleCadastro"
               placeholder="(XX) XXXXX-XXXX"
               @click="garantirVisibilidade"
+              @keydown="handleKeyDown"
             />
           </div>
 
@@ -30,7 +33,9 @@
             @click="handleCadastro"
             :disabled="loading"
           >
-            <span v-if="!loading">Confirmar</span>
+            <span v-if="!loading">
+              <img src="@/assets/icons/arrowIcon.svg" alt="Enter" class="arrow-icon"/>
+            </span>
             <div v-else class="spinner"></div>
           </button>
 
@@ -52,10 +57,8 @@
 </template>
 
 <script>
-import { enviarCodigo } from '@/services/codigoService';
 import usuarioService from '@/services/usuarioService';
 import BotaoDescricao from '@/components/BotaoDescricao.vue';
-import Login from './Login.vue';
 
 export default {
   name: 'Cadastro',
@@ -68,10 +71,41 @@ export default {
       cadastroTelefone: '',
       cadastroError: '',
       cadastroSuccess: '',
-      errorMessage: ''
+      errorMessage: '',
+      mostrarTutorial: false,
+    }
+  },
+  mounted() {
+    const estadoSalvo = localStorage.getItem('audioDescricaoAtiva');
+
+    if (estadoSalvo !== null) {
+      this.mostrarTutorial = estadoSalvo === 'true';
     }
   },
   methods: {
+    handleKeyDown(event) {
+      if (event.key === 'Backspace') {
+        const input = event.target;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const value = input.value;
+
+        if (start !== end) return;
+
+        if (value[start - 1] === '-') {
+          event.preventDefault();
+
+          const newValue = value.slice(0, start - 2) + value.slice(start);
+          
+          this.numero = newValue;
+
+          this.$nextTick(() => {
+            const newPos = start - 1;
+            input.setSelectionRange(newPos, newPos);
+          });
+        }
+      }
+    },
     handleTutorialToggle(ativo) {
       this.mostrarTutorial = ativo;
       localStorage.setItem('audioDescricaoAtiva', ativo); 
@@ -95,7 +129,7 @@ export default {
 
       const utterance = new SpeechSynthesisUtterance(texto);
       utterance.lang = 'pt-BR';
-      utterance.rate = 1.0;
+      utterance.rate = 1.1;
 
       const voices = window.speechSynthesis.getVoices();
       const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
@@ -108,11 +142,11 @@ export default {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
 
-      const texto = "Clique nos títulos para ouví-los";
+      const texto = "Descrição por áudio habilitada. Clique nos títulos para ouví-los";
       this.audioTutorial = new SpeechSynthesisUtterance(texto);
       this.audioTutorial.lang = 'pt-BR';
       
-      this.audioTutorial.rate = 0.9;
+      this.audioTutorial.rate = 1.1;
       this.audioTutorial.pitch = 1.0;
 
       const selecionarMelhorVoz = () => {
@@ -236,7 +270,6 @@ export default {
 }
 
 .auth-container {
-  position: relative;
   height: 100vh; 
   width: 100%;
   max-width: 440px;
@@ -247,24 +280,16 @@ export default {
 }
 
 .top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 0 4px;
-  margin-bottom: 20px;
-  position: relative;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 
-@media (max-width: 768px) {
-  .top-bar {
-    right: 24px;
-    top: 16px;
-  }
-}
+.right-actions { display: flex; gap: 12px; align-items: center; }
 
 .form-wrapper {
   width: 100%;
@@ -276,6 +301,8 @@ export default {
 }
 
 .form-content {
+  position: relative; /* ✅ ADICIONAR ISSO */
+  
   width: 100%;
   text-align: center;
   background: white;
@@ -284,6 +311,7 @@ export default {
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 
 .icon-box {
   width: 64px;
@@ -414,6 +442,10 @@ export default {
   background: #fef2f2;
   color: #991b1b;
   border: 1px solid #fecaca;
+}
+
+.arrow-icon{
+  filter: brightness(0) invert(1);
 }
 
 .alert-success {

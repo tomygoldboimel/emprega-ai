@@ -1,12 +1,10 @@
-import api from '../api'; // Sua instância centralizada
+import api from '../api';
 import type { Experiencia } from 'src/models/Experiencia';
 
-// Agora você só define o "pedaço" final da URL
 const ROUTE = '/Experiencia';
 
 class ExperienciaService {
   async adicionarExperiencia(experiencia: Omit<Experiencia, 'id'>): Promise<Experiencia> {
-    // 'api' já sabe que o início é 'https://.../api'
     const response = await api.post<Experiencia>(ROUTE, experiencia);
     return response.data;
   }

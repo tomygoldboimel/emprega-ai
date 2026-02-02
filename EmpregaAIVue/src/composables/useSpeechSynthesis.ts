@@ -1,4 +1,3 @@
-// src/composables/useSpeechSynthesis.ts
 import { ref, computed, onUnmounted, watch } from 'vue';
 
 export function useSpeechSynthesis() {
@@ -8,22 +7,20 @@ export function useSpeechSynthesis() {
   const status = ref<'init' | 'playing' | 'pause' | 'end'>('init');
   
   const text = ref('');
-  const pitch = ref(1); // 0.5 a 2
-  const rate = ref(1); // 0.5 a 2
-  const volume = ref(1); // 0 a 1
+  const pitch = ref(1);
+  const rate = ref(1);
+  const volume = ref(1);
   const voice = ref<SpeechSynthesisVoice | null>(null);
   const voices = ref<SpeechSynthesisVoice[]>([]);
   
   const error = ref<string | null>(null);
   
-  // Para highlight de texto
   const boundaryStart = ref(0);
   const boundaryEnd = ref(0);
   
   let synth: SpeechSynthesis;
   let utterance: SpeechSynthesisUtterance | null = null;
 
-  // Segmentos de texto (para highlight)
   const textSegments = computed(() => {
     const fullText = text.value || '';
     const startIndex = Math.max(0, Math.min(boundaryStart.value, fullText.length));
@@ -36,14 +33,12 @@ export function useSpeechSynthesis() {
     };
   });
 
-  // Verificar suporte
   const checkSupport = () => {
     if ('speechSynthesis' in window) {
       isSupported.value = true;
       synth = window.speechSynthesis;
       loadVoices();
       
-      // Alguns navegadores carregam as vozes de forma assíncrona
       if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = loadVoices;
       }
@@ -53,11 +48,9 @@ export function useSpeechSynthesis() {
     }
   };
 
-  // Carregar vozes disponíveis
   const loadVoices = () => {
     voices.value = synth.getVoices();
     
-    // Selecionar voz em português como padrão
     const portugueseVoice = voices.value.find(v => 
       v.lang.startsWith('pt-BR') || v.lang.startsWith('pt')
     );
@@ -69,7 +62,6 @@ export function useSpeechSynthesis() {
     }
   };
 
-  // Evento de boundary (para highlight)
   const onBoundary = (event: SpeechSynthesisEvent) => {
     const { charIndex, charLength } = event;
     const startIndex = charIndex;
@@ -88,13 +80,11 @@ export function useSpeechSynthesis() {
     boundaryEnd.value = endIndex;
   };
 
-  // Reset do highlight
   const resetBoundary = () => {
     boundaryStart.value = 0;
     boundaryEnd.value = 0;
   };
 
-  // Criar utterance
   const createUtterance = () => {
     if (!text.value) {
       error.value = 'Nenhum texto para falar';
@@ -103,7 +93,6 @@ export function useSpeechSynthesis() {
 
     utterance = new SpeechSynthesisUtterance(text.value);
     
-    // Configurações
     utterance.pitch = pitch.value;
     utterance.rate = rate.value;
     utterance.volume = volume.value;
@@ -117,7 +106,6 @@ export function useSpeechSynthesis() {
       isPaused.value = false;
       status.value = 'playing';
       error.value = null;
-      console.log('🔊 Falando...');
     };
 
     utterance.onend = () => {
@@ -125,7 +113,6 @@ export function useSpeechSynthesis() {
       isPaused.value = false;
       status.value = 'end';
       resetBoundary();
-      console.log('✅ Finalizado');
     };
 
     utterance.onerror = (event) => {
@@ -133,19 +120,16 @@ export function useSpeechSynthesis() {
       isPaused.value = false;
       status.value = 'end';
       error.value = `Erro na síntese de voz: ${event.error}`;
-      console.error('❌ Erro:', event.error);
     };
 
     utterance.onpause = () => {
       isPaused.value = true;
       status.value = 'pause';
-      console.log('⏸️ Pausado');
     };
 
     utterance.onresume = () => {
       isPaused.value = false;
       status.value = 'playing';
-      console.log('▶️ Retomado');
     };
 
     utterance.onboundary = onBoundary;
@@ -153,14 +137,12 @@ export function useSpeechSynthesis() {
     return utterance;
   };
 
-  // Falar
   const speak = () => {
     if (!isSupported.value) {
       error.value = 'Síntese de voz não suportada';
       return;
     }
 
-    // Cancelar se já estiver falando
     if (isPlaying.value) {
       synth.cancel();
     }
@@ -173,7 +155,6 @@ export function useSpeechSynthesis() {
     }
   };
 
-  // Play (falar ou resumir)
   const play = () => {
     if (isPaused.value) {
       resume();
@@ -182,21 +163,18 @@ export function useSpeechSynthesis() {
     }
   };
 
-  // Pausar
   const pause = () => {
     if (isPlaying.value && !isPaused.value) {
       synth.pause();
     }
   };
 
-  // Resumir
   const resume = () => {
     if (isPaused.value) {
       synth.resume();
     }
   };
 
-  // Parar
   const stop = () => {
     if (isPlaying.value || isPaused.value) {
       synth.cancel();
@@ -207,39 +185,33 @@ export function useSpeechSynthesis() {
     }
   };
 
-  // Obter vozes em português
   const getPortugueseVoices = computed(() => {
     return voices.value.filter(v => 
       v.lang.startsWith('pt-BR') || v.lang.startsWith('pt')
     );
   });
 
-  // Watch para reset quando status mudar para 'end'
   watch(() => status.value, (newStatus) => {
     if (newStatus === 'end') {
       resetBoundary();
     }
   });
 
-  // Limpar ao desmontar
   onUnmounted(() => {
     if (isPlaying.value) {
       synth.cancel();
     }
   });
 
-  // Inicializar
   checkSupport();
 
   return {
-    // Estado
     isSupported,
     isPlaying,
     isPaused,
     status,
     error,
     
-    // Configurações
     text,
     pitch,
     rate,
@@ -247,19 +219,16 @@ export function useSpeechSynthesis() {
     voice,
     voices,
     
-    // Highlight
     boundaryStart,
     boundaryEnd,
     textSegments,
     
-    // Métodos
     speak,
     play,
     pause,
     resume,
     stop,
     
-    // Helpers
     getPortugueseVoices,
   };
 }

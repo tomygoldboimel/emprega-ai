@@ -2,16 +2,16 @@
   <div v-if="isOpen" class="modal-overlay" @click="fechar">
     <div class="modal-container" @click.stop>
       <div class="modal-content">
-        <h3 class="modal-title">Sair</h3>
+        <h3 class="modal-title" @click="$emit('falar', title)">{{ title }}</h3>
         
-        <p class="modal-message">Tem certeza que deseja encerrar sua sessão?</p>
+        <p class="modal-message" @click="$emit('falar', message)">{{ message }}</p>
         
         <div class="modal-buttons">
           <button class="btn-voltar" @click="fechar">
-            Voltar
+            <img src="@/assets/icons/returnIcon.svg" alt="Return"/>
           </button>
           <button class="btn-confirmar" @click="confirmar">
-            Confirmar
+            <img src="@/assets/icons/logoutIcon.svg" alt="Logout" class="logout-icon"/>
           </button>
         </div>
       </div>
@@ -25,9 +25,17 @@ export default {
     isOpen: {
       type: Boolean,
       required: true
+    },
+    message: {
+      type: String,
+      default: 'Tem certeza que deseja encerrar sua sessão?'
+    },
+    title: {
+      type: String,
+      default: 'Sair'
     }
   },
-  emits: ['confirmar', 'fechar'],
+  emits: ['confirmar', 'fechar', 'falar'],
   methods: {
     confirmar() {
       this.$emit('confirmar');
@@ -99,15 +107,15 @@ export default {
 .modal-buttons {
   display: flex;
   gap: 1rem;
-  justify-content: center; /* Alinha os botões ao centro horizontalmente */
+  justify-content: center;
   margin-top: 25px;
-  width: 100%; /* Garante que o container use a largura disponível */
+  width: 100%;
 }
 
 .btn-voltar,
 .btn-confirmar {
-  width: auto; /* Muda de 100% para auto para não forçar a largura total */
-  min-width: 140px; /* Define um tamanho mínimo para manter a simetria */
+  width: auto;
+  min-width: 140px;
   height: 55px;
   padding: 0.75rem 2rem;
   border-radius: 12px;
@@ -116,6 +124,10 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   border: 2px solid #333;
+}
+
+.logout-icon{
+  filter: brightness(0) invert(1);
 }
 
 @media (max-width: 768px) {
