@@ -307,9 +307,9 @@ export default {
       );
 
       doc.text(nomeLines, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += nomeLines.length * 8;
+      yPosition += nomeLines.length * 6;
 
-      yPosition += 8;
+      yPosition += 4;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60, 60, 60);
