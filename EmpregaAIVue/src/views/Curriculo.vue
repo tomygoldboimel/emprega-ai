@@ -196,7 +196,7 @@
             <div class="form-group">
               <label @click="falarElemento">Data Início</label>
               
-              <div style="position: relative;">
+              <!-- <div style="position: relative;">
                 
                 <input 
                 type="date" 
@@ -211,7 +211,17 @@
                 @toggle="toggleGravacaoDataInicioExperiencia"
                 />
                 
-              </div>
+              </div> -->
+              <DataSimples 
+                  v-model="novaExperiencia.dataInicio"
+                  label="Data Início"
+                  tituloModal="Quando começou a trabalhar aqui?"
+                  :anoInicio="1960"
+                  :permitirVoz="true"
+                  :gravando="gravandoDataInicioExperiencia"
+                  @toggleGravacao="toggleGravacaoDataInicioExperiencia"
+                  @falar="falarTexto"
+                />
             </div>
             <div class="form-group">
               <label @click="falarElemento">Data Fim</label>
