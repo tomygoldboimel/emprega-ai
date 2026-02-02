@@ -21,13 +21,6 @@ namespace EmpregaAI.Services
         {
             curriculo.Id = Guid.NewGuid();
             curriculo.Excluido = false;
-
-            // 1. Corrija a Data de Nascimento para UTC
-            if (curriculo.DataNascimento != default)
-            {
-                curriculo.DataNascimento = DateTime.SpecifyKind((DateTime)curriculo.DataNascimento, DateTimeKind.Utc);
-            }
-
             // 2. Importante: Se houver experiências ou formações, as datas delas também darão erro!
             if (curriculo.Experiencias != null)
             {
@@ -38,13 +31,6 @@ namespace EmpregaAI.Services
                         exp.DataFim = DateTime.SpecifyKind(exp.DataFim.Value, DateTimeKind.Utc);
                 }
             }
-
-            // Validação (usando UtcNow para comparar maçãs com maçãs)
-            if (curriculo.DataNascimento > DateTime.UtcNow)
-            {
-                throw new ArgumentException("DataNascimento_Invalida");
-            }
-
             _context.Curriculos.Add(curriculo);
 
             try
@@ -94,10 +80,6 @@ namespace EmpregaAI.Services
             if (c == null)
             {
                 return null;
-            }
-            if (curriculo.DataNascimento > DateTime.Today)
-            {
-                throw new ArgumentException("DataNascimento_Invalida");
             }
             _context.Entry(c).CurrentValues.SetValues(curriculo);
             await _context.SaveChangesAsync();
