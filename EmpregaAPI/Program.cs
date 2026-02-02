@@ -51,7 +51,7 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddCors(options => {
     options.AddPolicy("AppPolicy", policy => {
         policy.WithOrigins(
-                "https://stellar-trust-production.up.railway.app",
+                "https://empregaai.up.railway.app",
                 "http://localhost:5173",
                 "https://dante-fibular-pulpily.ngrok-free.dev"
               )
