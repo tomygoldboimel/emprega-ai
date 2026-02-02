@@ -853,80 +853,71 @@ export default {
     async startRecording(fieldName, objeto) {
       try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
+
         if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          this.erroAudio = 'Navegador incompatível. Use Chrome ou Safari atualizados.';
           return;
         }
-        
+
+        if (this.recognition) {
+          this.recognition.abort();
+        }
+
         this.recognition = new SpeechRecognition();
+        
         this.recognition.lang = 'pt-BR';
         this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          let interim = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcriptParcial = event.results[i][0].transcript;
-            
-            if (event.results[i].isFinal) {
-              transcript += transcriptParcial;
-            } else {
-              interim += transcriptParcial;
-            }
-          }
-          
-          this.transcricaoAtual = interim || transcript;
-          
-          if (transcript) {
-            if (fieldName === 'estado') {
-              const sigla = this.converterEstadoParaSigla(transcript);
-              if (sigla) {
-                objeto[fieldName] = sigla;
-              }
-            }
-            else if (fieldName === 'cidade') {
-              const cidadeValida = this.validarEConverterCidade(transcript);
-              if (cidadeValida) {
-                objeto[fieldName] = cidadeValida;
-              }
-            }
-            else {
-              objeto[fieldName] = this.capitalizeText(transcript);
-            }
-          }
-        };
-        
+        this.recognition.interimResults = false;
+        this.recognition.maxAlternatives = 1;
+
         this.recognition.onstart = () => {
-          this.camposGravando[fieldName] = true;
+          this.$set(this.camposGravando, fieldName, true);
           this.erroAudio = null;
         };
-        
-        this.recognition.onend = () => {
-          this.camposGravando[fieldName] = false;
-          this.transcricaoAtual = '';
+
+        this.recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript.trim();
+          
+          if (transcript) {
+            this.processarTranscricao(fieldName, objeto, transcript);
+          }
         };
-        
+
         this.recognition.onerror = (event) => {
-          this.camposGravando[fieldName] = false;
+          this.$set(this.camposGravando, fieldName, false);
           
           const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
+            'no-speech': 'Não ouvi nada. Fale mais perto do microfone.',
+            'not-allowed': 'Acesse as configurações do celular e permita o microfone.',
+            'service-not-allowed': 'Serviço de voz do Google/Apple indisponível.',
+            'network': 'Sinal de internet fraco para reconhecimento.'
           };
           
           this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
         };
-        
-        this.recognition.start();
-        
+
+        this.recognition.onend = () => {
+          this.$set(this.camposGravando, fieldName, false);
+        };
+        setTimeout(() => {
+          this.recognition.start();
+        }, 100);
+
       } catch (error) {
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
-        this.camposGravando[fieldName] = false;
+        this.erroAudio = 'Erro ao iniciar microfone.';
+        this.$set(this.camposGravando, fieldName, false);
+      }
+    },
+
+    processarTranscricao(fieldName, objeto, transcript) {
+      if (fieldName === 'estado') {
+        const sigla = this.converterEstadoParaSigla(transcript);
+        if (sigla) objeto[fieldName] = sigla;
+      } else if (fieldName === 'cidade') {
+        const cidadeValida = this.validarEConverterCidade(transcript);
+        if (cidadeValida) objeto[fieldName] = cidadeValida;
+      } else {
+        objeto[fieldName] = this.capitalizeText(transcript);
       }
     },
     capitalizeText(text) {
