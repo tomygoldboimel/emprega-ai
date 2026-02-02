@@ -1449,8 +1449,13 @@ export default {
               const expId = this.curriculo.experiencias[this.editandoIndexExperiencia].id;
               
               if (expId) {
-                if (this.novaExperiencia.empregoAtual || this.novaExperiencia.dataFim != '')
-                  await experienciaService.atualizarExperiencia(this.novaExperiencia);
+                  const dadosParaAtualizar = {
+                      ...this.novaExperiencia,
+                      dataFim: this.novaExperiencia.empregoAtual ? null : this.novaExperiencia.dataFim
+                  };
+                  await experienciaService.atualizarExperiencia(dadosParaAtualizar);
+                  
+                  this.curriculo.experiencias.splice(this.editandoIndexExperiencia, 1, { ...dadosParaAtualizar });
               }
               
               this.curriculo.experiencias.splice(this.editandoIndexExperiencia, 1, { ...this.novaExperiencia });
