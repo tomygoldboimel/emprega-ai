@@ -1,7 +1,7 @@
 export interface Curriculo {
   id: string; 
   nome: string;
-  dataNascimento: string;
+  dataNascimento: string | null;
   email: string;
   telefone: string | null;
   endereco: string | null;

@@ -505,8 +505,8 @@ export default {
   font-size: 32px;
   margin-bottom: 8px;
   font-weight: bold;
-  word-break: break-word;      /* quebra palavras grandes */
-  overflow-wrap: break-word;   /* fallback moderno */
+  word-break: break-word;
+  overflow-wrap: break-word;
   hyphens: auto;
   text-align: center;
 }
