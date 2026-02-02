@@ -138,7 +138,6 @@ Lembre-se: retorne APENAS o JSON, sem texto adicional.";
             {
               ""dadosPessoais"": {
                 ""nomeCompleto"": ""string ou null"",
-                ""dataNascimento"": ""YYYY-MM-DD ou null"",
                 ""telefone"": ""string ou null"",
                 ""endereco"": ""string ou null"",
                 ""cidade"": ""string ou null"",
