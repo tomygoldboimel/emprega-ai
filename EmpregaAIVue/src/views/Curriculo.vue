@@ -49,40 +49,16 @@
           </form>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label @click="falarElemento">Data de Nascimento</label>
-            <div style="position: relative;"> 
-              <input
-              type="text" 
-              v-model="curriculo.dataNascimento"
-              placeholder="DD/MM/AAAA"
-              maxlength="10"
-              @input="aplicarMascaraData"
-              class="input-com-dois-icones"
-              @click="garantirVisibilidade"
-              />
-              <span class="icone-calendario">
-                <img src="@/assets/icons/calendarIcon.svg" alt="Calendar"/>
-              </span>
-              <BotaoMicrofone 
-              :isRecording="gravandoDataNascimento" 
-              @toggle="toggleGravacaoDataNascimento"
-              />
-                
-              </div>
-          </div>
-          <div class="form-group">
-            <label @click="falarElemento">Telefone</label>
-            <input 
-              type="tel" 
-              v-model="curriculo.telefone" 
-              @input="formatarTelefone"
-              placeholder="(XX) XXXXX-XXXX"
-              maxlength="15"
-              disabled
-            />
-          </div>
+        <div class="form-group">
+          <label @click="falarElemento">Telefone</label>
+          <input 
+            type="tel" 
+            v-model="curriculo.telefone" 
+            @input="formatarTelefone"
+            placeholder="(XX) XXXXX-XXXX"
+            maxlength="15"
+            disabled
+          />
         </div>
 
         <div class="form-row">
@@ -196,7 +172,7 @@
             <div class="form-group">
               <label @click="falarElemento">Data Início</label>
               
-              <!-- <div style="position: relative;">
+              <div style="position: relative;">
                 
                 <input 
                 type="date" 
@@ -211,17 +187,7 @@
                 @toggle="toggleGravacaoDataInicioExperiencia"
                 />
                 
-              </div> -->
-              <DataSimples 
-                  v-model="novaExperiencia.dataInicio"
-                  label="Data Início"
-                  tituloModal="Quando começou a trabalhar aqui?"
-                  :anoInicio="1960"
-                  :permitirVoz="true"
-                  :gravando="gravandoDataInicioExperiencia"
-                  @toggleGravacao="toggleGravacaoDataInicioExperiencia"
-                  @falar="falarTexto"
-                />
+              </div>
             </div>
             <div class="form-group">
               <label @click="falarElemento">Data Fim</label>
@@ -858,11 +824,9 @@ export default {
           
           if (transcript) {
             const dataFormatada = this.converterTextoParaDataISO(transcript);
+            
             if (dataFormatada) {
-              this.novaExperiencia = { 
-                ...this.novaExperiencia, 
-                dataInicio: dataFormatada
-              };
+              this.novaExperiencia.dataInicio = dataFormatada;
             } else {
               this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
             }
@@ -902,11 +866,7 @@ export default {
     converterTextoParaDataISO(texto) {
       if (!texto) return '';
       texto = texto.toLowerCase().trim();
-      const regex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/;
-      const match = texto.match(regex);
-      if (match) {
-        return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
-      }
+
       const meses = {
         'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
         'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
@@ -977,41 +937,7 @@ export default {
         this.startRecordingDataNascimento();
       }
     },
-    aplicarMascaraData(event) {
-      let value = event.target.value.replace(/\D/g, '');
-      if (value.length > 8) value = value.slice(0, 8);
-      
-      if (value.length > 4) {
-        value = value.replace(/^(\d{2})(\d{2})(\d{4}).*/, '$1/$2/$3');
-      } else if (value.length > 2) {
-        value = value.replace(/^(\d{2})(\d{0,2}).*/, '$1/$2');
-      }
-      
-      this.curriculo.dataNascimento = value;
-    },
-    converterTextoParaDataBR(texto) {
-      if (!texto) return '';
-      texto = texto.toLowerCase().trim();
-
-      const meses = {
-        'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
-        'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
-        'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
-      };
-
-      const regex = /(\d{1,2})\s*(?:de|[\/\s])\s*([a-zç0-9]+)\s*(?:de|[\/\s])\s*(\d{4})/i;
-      const match = texto.match(regex);
-
-      if (match) {
-        const dia = match[1].padStart(2, '0');
-        const mesCapturado = match[2];
-        const ano = match[3];
-        const mes = meses[mesCapturado] || mesCapturado.padStart(2, '0');
-
-        return `${dia}/${mes}/${ano}`;
-      }
-      return null;
-    },
+    
     async startRecordingDataFim() {
       try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1041,10 +967,7 @@ export default {
             const dataFormatada = this.converterTextoParaDataISO(transcript);
             
             if (dataFormatada) {
-              this.novaExperiencia = { 
-                ...this.novaExperiencia, 
-                dataFim: dataFormatada 
-              };
+              this.novaExperiencia.dataFim = dataFormatada;
             } else {
               this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
             }
@@ -1109,10 +1032,7 @@ export default {
             const dataFormatada = this.converterTextoParaDataISO(transcript);
             
             if (dataFormatada) {
-              this.curriculo = { 
-                ...this.curriculo, 
-                dataNascimento: dataFormatada 
-              };
+              this.curriculo.dataNascimento = dataFormatada;
             }
           }
         };
@@ -2161,6 +2081,7 @@ textarea {
   }
 }
 
+/* Responsivo */
 @media (max-width: 768px) {
   .btn-microfone {
     width: 32px;
