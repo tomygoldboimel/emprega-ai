@@ -885,7 +885,7 @@ export default {
       if (this.camposGravando[fieldName]) {
         this.stopRecording();
       } else {
-        this.startRecording(fieldName, objeto);
+        this.executarComVerificacao(() => this.startRecording(fieldName, objeto));
       }
     },
 
@@ -1045,7 +1045,7 @@ export default {
       if (this.gravandoDataInicioExperiencia) {
         this.stopRecording();
       } else {
-        this.startRecordingDataInicioExperiencia();
+        this.executarComVerificacao(() => this.startRecordingDataInicioExperiencia());
       }
     },
     
@@ -1172,7 +1172,7 @@ export default {
       if (this.gravandoDataFim) {
         this.stopRecording();
       } else {
-        this.startRecordingDataFim();
+        this.executarComVerificacao(() => this.startRecordingDataFim());
       }
     },
     
