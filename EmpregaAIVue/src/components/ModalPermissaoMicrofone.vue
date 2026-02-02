@@ -69,7 +69,7 @@ export default {
 .modal-container {
   background: white; border-radius: 24px;
   width: 90%; max-width: 350px;
-  height: 350px;
+  height: 400px;
   animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
