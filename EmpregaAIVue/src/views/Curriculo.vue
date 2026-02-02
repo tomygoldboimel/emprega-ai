@@ -341,12 +341,6 @@
       @confirmar="confirmarSair"
       @fechar="fecharModal"
       @falar="falarTexto"/>
-    <ModalPermissaoMicrofone 
-      :isOpen="exibirModalPermissao" 
-      @fechar="exibirModalPermissao = false"
-      @permitido="confirmarPermissao"
-      @falar="falarTexto"
-    />
   </div>
 </template>
 
@@ -368,7 +362,6 @@ import BackButton from '@/components/BackButton.vue';
 import SaveButton from '@/components/SaveButton.vue';
 import CidadeDropdown from '@/components/CidadeDropdown.vue';
 import ModalCarregamento from '@/components/ModalCarregamento.vue';
-import ModalPermissaoMicrofone from '@/components/ModalPermissaoMicrofone.vue';
 
 export default {
   name: 'CurriculoForm',
@@ -385,7 +378,6 @@ export default {
     BackButton,
     SaveButton,
     CidadeDropdown,
-    ModalPermissaoMicrofone
   },
   data() {
     return {
@@ -566,44 +558,6 @@ export default {
     this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
   },
   methods: {
-    async verificarEPedirPermissao(callbackOriginal) {
-      try {
-        const result = await navigator.permissions.query({ name: 'microphone' });
-        
-        if (result.state === 'granted') {
-          callbackOriginal();
-        } else {
-          this.exibirModalPermissao = true;
-          this.pendingAction = callbackOriginal;
-        }
-      } catch (e) {
-        this.exibirModalPermissao = true;
-        this.pendingAction = callbackOriginal;
-      }
-    },
-    async executarComVerificacao(callback) {
-      try {
-        if (navigator.permissions && navigator.permissions.query) {
-          const status = await navigator.permissions.query({ name: 'microphone' });
-
-          if (status.state === 'granted') {
-            callback();
-            return;
-          }
-
-          if (status.state === 'denied') {
-            alert("O microfone está bloqueado nas configurações do seu navegador. Clique no ícone de 'Cadeado' ao lado da barra de endereços para liberar.");
-            return;
-          }
-        }
-        
-        this.funcaoPendente = callback;
-        this.exibirModalPermissao = true;
-
-      } catch (error) {
-        this.exibirModalPermissao = true;
-      }
-    },
     formatarDataParaBR(dataISO) {
       if (!dataISO) return '';
       
@@ -885,7 +839,7 @@ export default {
       if (this.camposGravando[fieldName]) {
         this.stopRecording();
       } else {
-        this.executarComVerificacao(() => this.startRecording(fieldName, objeto));
+        this.startRecording(fieldName, objeto);
       }
     },
 
@@ -1045,7 +999,7 @@ export default {
       if (this.gravandoDataInicioExperiencia) {
         this.stopRecording();
       } else {
-        this.executarComVerificacao(() => this.startRecordingDataInicioExperiencia());
+        this.startRecordingDataInicioExperiencia();
       }
     },
     
@@ -1172,7 +1126,7 @@ export default {
       if (this.gravandoDataFim) {
         this.stopRecording();
       } else {
-        this.executarComVerificacao(() => this.startRecordingDataFim());
+        this.startRecordingDataFim();
       }
     },
     
