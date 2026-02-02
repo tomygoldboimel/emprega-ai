@@ -999,65 +999,59 @@ export default {
     async startRecordingDataInicioExperiencia() {
       try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
+
         if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          this.erroAudio = 'Navegador incompatível. Use Chrome ou Safari.';
           return;
         }
-        
+
         await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+
+        if (this.recognition) this.recognition.abort();
+
         this.recognition = new SpeechRecognition();
         this.recognition.lang = 'pt-BR';
         this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            const dataFormatada = this.converterTextoParaDataISO(transcript);
-            
-            if (dataFormatada) {
-              this.novaExperiencia.dataInicio = dataFormatada;
-            } else {
-              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
-            }
-          }
-        };
-        
+        this.recognition.interimResults = false;
+
         this.recognition.onstart = () => {
           this.gravandoDataInicioExperiencia = true;
           this.erroAudio = null;
+          if (navigator.vibrate) navigator.vibrate(50);
         };
-        
+
+        this.recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript.toLowerCase().trim();
+          
+          const dataFormatada = this.interpretarDataFalada(transcript);
+
+          if (dataFormatada) {
+            this.novaExperiencia.dataInicio = dataFormatada;
+            const [ano, mes, dia] = dataFormatada.split('-');
+            this.valorVisualDataInicio = `${dia}/${mes}/${ano}`;
+          } else {
+            this.erroAudio = `Não entendi "${transcript}". Fale algo como "10 de agosto de 2010".`;
+          }
+        };
+
+        this.recognition.onerror = (event) => {
+          this.gravandoDataInicioExperiencia = false;
+          const mensagens = {
+            'no-speech': 'Não ouvi nada. Tente falar mais alto.',
+            'not-allowed': 'Permissão do microfone negada.',
+            'network': 'Erro de conexão.'
+          };
+          this.erroAudio = mensagens[event.error] || 'Erro ao gravar.';
+        };
+
         this.recognition.onend = () => {
           this.gravandoDataInicioExperiencia = false;
         };
-        
-        this.recognition.onerror = (event) => {
-          this.gravandoDataInicioExperiencia = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-        };
-        
+
         this.recognition.start();
-        
+
       } catch (error) {
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.erroAudio = 'Ligue o microfone nas configurações do navegador.';
         this.gravandoDataInicioExperiencia = false;
       }
     },
@@ -1140,67 +1134,93 @@ export default {
     async startRecordingDataFim() {
       try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
+
         if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+          this.erroAudio = 'Navegador incompatível. Use Chrome ou Safari.';
           return;
         }
-        
+
         await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+
+        if (this.recognition) this.recognition.abort();
+
         this.recognition = new SpeechRecognition();
         this.recognition.lang = 'pt-BR';
         this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            const dataFormatada = this.converterTextoParaDataISO(transcript);
-            
-            if (dataFormatada) {
-              this.novaExperiencia.dataFim = dataFormatada;
-            } else {
-              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
-            }
-          }
-        };
-        
+        this.recognition.interimResults = false;
+
         this.recognition.onstart = () => {
           this.gravandoDataFim = true;
           this.erroAudio = null;
+          if (navigator.vibrate) navigator.vibrate(50);
         };
-        
+
+        this.recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript.toLowerCase().trim();
+          
+          const dataFormatada = this.interpretarDataFalada(transcript);
+
+          if (dataFormatada) {
+            this.novaExperiencia.dataFim = dataFormatada;
+            const [ano, mes, dia] = dataFormatada.split('-');
+            this.valorVisualDataFim = `${dia}/${mes}/${ano}`;
+          } else {
+            this.erroAudio = `Não entendi "${transcript}". Fale algo como "10 de agosto de 2010".`;
+          }
+        };
+
+        this.recognition.onerror = (event) => {
+          this.gravandoDataFim = false;
+          const mensagens = {
+            'no-speech': 'Não ouvi nada. Tente falar mais alto.',
+            'not-allowed': 'Permissão do microfone negada.',
+            'network': 'Erro de conexão.'
+          };
+          this.erroAudio = mensagens[event.error] || 'Erro ao gravar.';
+        };
+
         this.recognition.onend = () => {
           this.gravandoDataFim = false;
         };
-        
-        this.recognition.onerror = (event) => {
-          this.gravandoDataFim = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-        };
-        
+
         this.recognition.start();
-        
+
       } catch (error) {
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
+        this.erroAudio = 'Ligue o microfone nas configurações do navegador.';
         this.gravandoDataFim = false;
       }
+    },
+
+    interpretarDataFalada(texto) {
+      const meses = {
+        'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
+        'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
+        'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
+      };
+
+      let limpo = texto.replace(/ de /g, '/').replace(/\s/g, '/');
+      
+      const partes = limpo.split('/');
+      
+      let dia = partes[0].padStart(2, '0');
+      let mesTexto = partes[1];
+      let ano = partes[2];
+
+      if (meses[mesTexto]) {
+        mesTexto = meses[mesTexto];
+      } else {
+        mesTexto = mesTexto.padStart(2, '0');
+      }
+
+      if (ano && ano.length === 2) {
+        ano = parseInt(ano) > 25 ? '19' + ano : '20' + ano;
+      }
+
+      if (dia.length === 2 && mesTexto.length === 2 && ano?.length === 4) {
+        return `${ano}-${mesTexto}-${dia}`;
+      }
+
+      return null;
     },
 
     async startRecordingDataNascimento() {
