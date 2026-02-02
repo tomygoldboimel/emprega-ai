@@ -3,18 +3,8 @@
     <div class="dropdown-trigger" @click="aberto = !aberto">
       <span v-if="modelValue" class="valor-selecionado">{{ modelValue }}</span>
       <span v-else class="placeholder">Selecione</span>
-      <svg 
-        class="icone-seta" 
-        :class="{ rotacionado: aberto }"
-        width="16" 
-        height="16" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        stroke-width="2"
-      >
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
+      <img src="@/assets/icons/arrowIcon.svg" alt="Enter" class="icone-seta" 
+        :class="{ rotacionado: aberto }"/>
     </div>
     
     <div v-if="aberto" class="dropdown-lista">
@@ -142,10 +132,18 @@ export default {
   line-height: 1;
 }
 
+.arrow-icon{
+  rotate: 90deg;
+  height: 10px;
+  opacity: 0.6;
+}
+
 .icone-seta {
   color: #6b7280;
   transition: transform 0.3s ease;
   flex-shrink: 0;
+  rotate: 90deg;
+  height: 10px;
 }
 
 .icone-seta.rotacionado {

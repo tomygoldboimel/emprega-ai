@@ -10,10 +10,7 @@
       </div>
       <div class="header">
         <div class="logo-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-          </svg>
+          <img src="@/assets/icons/educationIcon.svg" alt="Atualizar" class="icon-education" />
         </div>
         <h1 @click="falarElemento">{{ modoEdicao ? 'Editar Currículo' : 'Criar Currículo' }}</h1>
         <p @click="falarElemento">Preencha seus dados profissionais</p>
@@ -52,42 +49,16 @@
           </form>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label @click="falarElemento">Data de Nascimento</label>
-            <div style="position: relative;"> 
-              <input
-              type="date" 
-              v-model="curriculo.dataNascimento"
-              class="input-com-dois-icones"
-              @click="garantirVisibilidade"
-              />
-              <span class="icone-calendario"> 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-              </span>
-              <BotaoMicrofone 
-              :isRecording="gravandoDataNascimento" 
-              @toggle="toggleGravacaoDataNascimento"
-              />
-                
-              </div>
-          </div>
-          <div class="form-group">
-            <label @click="falarElemento">Telefone</label>
-            <input 
-              type="tel" 
-              v-model="curriculo.telefone" 
-              @input="formatarTelefone"
-              placeholder="(XX) XXXXX-XXXX"
-              maxlength="15"
-              disabled
-            />
-          </div>
+        <div class="form-group">
+          <label @click="falarElemento">Telefone</label>
+          <input 
+            type="tel" 
+            v-model="curriculo.telefone" 
+            @input="formatarTelefone"
+            placeholder="(XX) XXXXX-XXXX"
+            maxlength="15"
+            disabled
+          />
         </div>
 
         <div class="form-row">
@@ -148,7 +119,7 @@
         <h2 class="step-title" @click="falarElemento">Trabalhos</h2>
         <div class="form-card">
           <div class="form-group">
-            <label @click="falarElemento">Descrição das Atividades*</label>
+            <label @click="falarElemento">Descrição das Atividades</label>
               <div style="position: relative;">
                 <textarea 
                   v-model="novaExperiencia.descricao" 
@@ -170,14 +141,14 @@
             <small v-if="iaMessage" :class="['ia-message', iaMessageType]">{{ iaMessage }}</small>
           </div>
           <div class="form-group">
-            <label @click="falarElemento">Empresa</label>
+            <label @click="falarElemento">Empresa (opcional)</label>
             <div style="position: relative;">
               
               <input 
                 type="text" 
                 v-model="novaExperiencia.empresa" 
                 style="width: 100%;" 
-                placeholder="Onde você trabalhou? (opcional)"
+                placeholder="Onde você trabalhou?"
                 @click="garantirVisibilidade"
               />
               
@@ -190,9 +161,9 @@
           </div>
 
           <div class="form-group">
-            <label @click="falarElemento">Cargo</label>
+            <label @click="falarElemento">Cargo (opcional)</label>
             <div style="position: relative;">
-              <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê? (opcional)" @click="garantirVisibilidade"/>
+              <input type="text" v-model="novaExperiencia.cargo" placeholder="Trabalhou como o quê?" @click="garantirVisibilidade"/>
               <BotaoMicrofone :isRecording="camposGravando.cargo" @toggle="toggleGravacao('cargo', novaExperiencia)"/>
             </div>
           </div>
@@ -209,12 +180,7 @@
                 class="input-com-dois-icones"
                 />
                 <span class="icone-calendario"> 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
+                  <img src="@/assets/icons/calendarIcon.svg" alt="Calendar"/>
                 </span>
                 <BotaoMicrofone 
                 :isRecording="gravandoDataInicioExperiencia" 
@@ -238,12 +204,7 @@
                 disabled
                 />
                 <span class="icone-calendario"> 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
+                  <img src="@/assets/icons/calendarIcon.svg" alt="Calendar" />
                 </span>
                 <BotaoMicrofone 
                 :isRecording="gravandoDataFim" 
@@ -359,18 +320,13 @@
       :confirmText="modalConfig.confirmText"
       @confirmar="confirmarRemocao"
       @fechar="showConfirmModal = false"
+      @falar="falarTexto"
     />
     <ModalEncerramentoSessao
       :isOpen="modalAberto"
       @confirmar="confirmarSair"
-      @fechar="fecharModal"/>
-    <ModalAviso
-      :show="modalAvisoAberto"
-      title="Atenção"
-      message="Ao importar o currículo, a formatação da descrição pode ser alterada. Recomendamos revisar os textos após a importação."
-      type="aviso"
-      @fechar="fecharModalAviso"
-    />
+      @fechar="fecharModal"
+      @falar="falarTexto"/>
   </div>
 </template>
 
@@ -383,7 +339,6 @@ import formacaoService from '@/services/formacaoService';
 import usuarioService from '@/services/usuarioService';
 import '@fortawesome/fontawesome-free/css/all.css';
 import ModalEncerramentoSessao from '@/components/ModalEncerramentoSessao.vue';
-import ModalAviso from '@/components/AvisoDescricao.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
 import BotaoMicrofone from '@/components/BotaoMicrofone.vue';
 import BotaoDescricao from '@/components/BotaoDescricao.vue';
@@ -402,7 +357,6 @@ export default {
     ModalExclusao,
     ModalEncerramentoSessao,
     ModalCarregamento,
-    ModalAviso,
     LogoutButton,
     BotaoMicrofone,
     BotaoDescricao,
@@ -433,7 +387,7 @@ export default {
       showConfirmModal: false,
       erroNome: false,
       itemParaRemover: null,
-      mostrarTutorial: localStorage.getItem('audioDescricaoAtiva') === 'true',
+      mostrarTutorial: false,
       audioTutorial: null,
       camposGravando: {
         descricao: false,
@@ -498,6 +452,11 @@ export default {
   mounted() {
     if (this.mostrarTutorial) {
       this.executarBoasVindasNativo();
+    }
+    const estadoSalvo = localStorage.getItem('audioDescricaoAtiva');
+
+    if (estadoSalvo !== null) {
+      this.mostrarTutorial = estadoSalvo === 'true';
     }
   },
   watch: {
@@ -585,7 +544,7 @@ export default {
   methods: {
     handleTutorialToggle(ativo) {
       this.mostrarTutorial = ativo;
-
+      localStorage.setItem('audioDescricaoAtiva', ativo);
       if (ativo) {
         this.executarBoasVindasNativo();
       } else {
@@ -605,7 +564,7 @@ export default {
 
       const utterance = new SpeechSynthesisUtterance(texto);
       utterance.lang = 'pt-BR';
-      utterance.rate = 1.0;
+      utterance.rate = 1.1;
 
       const voices = window.speechSynthesis.getVoices();
       const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
@@ -618,11 +577,11 @@ export default {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
 
-      const texto = "Clique nos títulos para ouví-los";
+      const texto = "Descrição por áudio habilitada. Clique nos títulos para ouví-los";
       this.audioTutorial = new SpeechSynthesisUtterance(texto);
       this.audioTutorial.lang = 'pt-BR';
       
-      this.audioTutorial.rate = 0.9;
+      this.audioTutorial.rate = 1.1;
       this.audioTutorial.pitch = 1.0;
 
       const selecionarMelhorVoz = () => {
@@ -1324,7 +1283,7 @@ export default {
         return this.mostrarErro(mensagem);
       }
       else if(!this.novaExperiencia.empregoAtual && (this.novaExperiencia.dataFim < this.novaExperiencia.dataInicio)){
-        const mensagem = 'A data fim deve ser posterior à data de início.';
+        const mensagem = 'A data fim não pode ser anterior à data de início.';
         if (this.mostrarTutorial) {
           this.falarTexto(mensagem);
         }
@@ -1342,7 +1301,12 @@ export default {
               }
               
               this.curriculo.experiencias.splice(this.editandoIndexExperiencia, 1, { ...this.novaExperiencia });
-              this.successMessage = 'Experiência atualizada!';
+              const mensagem = 'Experiência atualizada!';
+
+              if (this.mostrarTutorial) {
+                this.falarTexto(mensagem);
+              }
+              this.successMessage = mensagem;
 
           } else {
               if (this.curriculo.id) {
@@ -1360,8 +1324,12 @@ export default {
               } else {
                   this.curriculo.experiencias.push({ ...this.novaExperiencia });
               }
-              
-              this.successMessage = 'Experiência adicionada!';
+              const mensagem = 'Experiência adicionada!';
+
+              if (this.mostrarTutorial) {
+                this.falarTexto(mensagem);
+              }
+              this.successMessage = mensagem;
           }
           
           this.resetarFormExperiencia(); 
@@ -1431,8 +1399,12 @@ export default {
             1,
             { ...formacaoNormalizada }
           );
+          const mensagem = 'Formação atualizada!';
 
-          this.successMessage = 'Formação atualizada!';
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         } else {
           this.curriculoId = this.curriculo.id
           if (this.curriculoId) {
@@ -1445,8 +1417,12 @@ export default {
           } else {
             this.curriculo.formacoes.push({ ...formacaoNormalizada });
           }
+          const mensagem = 'Formação adicionada!';
 
-          this.successMessage = 'Formação adicionada!';
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         }
 
         this.resetarFormFormacao();
@@ -1504,8 +1480,12 @@ export default {
             } else if (this.editandoIndexExperiencia !== null && index < this.editandoIndexExperiencia) {
               this.editandoIndexExperiencia--;
             }
-            
-            this.successMessage = 'Experiência removida!';
+            const mensagemExp = 'Experiência removida com sucesso!';
+
+            if (this.mostrarTutorial) {
+              this.falarTexto(mensagemExp);
+            }
+            this.successMessage = mensagemExp;
             break;
             
           case 'formacao':
@@ -1519,8 +1499,12 @@ export default {
             } else if (this.editandoIndexFormacao !== null && index < this.editandoIndexFormacao) {
               this.editandoIndexFormacao--;
             }
-            
-            this.successMessage = 'Formação removida!';
+            const mensagemForm = 'Formação removida com sucesso!';
+
+            if (this.mostrarTutorial) {
+              this.falarTexto(mensagemForm);
+            }
+            this.successMessage = mensagemForm;
             break;
         }
 
@@ -1535,7 +1519,12 @@ export default {
 
     async formatarDescricaoComIA() {
       if (!this.novaExperiencia.descricao || this.novaExperiencia.descricao.trim().length < 10) {
-        this.iaMessage = 'Digite pelo menos 10 caracteres';
+        const mensagem = 'Digite pelo menos 10 caracteres';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'info';
         setTimeout(() => {
           this.iaMessage = '';
@@ -1558,8 +1547,12 @@ export default {
         );
         
         this.novaExperiencia.descricao = descricaoMelhorada;
-        
-        this.iaMessage = 'Descrição melhorada!';
+        const mensagem = 'Descrição melhorada com sucesso!';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'success';
         
         setTimeout(() => {
@@ -1568,7 +1561,12 @@ export default {
         }, 3000);
 
       } catch (error) {
-        this.iaMessage = 'Erro ao melhorar. Tente novamente.';
+        const mensagem = 'Erro ao melhorar. Tente novamente mais tarde.';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'error';
         
         setTimeout(() => {
@@ -1582,7 +1580,12 @@ export default {
 
     async formatarObjetivoComIA() {
       if (!this.curriculo.objetivo || this.curriculo.objetivo.trim().length < 10) {
-        this.iaMessage = 'Digite pelo menos 10 caracteres';
+        const mensagem = 'Digite pelo menos 10 caracteres';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'info';
         setTimeout(() => {
           this.iaMessage = '';
@@ -1592,7 +1595,12 @@ export default {
       }
 
       this.loadingIA = true;
-      this.iaMessage = 'Melhorando objetivo...';
+      const mensagem = 'Melhorando objetivo...';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+      this.iaMessage = mensagem;
       this.iaMessageType = 'info';
 
       try {
@@ -1603,8 +1611,12 @@ export default {
         );
         
         this.curriculo.objetivo = objetivoMelhorado;
-        
-        this.iaMessage = 'Objetivo melhorado!';
+        const mensagem = 'Objetivo melhorado com sucesso!';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'success';
         
         setTimeout(() => {
@@ -1613,7 +1625,12 @@ export default {
         }, 3000);
 
       } catch (error) {
-        this.iaMessage = 'Erro ao melhorar. Tente novamente.';
+        const mensagem = 'Erro ao melhorar. Tente novamente mais tarde.';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        this.iaMessage = mensagem;
         this.iaMessageType = 'error';
         
         setTimeout(() => {
@@ -1637,15 +1654,30 @@ export default {
         }
         if (dadosParaEnviar.id) {
           await curriculoService.atualizarCurriculo(dadosParaEnviar);
-          this.successMessage = 'Currículo atualizado com sucesso!';
+          const mensagem = 'Currículo atualizado com sucesso!';
+
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         } else {
           const data = await curriculoService.adicionarCurriculo(dadosParaEnviar);
           this.curriculoId = data.id;
-          this.successMessage = 'Currículo salvo com sucesso!';
+          const mensagem = 'Currículo salvo com sucesso!';
+
+          if (this.mostrarTutorial) {
+            this.falarTexto(mensagem);
+          }
+          this.successMessage = mensagem;
         }
         this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
       } catch (error) {
-        return this.mostrarErro('Erro ao salvar currículo');
+        const mensagem = 'Erro ao salvar currículo';
+
+        if (this.mostrarTutorial) {
+          this.falarTexto(mensagem);
+        }
+        return this.mostrarErro(mensagem);
       }
     },
 
@@ -1898,7 +1930,7 @@ input:disabled {
 }
 
 .icone-calendario{
-  color:#ff000000
+  opacity: 0;
 }
 
 .input-com-dois-icones::-webkit-calendar-picker-indicator {
@@ -1951,8 +1983,8 @@ textarea {
 .btn-microfone {
   position: absolute;
   right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 50%; 
+  transform: translateY(-50%); 
   
   width: 36px;
   height: 36px;
@@ -2057,8 +2089,8 @@ textarea {
     background: transparent;
     border: none;
     cursor: pointer;
-    
     padding: 20px; 
+    
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2106,7 +2138,7 @@ input::placeholder, textarea::placeholder {
 
 .btn-primary {
   width: 100%;
-  padding: 12px 60px 12px 12px;
+  padding: 12px 60px 12px 12px; 
   background: #000;
   color: white;
   border: none;
@@ -2258,6 +2290,10 @@ input::placeholder, textarea::placeholder {
 
 .icon-update {
   filter: brightness(0) invert(1);
+}
+.icon-education {
+  filter: brightness(0) invert(1);
+  height: 25px;
 }
 
 .icon-update {
@@ -2428,10 +2464,8 @@ input::placeholder, textarea::placeholder {
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
-  
   width: 90%;
   max-width: 400px;
-  
   padding: 16px;
   border-radius: 12px;
   font-size: 14px;
@@ -2468,18 +2502,17 @@ input::placeholder, textarea::placeholder {
 @media (max-width: 728px) {
   .wrapper {
     padding: 0;
-    background: rgb(255, 255, 255);
+    background: rgb(255, 255, 255); 
     align-items: flex-start;
   }
 
   .container {
     padding: 20px;
-    border-radius: 0; 
-    border: none; 
-    max-width: 100vw; 
+    border-radius: 0;
+    border: none;
+    max-width: 100vw;
     min-height: 100vh;
   }
-  
   input, select, textarea {
     font-size: 16px;
   }
@@ -2532,6 +2565,7 @@ input::placeholder, textarea::placeholder {
 
   .icone-calendario {
     position: absolute;
+    top: 8px;
     right: 40px;
     pointer-events: none;
     font-size: 1rem;
