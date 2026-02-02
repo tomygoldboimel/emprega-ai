@@ -137,8 +137,6 @@
                 </button>
               </div>
             
-            
-            
             <small v-if="iaMessage" :class="['ia-message', iaMessageType]">{{ iaMessage }}</small>
           </div>
         <div class="bottom-bar">
@@ -168,8 +166,6 @@
                   <span v-if="loadingIA" class="loading-spinner-small"></span>
                 </button>
               </div>
-            
-            
             
             <small v-if="iaMessage" :class="['ia-message', iaMessageType]">{{ iaMessage }}</small>
           </div>
@@ -261,7 +257,6 @@
               </div>
             </div>
           </div>
-
 
           <button class="btn-add" @click="adicionarExperiencia">
             <span v-if="!editandoIndexExperiencia">+</span>
@@ -365,10 +360,6 @@
       @confirmar="confirmarRemocao"
       @fechar="showConfirmModal = false"
     />
-    <!-- <ModalErro
-      :isOpen="modalAberto"
-      @confirmar="confirmarSair"
-      @fechar="fecharModal"/> -->
     <ModalEncerramentoSessao
       :isOpen="modalAberto"
       @confirmar="confirmarSair"
@@ -391,15 +382,8 @@ import experienciaService from '@/services/experienciaService';
 import formacaoService from '@/services/formacaoService';
 import usuarioService from '@/services/usuarioService';
 import '@fortawesome/fontawesome-free/css/all.css';
-import { ref, watch } from 'vue';
-import StatusDropdown from '@/components/StatusDropdown.vue';
-import NivelDropdown from '@/components/NivelDropdown.vue';
-import ResumeUpload from "@/components/ResumeUpload.vue";
 import ModalEncerramentoSessao from '@/components/ModalEncerramentoSessao.vue';
-import ModalConfirmacao from '@/components/ModalConfirmacao.vue';
-import ModalErro from '@/components/ModalErro.vue';
 import ModalAviso from '@/components/AvisoDescricao.vue';
-import BotaoAudio from '@/components/BotaoAudio.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
 import BotaoMicrofone from '@/components/BotaoMicrofone.vue';
 import BotaoDescricao from '@/components/BotaoDescricao.vue';
@@ -408,9 +392,6 @@ import { ibgeService } from '@/services/ibgeService';
 import BackButton from '@/components/BackButton.vue';
 import SaveButton from '@/components/SaveButton.vue';
 import CidadeDropdown from '@/components/CidadeDropdown.vue';
-import TutorialHand from '@/components/TutorialHand.vue';
-import pointerHandIcon from '@/assets/icons/pointerHandIcon.svg';
-import BotaoContraste from '@/components/BotaoContraste.vue';
 import ModalCarregamento from '@/components/ModalCarregamento.vue';
 
 export default {
@@ -418,16 +399,10 @@ export default {
   
   components: {
     EstadoDropdown,
-    StatusDropdown,
-    NivelDropdown,
     ModalExclusao,
     ModalEncerramentoSessao,
-    ModalConfirmacao,
     ModalCarregamento,
     ModalAviso,
-    ModalErro,
-    ResumeUpload,
-    BotaoAudio,
     LogoutButton,
     BotaoMicrofone,
     BotaoDescricao,
@@ -435,8 +410,6 @@ export default {
     BackButton,
     SaveButton,
     CidadeDropdown,
-    BotaoContraste,
-    TutorialHand,
     ModalCarregamento
   },
   data() {
@@ -460,10 +433,8 @@ export default {
       showConfirmModal: false,
       erroNome: false,
       itemParaRemover: null,
-      pointerHandIcon: pointerHandIcon,
       mostrarTutorial: localStorage.getItem('audioDescricaoAtiva') === 'true',
       audioTutorial: null,
-      // Sistema genérico de gravação
       camposGravando: {
         descricao: false,
         empresa: false,
@@ -472,16 +443,14 @@ export default {
         curso: false,
         estado: false,
         nomeCompleto: false,
-        cidade: false
+        email: false,
+        cidade: false,
+        objetivo: false
       },
-      // Gravação de datas individuais
       gravandoDataFim: false,
       gravandoDataNascimento: false,
       gravandoDataInicioExperiencia: false,
-      gravandoDataInicioFormacao: false,
-      gravandoDataConclusaoFormacao: false,
-      transcricaoDescricao: '',
-      transcricaoAtual: '', // Transcrição em tempo real do que está sendo falado
+      transcricaoAtual: '',
       erroAudio: null,
       curriculoOriginal: {},
       modalConfig: {
@@ -495,16 +464,20 @@ export default {
         nomeCompleto: '',
         dataNascimento: '',
         telefone: '',
+        email: '',
+        endereco: '',
         cidade: '',
         estado: '',
+        linkedin: '',
+        github: '',
         resumoProfissional: '',
+        objetivo: '',
         experiencias: [],
         formacoes: []
       },
       
       cidades: [],
       carregandoCidades: false,
-      
 
       novaExperiencia: {
         empresa: '',
@@ -523,7 +496,6 @@ export default {
     }
   },
   mounted() {
-    // Se o usuário já tinha ativado antes, o sistema pode dar as boas-vindas
     if (this.mostrarTutorial) {
       this.executarBoasVindasNativo();
     }
@@ -539,17 +511,13 @@ export default {
         this.carregandoCidades = true;
         this.cidades = [];
         
-        // SÓ limpa a cidade se já existia um estado antes (mudança manual)
-        // Se oldValue for undefined ou null, significa que é o carregamento inicial
         if (oldValue) {
           this.curriculo.cidade = ''; 
         }
         
         try {
           this.cidades = await ibgeService.listarCidades(newValue);
-          console.log(`📍 Cidades carregadas para ${newValue}:`, this.cidades.length);
         } catch (error) {
-          console.error('Erro ao carregar cidades:', error);
           this.mostrarErro('Erro ao carregar cidades');
         } finally {
           this.carregandoCidades = false;
@@ -560,22 +528,20 @@ export default {
   async created() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const userStr = localStorage.getItem('user');
-    // if (!userStr) {
-    //   this.mostrarErro('Usuário não encontrado. Faça login novamente.');
-    //   this.$router.push('/login');
-    //   return;
-    // }
+    if (!userStr) {
+      this.$router.push('/login');
+      return;
+    }
 
     let user;
     try {
       user = JSON.parse(userStr);
     } catch (e) {
       this.mostrarErro('Erro ao carregar dados do usuário.');
-      // this.$router.push('/login');
+      this.$router.push('/login');
       return;
     }
 
-    // 1. Já garantimos os dados básicos do usuário no objeto local imediatamente
     this.curriculo.usuarioId = user.id;
     if (user.telefone) {
       this.curriculo.telefone = this.formatarTelefoneString(user.telefone);
@@ -586,39 +552,30 @@ export default {
       const curriculoExistente = await curriculoService.listarCurriculosPorUsuario(user.id);
       
       if (curriculoExistente) {
-        console.log(curriculoExistente)
         const exps = await experienciaService.listarExperienciaPorIdCurriculo(curriculoExistente.id);
         const forms = await formacaoService.listarFormacoesPorCurriculoId(curriculoExistente.id);
         this.curriculo = {
-          ...this.curriculo, // Mantém o que já setamos acima (telefone e userId)
+          ...this.curriculo,
           ...curriculoExistente,
           experiencias: exps || [],
           formacoes: forms || []
         };
-        console.log(this.curriculo)
       } else {
-        // Se for nulo, garantimos que as listas não sejam "undefined" para o Vue não quebrar
         this.curriculo.experiencias = [];
         this.curriculo.formacoes = [];
       }
     } catch (error) {
-      console.error("Erro ao buscar currículo, mas continuaremos com os dados de login:", error);
-      // Mesmo com erro na API, as listas devem ser inicializadas
       this.curriculo.experiencias = [];
       this.curriculo.formacoes = [];
     } finally {
-      // 2. Desativa o modal independente de sucesso ou erro
       this.loading = false; 
     }
 
-    // 3. Verificação de edição (params ID)
     if (this.$route.params.id) {
       this.modoEdicao = true;
       this.curriculoId = this.$route.params.id;
-      // ... sua lógica de carregar experiências por ID
     }
 
-    // 4. Formatação de data (só se existir)
     if (this.curriculo.dataNascimento) {
       this.curriculo.dataNascimento = this.curriculo.dataNascimento.split('T')[0];
     }
@@ -640,19 +597,16 @@ export default {
       this.falarTexto(texto);
     },
     falarTexto(texto) {
-      // Só fala se o modo tutorial estiver ligado
       if (!this.mostrarTutorial) return;
 
       if (!window.speechSynthesis) return;
 
-      // Cancela falas anteriores para não encavalar
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(texto);
       utterance.lang = 'pt-BR';
       utterance.rate = 1.0;
 
-      // Tenta usar a voz do Google se disponível
       const voices = window.speechSynthesis.getVoices();
       const googleVoice = voices.find(v => v.lang === 'pt-BR' && v.name.includes('Google'));
       if (googleVoice) utterance.voice = googleVoice;
@@ -668,14 +622,12 @@ export default {
       this.audioTutorial = new SpeechSynthesisUtterance(texto);
       this.audioTutorial.lang = 'pt-BR';
       
-      // Ajuste fino para soar menos robótico
-      this.audioTutorial.rate = 0.9;  // Um pouco mais lento costuma soar mais natural
-      this.audioTutorial.pitch = 1.0; // Tom da voz
+      this.audioTutorial.rate = 0.9;
+      this.audioTutorial.pitch = 1.0;
 
       const selecionarMelhorVoz = () => {
         const vozes = window.speechSynthesis.getVoices();
         
-        // Procura especificamente pelas vozes neurais (Google ou Premium)
         const melhorVoz = vozes.find(v => 
           v.lang === 'pt-BR' && 
           (v.name.includes('Google') || v.name.includes('Neural') || v.name.includes('Natural'))
@@ -696,7 +648,6 @@ export default {
     },
 
     pararAudioTutorial() {
-      // Para todas as falas em execução no navegador
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
@@ -704,50 +655,6 @@ export default {
 
     beforeUnmount() {
       this.pararAudioTutorial();
-    },
-    getTextoStep1() {
-      const campos = [];
-      
-      if (this.curriculo.nomeCompleto) {
-        campos.push(`Nome completo: ${this.curriculo.nomeCompleto}`);
-      }
-      if (this.curriculo.dataNascimento) {
-        campos.push(`Data de nascimento: ${this.formatarDataParaLeitura(this.curriculo.dataNascimento)}`);
-      }
-      if (this.telefoneFormatado) {
-        campos.push(`Telefone: ${this.telefoneFormatado}`);
-      }
-      if (this.curriculo.estado) {
-        campos.push(`Estado: ${this.curriculo.estado}`);
-      }
-      if (this.curriculo.cidade) {
-        campos.push(`Cidade: ${this.curriculo.cidade}`);
-      }
-
-      if (campos.length === 0) {
-        return 'Dados pessoais. Preencha os campos do formulário.';
-      }
-
-      return 'Dados pessoais preenchidos: ' + campos.join('. ');
-    },
-
-    formatarDataParaLeitura(data) {
-      if (!data) return '';
-      const partes = data.split('-');
-      if (partes.length === 3) {
-        return `${partes[2]} de ${this.getNomeMes(partes[1])} de ${partes[0]}`;
-      }
-      return data;
-    },
-
-    getNomeMes(mes) {
-      const meses = {
-        '01': 'janeiro', '02': 'fevereiro', '03': 'março',
-        '04': 'abril', '05': 'maio', '06': 'junho',
-        '07': 'julho', '08': 'agosto', '09': 'setembro',
-        '10': 'outubro', '11': 'novembro', '12': 'dezembro'
-      };
-      return meses[mes] || mes;
     },
 
     mostrarErro(mensagem){
@@ -760,146 +667,6 @@ export default {
       });
       setTimeout(() => this.errorMessage = '', 3000);
       return;
-    },
-    handleResumeImport(data) {
-      try {
-        this.abrirModalAviso();
-        if (data.dadosPessoais) {
-          this.curriculo.nomeCompleto = data.dadosPessoais.nomeCompleto || '';
-          this.curriculo.dataNascimento = data.dadosPessoais.dataNascimento?.split('T')[0] || '';
-          this.curriculo.cidade = data.dadosPessoais.cidade || '';
-          this.curriculo.estado = data.dadosPessoais.estado || '';
-
-          if (data.dadosPessoais.telefone) {
-            this.telefoneFormatado = this.formatarTelefoneString(data.dadosPessoais.telefone);
-            this.curriculo.telefone = data.dadosPessoais.telefone.replace(/\D/g, '');
-          }
-        }
-
-        /* EXPERIÊNCIAS */
-        if (Array.isArray(data.experiencias)) {
-          this.curriculo.experiencias = data.experiencias.map(exp => ({
-            empresa: exp.empresa || '',
-            cargo: exp.cargo || '',
-            dataInicio: exp.dataInicio ? exp.dataInicio.split('T')[0] : '',
-            dataFim: exp.dataFim ? exp.dataFim.split('T')[0] : '',
-            empregoAtual: exp.empregoAtual || false,
-            descricao: exp.descricao || ''
-          }));
-          console.log('✅ Experiências importadas:', this.curriculo.experiencias.length);
-        }
-
-        /* FORMAÇÕES */
-        if (Array.isArray(data.formacoes)) {
-          this.curriculo.formacoes = data.formacoes.map(form => ({
-            instituicao: form.instituicao || '',
-            curso: form.curso || '',
-            nivel: form.nivel || '',
-            status: form.status || '',
-            dataInicio: form.dataInicio ? form.dataInicio.split('T')[0] : '',
-            dataConclusao: form.dataConclusao ? form.dataConclusao.split('T')[0] : ''
-          }));
-          console.log('✅ Formações importadas:', this.curriculo.formacoes.length);
-        }
-
-        /* FEEDBACK */
-        this.successMessage = 'Currículo importado com sucesso!';
-        
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
-
-        // Scroll para o topo
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      } catch (error) {
-        console.error('❌ Erro ao importar:', error);
-        this.mostrarErro('Erro ao aplicar dados do currículo.');
-      }
-    },
-    toggleGravacaoDescricao() {
-      if (this.gravandoDescricao) {
-        // Parar gravação
-        this.stopRecording();
-      } else {
-        // Iniciar gravação
-        this.startRecordingDescricao();
-      }
-    },
-    
-    async startRecordingDescricao() {
-      try {
-        // Verificar suporte
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
-          return;
-        }
-        
-        // Solicitar permissão do microfone
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        // Criar reconhecimento
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'pt-BR';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        // Quando tem resultado
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            } else {
-              this.transcricaoDescricao = event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            objeto[fieldName] = this.capitalizeText(transcript);
-          }
-        };
-        
-        this.recognition.onstart = () => {
-          this.gravandoDescricao = true;
-          this.erroAudio = null;
-          this.transcricaoDescricao = '';
-          console.log('🎤 Gravação iniciada');
-        };
-        
-        // Quando termina
-        this.recognition.onend = () => {
-          this.gravandoDescricao = false;
-          this.transcricaoDescricao = '';
-          console.log('🛑 Gravação finalizada');
-        };
-        
-        // Quando dá erro
-        this.recognition.onerror = (event) => {
-          this.gravandoDescricao = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
-        };
-        
-        // Iniciar
-        this.recognition.start();
-        
-      } catch (error) {
-        console.error('Erro ao iniciar gravação:', error);
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
-        this.gravandoDescricao = false;
-      }
     },
 
     stopRecording() {
@@ -925,7 +692,6 @@ export default {
           return;
         }
         
-        
         this.recognition = new SpeechRecognition();
         this.recognition.lang = 'pt-BR';
         this.recognition.continuous = false;
@@ -933,7 +699,7 @@ export default {
         
         this.recognition.onresult = (event) => {
           let transcript = '';
-          let interim = ''; // Texto enquanto está falando
+          let interim = '';
           
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcriptParcial = event.results[i][0].transcript;
@@ -941,46 +707,26 @@ export default {
             if (event.results[i].isFinal) {
               transcript += transcriptParcial;
             } else {
-              interim += transcriptParcial; // Captura o que está sendo falado
+              interim += transcriptParcial;
             }
           }
           
-          // Mostrar em tempo real o que está sendo falado
           this.transcricaoAtual = interim || transcript;
           
-          // Console logs para verificação
-          if (interim) {
-            console.log(`🎙️ OUVINDO (${fieldName}):`, interim);
-          }
           if (transcript) {
-            console.log(`✅ FINAL (${fieldName}):`, transcript);
-          }
-          
-          if (transcript) {
-            // Se for estado, converter para sigla
             if (fieldName === 'estado') {
               const sigla = this.converterEstadoParaSigla(transcript);
-              // Só preenchher se a conversão foi bem-sucedida (retornou uma sigla válida)
               if (sigla) {
                 objeto[fieldName] = sigla;
-                console.log(`✨ Estado convertido para:`, sigla);
               }
-            } 
-            // Se for cidade, validar se existe no estado selecionado
+            }
             else if (fieldName === 'cidade') {
               const cidadeValida = this.validarEConverterCidade(transcript);
               if (cidadeValida) {
                 objeto[fieldName] = cidadeValida;
               }
             }
-            else if (fieldName === 'nivel') {
-              const nivelValido = this.validarNivel(transcript);
-              if (nivelValido) {
-                objeto[fieldName] = nivelValido;
-              }
-            }
             else {
-              // Para outros campos, adicionar ao existente ou criar novo
               objeto[fieldName] = this.capitalizeText(transcript);
             }
           }
@@ -989,15 +735,11 @@ export default {
         this.recognition.onstart = () => {
           this.camposGravando[fieldName] = true;
           this.erroAudio = null;
-          this.transcricaoDescricao = '';
-          console.log(`🎤 Gravação ${fieldName} iniciada`);
         };
         
         this.recognition.onend = () => {
           this.camposGravando[fieldName] = false;
-          this.transcricaoAtual = ''; // Limpar a transcrição ao terminar
-          this.transcricaoDescricao = '';
-          console.log(`🛑 Gravação ${fieldName} finalizada`);
+          this.transcricaoAtual = '';
         };
         
         this.recognition.onerror = (event) => {
@@ -1011,13 +753,11 @@ export default {
           };
           
           this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
         };
         
         this.recognition.start();
         
       } catch (error) {
-        console.error(`Erro ao iniciar gravação ${fieldName}:`, error);
         this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
         this.camposGravando[fieldName] = false;
       }
@@ -1027,151 +767,9 @@ export default {
       const trimmed = text.trim();
       return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
     },
-
-    toggleGravacaoEmpresa() {
-      if (this.gravandoEmpresa) {
-        this.stopRecording();
-      } else {
-        this.startRecordingEmpresa();
-      }
-    },
-    
-    async startRecordingEmpresa() {
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
-          return;
-        }
-        
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'pt-BR';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            this.novaExperiencia.empresa = transcript;
-          }
-        };
-        
-        this.recognition.onstart = () => {
-          this.gravandoEmpresa = true;
-          this.erroAudio = null;
-          console.log('🎤 Gravação empresa iniciada');
-        };
-        
-        this.recognition.onend = () => {
-          this.gravandoEmpresa = false;
-          console.log('🛑 Gravação empresa finalizada');
-        };
-        
-        this.recognition.onerror = (event) => {
-          this.gravandoEmpresa = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
-        };
-        
-        this.recognition.start();
-        
-      } catch (error) {
-        console.error('Erro ao iniciar gravação empresa:', error);
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
-        this.gravandoEmpresa = false;
-      }
-    },
-    toggleGravacaoCargo() {
-      if (this.gravandoCargo) {
-        this.stopRecording();
-      } else {
-        this.startRecordingCargo();
-      }
-    },
-    
-    async startRecordingCargo() {
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
-          return;
-        }
-        
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'pt-BR';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            this.novaExperiencia.cargo = transcript;
-          }
-        };
-        
-        this.recognition.onstart = () => {
-          this.gravandoCargo = true;
-          this.erroAudio = null;
-        };
-        
-        this.recognition.onend = () => {
-          this.gravandoCargo = false;
-        };
-        
-        this.recognition.onerror = (event) => {
-          this.gravandoCargo = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
-        };
-        
-        this.recognition.start();
-        
-      } catch (error) {
-        console.error('Erro ao iniciar gravação cargo:', error);
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
-        this.gravandoCargo = false;
-      }
-    },
     
     converterEstadoParaSigla(nomeEstado) {
       const estadosMap = {
-        // Nomes completos
         'acre': 'AC',
         'alagoas': 'AL',
         'amapá': 'AP',
@@ -1186,9 +784,9 @@ export default {
         'mato grosso do sul': 'MS',
         'minas gerais': 'MG',
         'pará': 'PA',
-        'para': 'PA', // Variação para "Pará"
-        'parà': 'PA', // Variação para "Pará"
-        'parar': 'PA', // Variação para "Pará"
+        'para': 'PA',
+        'parà': 'PA',
+        'parar': 'PA',
         'paraíba': 'PB',
         'paraná': 'PR',
         'pernambuco': 'PE',
@@ -1207,7 +805,6 @@ export default {
       const estadoLower = nomeEstado.trim().toLowerCase();
       const sigla = estadosMap[estadoLower];
       
-      // Retorna null se não encontrar um estado válido
       if (!sigla) {
         return null;
       }
@@ -1218,48 +815,19 @@ export default {
     validarEConverterCidade(nomeCidade) {
       if (!this.curriculo.estado) {
         this.erroAudio = 'Selecione um estado antes de selecionar a cidade.';
-        console.warn('❌ Estado não selecionado');
         return null;
       }
       
-      // Procurar pela cidade nas cidades carregadas do estado
       const cidadeEncontrada = this.cidades.find(c => 
         c.nome.toLowerCase() === nomeCidade.trim().toLowerCase()
       );
       
       if (!cidadeEncontrada) {
         this.erroAudio = `"${nomeCidade}" não é uma cidade válida em ${this.curriculo.estado}. Tente falar o nome de uma cidade do estado.`;
-        console.warn(`❌ Cidade inválida para ${this.curriculo.estado}: "${nomeCidade}"`);
         return null;
       }
       
-      console.log(`✨ Cidade encontrada: ${cidadeEncontrada.nome}`);
       return cidadeEncontrada.nome;
-    },
-
-    validarNivel(nomeNivel) {
-      const niveis = [
-        'Ensino Fundamental',
-        'Ensino Médio',
-        'Técnico',
-        'Graduação',
-        'Pós-graduação',
-        'Mestrado',
-        'Doutorado'
-      ];
-
-      const nivelEncontrado = niveis.find(n =>
-        n.toLowerCase() === nomeNivel.trim().toLowerCase()
-      );
-
-      if (!nivelEncontrado) {
-        this.erroAudio = `"${nomeNivel}" não é um nível válido. Opções: ${niveis.join(', ')}.`;
-        console.warn(`❌ Nível inválido: "${nomeNivel}"`);
-        return null;
-      }
-
-      console.log(`✨ Nível encontrado: ${nivelEncontrado}`);
-      return nivelEncontrado;
     },
     
     toggleGravacaoDataInicioExperiencia() {
@@ -1296,14 +864,11 @@ export default {
           }
           
           if (transcript) {
-            // AQUI ESTÁ A MUDANÇA:
-            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
             const dataFormatada = this.converterTextoParaDataISO(transcript);
             
             if (dataFormatada) {
               this.novaExperiencia.dataInicio = dataFormatada;
             } else {
-              // Opcional: Avisar usuário que não entendeu a data
               this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
             }
           }
@@ -1329,13 +894,11 @@ export default {
           };
           
           this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
         };
         
         this.recognition.start();
         
       } catch (error) {
-        console.error('Erro ao iniciar gravação data início:', error);
         this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
         this.gravandoDataInicioExperiencia = false;
       }
@@ -1380,7 +943,6 @@ export default {
         }
       }
 
-      // Regex Misto (Barra + Texto)
       const regexMisto = /(\d{1,2})[\/-](\d{1,2})\s*(?:d[eo])?\s*(\d{4})/;
       const matchMisto = texto.match(regexMisto);
       if (matchMisto) {
@@ -1390,7 +952,6 @@ export default {
         return `${ano}-${mes}-${dia}`;
       }
 
-      // Regex Numérico Puro
       const regexNumerico = /(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/;
       const matchNumerico = texto.match(regexNumerico);
       if (matchNumerico) {
@@ -1400,7 +961,6 @@ export default {
         return `${ano}-${mes}-${dia}`;
       }
 
-      console.warn("Não foi possível converter a data:", texto);
       return '';
     },
     toggleGravacaoDataFim() {
@@ -1445,15 +1005,11 @@ export default {
           }
           
           if (transcript) {
-            // AQUI ESTÁ A MUDANÇA:
-            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
             const dataFormatada = this.converterTextoParaDataISO(transcript);
             
             if (dataFormatada) {
               this.novaExperiencia.dataFim = dataFormatada;
-              console.log(`Convertido: "${transcript}" -> "${dataFormatada}"`);
             } else {
-              // Opcional: Avisar usuário que não entendeu a data
               this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
             }
           }
@@ -1462,12 +1018,10 @@ export default {
         this.recognition.onstart = () => {
           this.gravandoDataFim = true;
           this.erroAudio = null;
-          console.log('🎤 Gravação data fim iniciada');
         };
         
         this.recognition.onend = () => {
           this.gravandoDataFim = false;
-          console.log('🛑 Gravação data fim finalizada');
         };
         
         this.recognition.onerror = (event) => {
@@ -1481,13 +1035,11 @@ export default {
           };
           
           this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
         };
         
         this.recognition.start();
         
       } catch (error) {
-        console.error('Erro ao iniciar gravação data fim:', error);
         this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
         this.gravandoDataFim = false;
       }
@@ -1521,11 +1073,7 @@ export default {
             const dataFormatada = this.converterTextoParaDataISO(transcript);
             
             if (dataFormatada) {
-              // FORCE AQUI O CAMINHO CORRETO
-              this.curriculo.dataNascimento = dataFormatada; 
-              
-              // LOG DE SEGURANÇA (Para você ter certeza do que aconteceu)
-              console.log(`SUCESSO: Gravei ${dataFormatada} em NASCIMENTO`);
+              this.curriculo.dataNascimento = dataFormatada;
             }
           }
         };
@@ -1533,12 +1081,10 @@ export default {
         this.recognition.onstart = () => {
           this.gravandoDataNascimento = true;
           this.erroAudio = null;
-          console.log('🎤 Gravação data fim iniciada');
         };
         
         this.recognition.onend = () => {
           this.gravandoDataNascimento = false;
-          console.log('🛑 Gravação data fim finalizada');
         };
         
         this.recognition.onerror = (event) => {
@@ -1552,22 +1098,13 @@ export default {
           };
           
           this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
         };
         
         this.recognition.start();
         
       } catch (error) {
-        console.error('Erro ao iniciar gravação data fim:', error);
         this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
         this.gravandoDataNascimento = false;
-      }
-    },
-    toggleGravacaoDataInicioFormacao() {
-      if (this.gravandoDataInicioFormacao) {
-        this.stopRecording();
-      } else {
-        this.startRecordingDataInicioFormacao();
       }
     },
 
@@ -1583,161 +1120,7 @@ export default {
         }
       }, 300);
     },
-    
-    async startRecordingDataInicioFormacao() {
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
-          return;
-        }
-        
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'pt-BR';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            // AQUI ESTÁ A MUDANÇA:
-            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
-            const dataFormatada = this.converterTextoParaDataISO(transcript);
-            
-            if (dataFormatada) {
-              this.novaFormacao.dataInicio = dataFormatada;
-              console.log(`Convertido: "${transcript}" -> "${dataFormatada}"`);
-            } else {
-              // Opcional: Avisar usuário que não entendeu a data
-              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
-            }
-          }
-        };
-        
-        this.recognition.onstart = () => {
-          this.gravandoDataInicioFormacao = true;
-          this.erroAudio = null;
-          console.log('🎤 Gravação data início formação iniciada');
-        };
-        
-        this.recognition.onend = () => {
-          this.gravandoDataInicioFormacao = false;
-          console.log('🛑 Gravação data início formação finalizada');
-        };
-        
-        this.recognition.onerror = (event) => {
-          this.gravandoDataInicioFormacao = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
-        };
-        
-        this.recognition.start();
-        
-      } catch (error) {
-        console.error('Erro ao iniciar gravação data início formação:', error);
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
-        this.gravandoDataInicioFormacao = false;
-      }
-    },
-    toggleGravacaoDataConclusaoFormacao() {
-      if (this.gravandoDataConclusaoFormacao) {
-        this.stopRecording();
-      } else {
-        this.startRecordingDataConclusaoFormacao();
-      }
-    },
-    
-    async startRecordingDataConclusaoFormacao() {
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          this.erroAudio = 'Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
-          return;
-        }
-        
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        this.recognition = new SpeechRecognition();
-        this.recognition.lang = 'pt-BR';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        
-        this.recognition.onresult = (event) => {
-          let transcript = '';
-          
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript;
-            }
-          }
-          
-          if (transcript) {
-            // AQUI ESTÁ A MUDANÇA:
-            // Convertemos o texto "5 de maio de 1996" para "1996-05-05"
-            const dataFormatada = this.converterTextoParaDataISO(transcript);
-            
-            if (dataFormatada) {
-              this.novaFormacao.dataConclusao = dataFormatada;
-              console.log(`Convertido: "${transcript}" -> "${dataFormatada}"`);
-            } else {
-              // Opcional: Avisar usuário que não entendeu a data
-              this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
-            }
-          }
-        };
-        
-        this.recognition.onstart = () => {
-          this.gravandoDataConclusaoFormacao = true;
-          this.erroAudio = null;
-          console.log('🎤 Gravação data conclusão formação iniciada');
-        };
-        
-        this.recognition.onend = () => {
-          this.gravandoDataConclusaoFormacao = false;
-          console.log('🛑 Gravação data conclusão formação finalizada');
-        };
-        
-        this.recognition.onerror = (event) => {
-          this.gravandoDataConclusaoFormacao = false;
-          
-          const errorMessages = {
-            'no-speech': 'Não detectei fala. Tente novamente.',
-            'audio-capture': 'Microfone não encontrado.',
-            'not-allowed': 'Permissão negada. Permita o microfone.',
-            'network': 'Erro de rede.',
-          };
-          
-          this.erroAudio = errorMessages[event.error] || `Erro: ${event.error}`;
-          console.error('❌ Erro:', event.error);
-        };
-        
-        this.recognition.start();
-        
-      } catch (error) {
-        console.error('Erro ao iniciar gravação data conclusão formação:', error);
-        this.erroAudio = 'Erro ao acessar microfone. Verifique as permissões.';
-        this.gravandoDataConclusaoFormacao = false;
-      }
-    },
+
     resetarFormExperiencia() {
       this.novaExperiencia = {
         empresa: '',
@@ -1753,10 +1136,7 @@ export default {
       this.novaFormacao = {
         instituicao: '',
         curso: '',
-        nivel: '',
-        status: '',
-        dataInicio: '',
-        dataConclusao: ''
+        status: false,
       };
       this.editandoIndexFormacao = null;
     },
@@ -1800,19 +1180,14 @@ export default {
         this.novaFormacao = {
           instituicao: '',
           curso: '',
-          nivel: '',
           status: '',
-          dataInicio: '',
-          dataConclusao: '',
         }
         this.editandoIndexFormacao = null;
         this.editandoFormacao = null;
       }
       else{
         this.novaFormacao = {
-          ...formacao,
-          dataInicio: formacao.dataInicio?.split('T')[0] || '',
-          dataConclusao: formacao.dataConclusao?.split('T')[0] || ''
+          ...formacao
         };
         
         this.editandoIndexFormacao = index;
@@ -1820,7 +1195,6 @@ export default {
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
-
 
     formatarTelefone(event) {
       let valor = event.target.value.replace(/\D/g, '');
@@ -1911,47 +1285,26 @@ export default {
 
       return `${inicio} - ${fim}`;
     },
-    nextStep() {
-      if (this.step < 3) this.step++;
-    },
     
     prevStep() {
       if (this.step > 1) {
         this.step--;
         window.scrollTo({
           top: 0,
-          behavior: 'smooth' // Faz a subida ser suave
+          behavior: 'smooth'
         });
       }
     },
-    formatarDataAtual(dataRef) {
-      const dataString = dataRef?.value || dataRef;
-      
-      if (!dataString) return '';
-      
-      const data = new Date(dataString);
-      
-      if (isNaN(data.getTime())) {
-        return '';
-      }
-      
-      const dia = String(data.getDate()).padStart(2, '0');
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const ano = data.getFullYear();
-      
-      return `${dia}/${mes}/${ano}`;
-    },
+
     async adicionarExperiencia() {
      if (!this.novaExperiencia.descricao || this.novaExperiencia.descricao.trim() === '') {
         
         const mensagem = 'Preencha a descrição da atividade.';
 
-        // 2. Se o tutorial estiver ativo, lê o erro em voz alta
         if (this.mostrarTutorial) {
           this.falarTexto(mensagem);
         }
 
-        // 3. Mostra o Toast na tela (independente do tutorial)
         return this.mostrarErro(mensagem);
       }
       else if (!this.novaExperiencia.dataInicio) {
@@ -1960,7 +1313,6 @@ export default {
           this.falarTexto(mensagem);
         }
 
-        // 3. Mostra o Toast na tela (independente do tutorial)
         return this.mostrarErro(mensagem);
       }
       else if(!this.novaExperiencia.empregoAtual && this.novaExperiencia.dataFim == ''){
@@ -1969,7 +1321,6 @@ export default {
           this.falarTexto(mensagem);
         }
 
-        // 3. Mostra o Toast na tela (independente do tutorial)
         return this.mostrarErro(mensagem);
       }
       else if(!this.novaExperiencia.empregoAtual && (this.novaExperiencia.dataFim < this.novaExperiencia.dataInicio)){
@@ -1994,7 +1345,6 @@ export default {
               this.successMessage = 'Experiência atualizada!';
 
           } else {
-              console.log(this.curriculo.id)
               if (this.curriculo.id) {
                   const experienciaComCurriculo = {
                       ...this.novaExperiencia,
@@ -2073,7 +1423,6 @@ export default {
           const formId = this.curriculo.formacoes[this.editandoIndexFormacao].id;
 
           if (formId) {
-            console.log("B")
             await formacaoService.atualizarFormacao(formacaoNormalizada);
           }
 
@@ -2085,14 +1434,12 @@ export default {
 
           this.successMessage = 'Formação atualizada!';
         } else {
-          console.log(this.curriculoId)
           this.curriculoId = this.curriculo.id
           if (this.curriculoId) {
             const formacaoComCurriculo = {
               ...formacaoNormalizada,
               curriculoId: this.curriculoId
             };
-            console.log("A")
             const novaForm = await formacaoService.adicionarFormacao(formacaoComCurriculo);
             this.curriculo.formacoes.push(novaForm);
           } else {
@@ -2280,108 +1627,46 @@ export default {
 
     async salvarCurriculo() {
       try {
-          const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
-          console.log(dadosParaEnviar)
-          if (dadosParaEnviar.experiencias) {
-              dadosParaEnviar.experiencias.forEach(t => {
-                  t.dataFim = (t.dataFim === "" || !t.dataFim) ? null : t.dataFim;
-                  t.dataInicio = (t.dataInicio === "" || !t.dataInicio) ? null : t.dataInicio;
-              });
-          }
-          const idExistente = dadosParaEnviar.id;
-
-          if (idExistente) {
-              await curriculoService.atualizarCurriculo(dadosParaEnviar);
-              this.successMessage = "Currículo atualizado com sucesso!";
-          } else {
-              const resposta = await curriculoService.adicionarCurriculo(dadosParaEnviar);
-              this.curriculoId = resposta.id;
-              this.successMessage = "Currículo salvo com sucesso!";
-          }
-
-          const idFinal = idExistente || this.curriculoId;
-          this.$router.push(`/curriculo/visualizar/${idFinal}`);
-
-      } catch (err) {
-          console.error("Erro no Servidor:", err.response?.data || err.message);
-          this.mostrarErro("Erro interno no servidor ao processar a atualização.");
-      }
-    },
-    async updateCurriculo() {
-      try {
-        await curriculoService.atualizarCurriculo(this.curriculo);
-        this.successMessage = 'Currículo atualizado com sucesso!';
-        setTimeout(() => {
-          this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
-        }, 2000);
+        const dadosParaEnviar = JSON.parse(JSON.stringify(this.curriculo));
+        console.log(dadosParaEnviar);
+        if (dadosParaEnviar.experiencias) {
+          dadosParaEnviar.experiencias.forEach(exp => {
+            if (!exp.dataFim || exp.dataFim === "") exp.dataFim = null;
+            if (!exp.dataInicio || exp.dataInicio === "") exp.dataInicio = null;
+          });
+        }
+        if (dadosParaEnviar.id) {
+          await curriculoService.atualizarCurriculo(dadosParaEnviar);
+          this.successMessage = 'Currículo atualizado com sucesso!';
+        } else {
+          const data = await curriculoService.adicionarCurriculo(dadosParaEnviar);
+          this.curriculoId = data.id;
+          this.successMessage = 'Currículo salvo com sucesso!';
+        }
+        this.$router.push(`/curriculo/visualizar/${this.curriculo.id || this.curriculoId}`);
       } catch (error) {
         return this.mostrarErro('Erro ao salvar currículo');
       }
     },
-    async continuarPerfil() {
-    try {
-        if (this.curriculo.id) {
-            await curriculoService.atualizarCurriculo(this.curriculo);
-            this.successMessage = 'Currículo atualizado com sucesso!';
-            setTimeout(() => this.successMessage = '', 3000);
-        } else {
-            const data = await curriculoService.adicionarCurriculo(this.curriculo);
-            this.curriculoId = data.id;
-            this.curriculo.id = data.id;
-            this.successMessage = 'Currículo salvo com sucesso!';
-            setTimeout(() => this.successMessage = '', 3000);
-        }
-        this.curriculoOriginal = JSON.parse(JSON.stringify(this.curriculo));
-        
-        return true;
-    } catch (error) {
-        const apiResponse = error.response;
-        if (apiResponse && apiResponse.status === 400) {
-            const errorCode = apiResponse.data.code;
-            if (errorCode === 'DataNascimento_Invalida'){
-                return this.mostrarErro('A data de nascimento é inválida');
-            }
-        } else {
-            return this.mostrarErro('Erro ao salvar experiência. Verifique a conexão e o servidor.');
-        }
-      }
-  },
+
   nextStepPerfil() {
-    console.log(this.curriculo.nomeCompleto)
     if (this.curriculo.nomeCompleto == '' || !this.curriculo.nomeCompleto) {
       
       const mensagem = 'Preencha o nome completo.';
 
-      // 2. Se o tutorial estiver ativo, lê o erro em voz alta
       if (this.mostrarTutorial) {
         this.falarTexto(mensagem);
       }
 
-      // 3. Mostra o Toast na tela (independente do tutorial)
       return this.mostrarErro(mensagem);
     }
     this.step++;
     window.scrollTo({
       top: 0,
-      behavior: 'smooth' // Faz a subida ser suave
+      behavior: 'smooth'
     });
   },
-  async voltarLogin() {
-    try {
-      await usuarioService.logout();
-      
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      this.$router.replace('/login').then(() => {
-        window.location.reload();
-      });
-      
-    } catch (error) {
-      this.$router.replace('/login').then(() => {
-        window.location.reload();
-      });
-    }
-  },
+
   abrirModal() {
     this.modalAberto = true;
   },
@@ -2406,9 +1691,6 @@ export default {
         window.location.reload();
       });
     }
-  },
-  hasChanges() {
-    return JSON.stringify(this.curriculo) !== JSON.stringify(this.curriculoOriginal);
   }
 }
 }
@@ -2496,7 +1778,7 @@ export default {
 
 .progress-bar {
   display: flex;
-  align-items: center; /* Alinha pelo topo para o cálculo da linha ser fixo */
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 40px;
   padding: 0 10px; 
@@ -2509,8 +1791,8 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  min-width: 80px; /* Garante que cada etapa tenha uma área mínima para não "esmagar" o círculo */
-  z-index: 1; /* Garante que o círculo fique acima da linha se eles se sobrepuserem */
+  min-width: 80px;
+  z-index: 1;
 }
 
 .step-circle {
@@ -2603,26 +1885,23 @@ export default {
   transform: translateY(-50%);
 }
 
-input:disabled { /* Fundo cinza bem claro */
-  color: #999999;       /* Muda o cursor para um sinal de "proibido" */
-  border: 1px solid #dddddd; /* Borda suave */
-  opacity: 0.7;              /* Garante que pareça levemente desbotado */
+input:disabled {
+  color: #999999;
+  border: 1px solid #dddddd;
+  opacity: 0.7;
 }
 
 .input-com-dois-icones {
-  width: 100% !important; /* O !important garante que ele ignore o tamanho padrão do navegador */
-  min-width: 100%;        /* Força a ocupação total da coluna */
-  box-sizing: border-box; /* Evita que o padding "estoure" a largura */
+  width: 100% !important;
+  min-width: 100%;
+  box-sizing: border-box;
 }
 
 .icone-calendario{
   color:#ff000000
 }
 
-/* 2. O MÁGICO: Empurra o ícone nativo do calendário para a esquerda */
 .input-com-dois-icones::-webkit-calendar-picker-indicator {
-  /* Move o ícone do calendário para longe da borda direita, 
-     dando espaço para o microfone entrar */
   margin-right: 25px; 
   cursor: pointer;
   opacity: 0.3;
@@ -2632,7 +1911,7 @@ input:disabled { /* Fundo cinza bem claro */
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-  align-items: start; /* Garante que os labels fiquem alinhados no topo */
+  align-items: start;
 }
 
 label {
@@ -2671,9 +1950,9 @@ textarea {
 
 .btn-microfone {
   position: absolute;
-  right: 8px; /* Ajuste este valor para afastar da borda direita do input */
-  top: 50%;   /* Centraliza verticalmente */
-  transform: translateY(-50%); /* Ajuste fino para a centralização vertical */
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   
   width: 36px;
   height: 36px;
@@ -2711,7 +1990,7 @@ textarea {
 }
 
 .btn-microfone.gravando svg {
-  color: #ef4444; /* ← Vermelho quando grava */
+  color: #ef4444;
 }
 
 @keyframes pulse-icon {
@@ -2728,7 +2007,6 @@ textarea {
 }
 
 
-/* Transcrição em tempo real */
 .transcricao-tempo-real {
   margin-top: 10px;
   padding: 10px 12px;
@@ -2745,7 +2023,6 @@ textarea {
   display: block;
 }
 
-/* Erro de áudio */
 .erro-audio {
   margin-top: 10px;
   padding: 10px 12px;
@@ -2772,7 +2049,6 @@ textarea {
   }
 }
 
-/* Responsivo */
 @media (max-width: 768px) {
   .btn-microfone {
     width: 32px;
@@ -2782,14 +2058,11 @@ textarea {
     border: none;
     cursor: pointer;
     
-    /* Aumenta a área de clique em 20px para todos os lados */
     padding: 20px; 
-    
-    /* Garante que o ícone não mude de lugar, apenas a área em volta dele cresça */
     display: flex;
     align-items: center;
     justify-content: center;
-    right: 4px; /* Ajuste este valor para afastar da borda direita do input */
+    right: 4px;
   } 
   
   textarea {
@@ -2833,7 +2106,7 @@ input::placeholder, textarea::placeholder {
 
 .btn-primary {
   width: 100%;
-  padding: 12px 60px 12px 12px; /* Padding extra à direita para o botão de áudio */
+  padding: 12px 60px 12px 12px;
   background: #000;
   color: white;
   border: none;
@@ -2963,9 +2236,9 @@ input::placeholder, textarea::placeholder {
 
 .btn-ia {
   position: absolute;
-  right: 5px; /* Ajuste este valor para afastar da borda direita do input */
-  top: 20%;   /* Centraliza verticalmente */
-  transform: translateY(-50%); /* Ajuste fino para a centralização vertical */
+  right: 5px;
+  top: 20%;
+  transform: translateY(-50%);
   
   width: 36px;
   height: 36px;
@@ -3150,25 +2423,21 @@ input::placeholder, textarea::placeholder {
 }
 
 .alert {
-  /* Posicionamento fixo no topo */
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999; /* Garante que fique acima de tudo */
+  z-index: 9999;
   
-  /* Largura adaptável para mobile */
   width: 90%;
   max-width: 400px;
   
-  /* Estilo visual */
   padding: 16px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   
-  /* Mantém sua animação */
   animation: slideDown 0.3s ease;
   text-align: center;
 }
@@ -3198,41 +2467,38 @@ input::placeholder, textarea::placeholder {
 
 @media (max-width: 728px) {
   .wrapper {
-    padding: 0; /* Remove o respiro externo para o card encostar na lateral se necessário */
-    background: rgb(255, 255, 255); /* Opcional: tira o fundo cinza para parecer um app nativo */
-    align-items: flex-start; /* Alinha o conteúdo no topo */
+    padding: 0;
+    background: rgb(255, 255, 255);
+    align-items: flex-start;
   }
 
   .container {
-    padding: 20px; /* Reduz drasticamente o padding interno */
-    border-radius: 0; /* Remove arredondamento para ocupar os cantos da tela */
-    border: none; /* Remove a borda para um visual mais limpo */
-    max-width: 100vw; /* Garante 100% da largura da visualização */
-    min-height: 100vh; /* Faz o branco ocupar a altura toda do celular */
+    padding: 20px;
+    border-radius: 0; 
+    border: none; 
+    max-width: 100vw; 
+    min-height: 100vh;
   }
   
-  /* Ajuste para que os inputs fiquem confortáveis */
   input, select, textarea {
-    font-size: 16px; /* Evita que o iOS dê zoom automático ao clicar */
+    font-size: 16px;
   }
 
   input::placeholder {
-    font-size: 14px; /* Ajuste para o tamanho desejado */
-    color: #b4b4b4;    /* Opcional: ajusta a cor para melhorar o contraste */
+    font-size: 14px;
+    color: #b4b4b4;
   }
 
   textarea {
-    resize: none; /* Impede qualquer redimensionamento manual */
+    resize: none;
   }
 
-  /* Remove a seta e o botão de limpeza padrão no Chrome/Android */
   input[type="date"]::-webkit-inner-spin-button,
   input[type="date"]::-webkit-calendar-picker-indicator {
       display: none;
       -webkit-appearance: none;
   }
 
-  /* Garante que o input ocupe o espaço correto sem quebras */
   input[type="date"] {
       appearance: none;
       -moz-appearance: none;
@@ -3243,7 +2509,6 @@ input::placeholder, textarea::placeholder {
   input[type="date"]::-webkit-calendar-picker-indicator {
     display: block;
     cursor: pointer;
-    /* Afasta o ícone para a esquerda para não  sobrepor o microfone */
     margin-right: 35px; 
     filter: invert(0.5);
   }
@@ -3253,8 +2518,8 @@ input::placeholder, textarea::placeholder {
   }
 
   .form-row {
-    grid-template-columns: 1fr; /* Um campo por linha no celular */
-    gap: 0; /* O margin-bottom do form-group já cuidará do espaço */
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 
   .button-group {
@@ -3262,14 +2527,13 @@ input::placeholder, textarea::placeholder {
   }
 
   .progress-bar {
-    /* No mobile, talvez precise de um pouco mais de respiro */
     padding: 0 25px;
   }
 
   .icone-calendario {
     position: absolute;
     right: 40px;
-    pointer-events: none; /* Garante que o clique abra o seletor de data do input */
+    pointer-events: none;
     font-size: 1rem;
     z-index: 1;
     color:#000000;

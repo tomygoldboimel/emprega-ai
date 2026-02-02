@@ -45,7 +45,7 @@
             <span class="period-text">
               {{ form.nivel }} • {{ form.status === true ? 'Incompleto' : 'Completo' }}
               <br>
-              {{ formatarData(form.dataInicio) }} - {{ form.dataConclusao ? formatarData(form.dataConclusao) : 'Em andamento' }}
+              {{ formatarData(form.dataInicio) }}
             </span>
           </div>
         </section>
@@ -106,11 +106,6 @@ export default {
   async created() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const autenticado = await usuarioService.verificarSessao();
-    
-    if (!autenticado) {
-      this.$router.replace('/login');
-      return;
-    }
 
     const curriculoId = this.$route.params.id;
     if (curriculoId) {
@@ -234,7 +229,7 @@ export default {
 
         this.curriculo.email,
 
-        localizacao // Se a localização for vazia, o filter abaixo remove ela
+        localizacao
 
       ].filter(item => item && item.trim() !== '').join(' | ');
 
@@ -302,17 +297,13 @@ export default {
 
           doc.setTextColor(40, 40, 40);
 
-         
-
-          // Faz o texto quebrar automaticamente se for muito longo
-
           const objetivoLines = doc.splitTextToSize(this.curriculo.objetivo, pageWidth - 2 * margin);
 
           doc.text(objetivoLines, margin, yPosition);
 
          
 
-          yPosition += (objetivoLines.length * 5) + 10; // Ajusta o yPosition para a próxima seção
+          yPosition += (objetivoLines.length * 5) + 10;
 
       }
 
@@ -488,7 +479,7 @@ export default {
 
             yPosition += 5;
 
-            const periodo = `${this.formatarData(form.dataInicio)} - ${form.dataConclusao ? this.formatarData(form.dataConclusao) : 'Em andamento'}`;
+            const periodo = `${this.formatarData(form.dataInicio)}`;
 
             doc.text(periodo, margin, yPosition);
 
@@ -514,7 +505,6 @@ export default {
 </script>
 
 <style scoped>
-/* Estilos ajustados para visualização "Papel A4" idêntica ao PDF */
 .wrapper {
   background: #f4f4f5;
   padding: 40px 20px;
