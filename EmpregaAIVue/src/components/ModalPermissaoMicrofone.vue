@@ -32,7 +32,7 @@ export default {
     isOpen: { type: Boolean, required: true },
     message: {
       type: String,
-      default: 'Para usar o comando de voz, permita que a plataforma acesse seu microfone.'
+      default: 'Seu navegador não possui acesso ao microfone. Configure suas permissões para acessar esse recurso.'
     },
   },
   emits: ['permitido', 'fechar', 'falar', 'erro'],
