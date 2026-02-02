@@ -49,16 +49,42 @@
           </form>
         </div>
 
-        <div class="form-group">
-          <label @click="falarElemento">Telefone</label>
-          <input 
-            type="tel" 
-            v-model="curriculo.telefone" 
-            @input="formatarTelefone"
-            placeholder="(XX) XXXXX-XXXX"
-            maxlength="15"
-            disabled
-          />
+        <div class="form-row">
+          <div class="form-group">
+            <label @click="falarElemento">Data de Nascimento</label>
+            <div style="position: relative;"> 
+              <input
+              type="date" 
+              v-model="curriculo.dataNascimento"
+              class="input-com-dois-icones"
+              @click="garantirVisibilidade"
+              />
+              <span class="icone-calendario"> 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </span>
+              <BotaoMicrofone 
+              :isRecording="gravandoDataNascimento" 
+              @toggle="toggleGravacaoDataNascimento"
+              />
+                
+              </div>
+          </div>
+          <div class="form-group">
+            <label @click="falarElemento">Telefone</label>
+            <input 
+              type="tel" 
+              v-model="curriculo.telefone" 
+              @input="formatarTelefone"
+              placeholder="(XX) XXXXX-XXXX"
+              maxlength="15"
+              disabled
+            />
+          </div>
         </div>
 
         <div class="form-row">
@@ -824,9 +850,11 @@ export default {
           
           if (transcript) {
             const dataFormatada = this.converterTextoParaDataISO(transcript);
-            
             if (dataFormatada) {
-              this.novaExperiencia.dataInicio = dataFormatada;
+              this.novaExperiencia = { 
+                ...this.novaExperiencia, 
+                dataInicio: dataFormatada
+              };
             } else {
               this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
             }
@@ -866,7 +894,11 @@ export default {
     converterTextoParaDataISO(texto) {
       if (!texto) return '';
       texto = texto.toLowerCase().trim();
-
+      const regex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/;
+      const match = texto.match(regex);
+      if (match) {
+        return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
+      }
       const meses = {
         'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
         'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
@@ -967,7 +999,10 @@ export default {
             const dataFormatada = this.converterTextoParaDataISO(transcript);
             
             if (dataFormatada) {
-              this.novaExperiencia.dataFim = dataFormatada;
+              this.novaExperiencia = { 
+                ...this.novaExperiencia, 
+                dataFim: dataFormatada 
+              };
             } else {
               this.erroAudio = `Não entendi a data "${transcript}". Tente falar "05 de maio de 1996"`;
             }
@@ -1032,7 +1067,10 @@ export default {
             const dataFormatada = this.converterTextoParaDataISO(transcript);
             
             if (dataFormatada) {
-              this.curriculo.dataNascimento = dataFormatada;
+              this.curriculo = { 
+                ...this.curriculo, 
+                dataNascimento: dataFormatada 
+              };
             }
           }
         };
