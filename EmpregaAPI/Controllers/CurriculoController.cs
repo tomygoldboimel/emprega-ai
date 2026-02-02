@@ -27,11 +27,6 @@ public class CurriculoController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            if (ex.Message == "DataNascimento_Invalida")
-            {
-                return BadRequest(new { code = "DataNascimento_Invalida", message = "A data de nascimento é inválida." });
-            }
-
             return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
@@ -73,10 +68,6 @@ public class CurriculoController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            if (ex.Message == "DataNascimento_Invalida")
-            {
-                return BadRequest(new { code = "DataNascimento_Invalida", message = "A data de nascimento é inválida." });
-            }
 
             return BadRequest(new { message = ex.Message });
         }
